@@ -8,12 +8,12 @@
     :root {
       --bg: #0b0e14;
       --panel: rgba(17, 22, 33, 0.92);
-      --border: rgba(255, 255, 255, 0.12);
+      --border: rgba(255, 255, 255, 0.14);
       --text: #eef2f7;
       --muted: #9aa6b8;
       --accent: #38bdf8;
       --accent-2: #22c55e;
-      --warn: #fbbf24;
+      --danger: #f87171;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -23,13 +23,68 @@
       color: var(--text);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       min-height: 100vh;
-      overflow-x: hidden;
+      overflow: hidden;
     }
 
     #canvas-wrap {
       position: fixed;
       inset: 0;
       z-index: 1;
+    }
+
+    /* Pantalla de Login / Registro */
+    .auth-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: radial-gradient(circle at 50% 25%, #172236, #090c12 75%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .auth-screen.hidden { display: none; }
+
+    .auth-card {
+      width: min(390px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+    }
+
+    .auth-card h1 { font-size: 1.25rem; }
+    .auth-card p { color: var(--muted); font-size: 0.85rem; }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .field label { font-size: 0.8rem; color: var(--muted); }
+
+    .field input {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 9px 11px;
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .field input:focus { border-color: var(--accent); }
+
+    .auth-error {
+      color: var(--danger);
+      font-size: 0.82rem;
+      min-height: 18px;
     }
 
     .hud-top {
@@ -41,7 +96,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       pointer-events: none;
       flex-wrap: wrap;
     }
@@ -52,8 +107,8 @@
       backdrop-filter: blur(10px);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 8px 14px;
-      font-size: 0.9rem;
+      padding: 8px 13px;
+      font-size: 0.88rem;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -67,26 +122,12 @@
       box-shadow: 0 0 8px var(--accent-2);
     }
 
-    .fallback-banner {
-      position: relative;
-      z-index: 15;
-      margin: 72px auto 14px;
-      width: min(760px, calc(100vw - 28px));
-      background: rgba(251, 191, 36, 0.12);
-      border: 1px solid rgba(251, 191, 36, 0.45);
-      color: #fde68a;
-      border-radius: 12px;
-      padding: 12px 14px;
-      font-size: 0.88rem;
-      display: none;
-    }
-
     .panel {
       position: fixed;
       right: 14px;
       bottom: 14px;
-      width: min(360px, calc(100vw - 28px));
-      max-height: 64vh;
+      width: min(350px, calc(100vw - 28px));
+      max-height: 62vh;
       overflow-y: auto;
       z-index: 20;
       background: var(--panel);
@@ -129,6 +170,7 @@
 
     .btn:hover { border-color: var(--accent); }
     .btn.primary { background: #0284c7; border-color: #38bdf8; font-weight: 600; }
+    .btn.ghost { background: transparent; }
 
     .live-note {
       margin-top: 10px;
@@ -139,51 +181,24 @@
       min-height: 22px;
     }
 
-    /* Inspector giratorio del producto */
-    .inspector-modal {
+    /* Barra flotante cuando tienes un producto tomado frente a la cámara */
+    .held-bar {
       position: fixed;
-      inset: 0;
-      z-index: 40;
-      background: rgba(5, 8, 14, 0.76);
-      backdrop-filter: blur(6px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-    }
-
-    .inspector-modal.open { display: flex; }
-
-    .inspector-card {
-      width: min(440px, 100%);
+      left: 14px;
+      bottom: 14px;
+      z-index: 25;
+      width: min(360px, calc(100vw - 28px));
       background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
-      display: flex;
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--accent);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: none;
       flex-direction: column;
-      gap: 12px;
+      gap: 8px;
     }
 
-    #inspect-canvas-wrap {
-      width: 100%;
-      height: 250px;
-      border-radius: 12px;
-      background: radial-gradient(circle at 50% 35%, #1e293b, #0b0e14);
-      border: 1px solid var(--border);
-      overflow: hidden;
-      cursor: grab;
-      touch-action: none;
-    }
-
-    #inspect-canvas-wrap:active { cursor: grabbing; }
-
-    .inspector-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-    }
+    .held-bar.active { display: flex; }
   </style>
   <script type="importmap">
     {
@@ -197,56 +212,85 @@
 <body>
   <div id="canvas-wrap"></div>
 
+  <!-- Validación de sesión -->
+  <section class="auth-screen" id="auth-screen">
+    <form class="auth-card" id="auth-form">
+      <div>
+        <h1>ZeroMart 3D</h1>
+        <p>Inicia sesión o crea tu cuenta para entrar al pasillo interactivo.</p>
+      </div>
+      <div class="field">
+        <label for="username">Usuario</label>
+        <input id="username" name="username" type="text" autocomplete="username" required placeholder="ej. matrix" />
+      </div>
+      <div class="field">
+        <label for="password">Contraseña</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="mínimo 6 caracteres" />
+      </div>
+      <div class="auth-error" id="auth-error"></div>
+      <div class="row">
+        <button type="submit" class="btn primary" id="login-btn">Iniciar sesión</button>
+        <button type="button" class="btn" id="register-btn">Registrarse</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- HUD superior -->
   <div class="hud-top">
     <div class="badge">
       <span class="dot"></span>
       <strong>ZeroMart 3D</strong>
-      <span class="muted" style="margin:0;">Arrastra para rotar · Clic en producto para inspeccionar</span>
+      <span class="muted" id="user-label" style="margin:0;">Sin sesión</span>
     </div>
-    <div class="badge" id="status-badge">Conectando...</div>
+    <div class="row" style="gap:8px;">
+      <div class="badge" id="status-badge">Conectando...</div>
+      <button class="btn ghost badge" id="logout-btn" style="display:none;">Salir</button>
+    </div>
   </div>
 
-  <div class="fallback-banner" id="fallback-banner">
-    <strong>Aviso WebGL:</strong> Este navegador no pudo iniciar WebGL. El catálogo y la sincronización en tiempo real siguen activos.
+  <!-- Panel cuando sostienes/inspeccionas un producto en el 3D -->
+  <div class="held-bar" id="held-bar">
+    <div class="row">
+      <strong id="held-title">Producto tomado</strong>
+      <span class="price" id="held-price">$0</span>
+    </div>
+    <p class="muted" id="held-meta" style="margin:0;">Arrastra el producto para girarlo · Mueve la cámara libremente</p>
+    <div class="row">
+      <button class="btn" id="release-btn">Devolver al estante</button>
+      <button class="btn primary" id="confirm-btn">Confirmar selección</button>
+    </div>
   </div>
 
+  <!-- Catálogo lateral -->
   <aside class="panel">
     <h2>Catálogo en Pasillo</h2>
-    <p class="muted" id="selected-info">Toca un producto en 3D o en la lista para girarlo.</p>
+    <p class="muted" id="selected-info">Toca un producto en 3D o en la lista para tomarlo y girarlo.</p>
     <div class="product-list" id="product-list"></div>
     <div class="live-note" id="live-note">Esperando eventos en tiempo real...</div>
   </aside>
 
-  <div class="inspector-modal" id="inspector-modal">
-    <div class="inspector-card">
-      <div class="row">
-        <h3 id="inspect-title">Producto</h3>
-        <span class="price" id="inspect-price">$0</span>
-      </div>
-      <p class="muted" id="inspect-meta" style="margin:0;">Arrastra para girar 360°</p>
-      <div id="inspect-canvas-wrap"></div>
-      <div class="inspector-actions">
-        <button class="btn" id="inspect-close">Cerrar</button>
-        <button class="btn primary" id="inspect-confirm">Tomar / Seleccionar en pasillo</button>
-      </div>
-    </div>
-  </div>
-
   <script src="/socket.io/socket.io.js"></script>
   <script type="module">
+    const authScreen = document.getElementById("auth-screen");
+    const authForm = document.getElementById("auth-form");
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+    const authError = document.getElementById("auth-error");
+    const registerBtn = document.getElementById("register-btn");
+    const logoutBtn = document.getElementById("logout-btn");
+    const userLabel = document.getElementById("user-label");
+
     const statusBadgeEl = document.getElementById("status-badge");
     const listEl = document.getElementById("product-list");
     const selectedInfoEl = document.getElementById("selected-info");
     const liveNoteEl = document.getElementById("live-note");
-    const fallbackBanner = document.getElementById("fallback-banner");
 
-    const modalEl = document.getElementById("inspector-modal");
-    const inspectTitleEl = document.getElementById("inspect-title");
-    const inspectPriceEl = document.getElementById("inspect-price");
-    const inspectMetaEl = document.getElementById("inspect-meta");
-    const inspectWrapEl = document.getElementById("inspect-canvas-wrap");
-    const inspectCloseBtn = document.getElementById("inspect-close");
-    const inspectConfirmBtn = document.getElementById("inspect-confirm");
+    const heldBar = document.getElementById("held-bar");
+    const heldTitle = document.getElementById("held-title");
+    const heldPrice = document.getElementById("held-price");
+    const heldMeta = document.getElementById("held-meta");
+    const releaseBtn = document.getElementById("release-btn");
+    const confirmBtn = document.getElementById("confirm-btn");
 
     const fallbackProducts = [
       { id: 1, name: "Refresco Cola 600ml", price: 18, stock: 25, aisle: "Bebidas" },
@@ -254,18 +298,86 @@
       { id: 3, name: "Leche Entera 1L", price: 26, stock: 20, aisle: "Lácteos" }
     ];
 
+    let currentUser = null;
     let products = fallbackProducts;
     let selectedId = null;
-    let inspectingProduct = null;
+    let heldProduct = null;
+    let heldMeshGroup = null;
+    let heldOriginalPos = null;
+
     const productGroups = new Map();
     const labelTextureCache = new Map();
 
     let THREE, OrbitControls, scene, camera, renderer, controls, raycaster, pointer;
-    let inspectScene, inspectCamera, inspectRenderer, inspectModel;
-    let isDraggingInspect = false;
-    let prevInspectX = 0;
-    let prevInspectY = 0;
+    let isDraggingHeld = false;
+    let prevX = 0;
+    let prevY = 0;
     let socket = null;
+
+    function setAuthenticatedUser(user) {
+      currentUser = user || null;
+      if (currentUser) {
+        authScreen.classList.add("hidden");
+        userLabel.textContent = `Usuario: ${currentUser.username}`;
+        logoutBtn.style.display = "inline-flex";
+      } else {
+        authScreen.classList.remove("hidden");
+        userLabel.textContent = "Sin sesión";
+        logoutBtn.style.display = "none";
+      }
+    }
+
+    async function checkSession() {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.user) setAuthenticatedUser(data.user);
+        } else {
+          setAuthenticatedUser(null);
+        }
+      } catch {
+        setAuthenticatedUser(null);
+      }
+    }
+
+    async function submitAuth(endpoint) {
+      authError.textContent = "";
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value;
+
+      try {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          authError.textContent = data?.error || "Error de autenticación.";
+          return;
+        }
+        setAuthenticatedUser(data.user);
+        passwordInput.value = "";
+      } catch {
+        authError.textContent = "No se pudo conectar con el servidor.";
+      }
+    }
+
+    authForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      submitAuth("/api/auth/login");
+    });
+
+    registerBtn.addEventListener("click", () => {
+      submitAuth("/api/auth/register");
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      await fetch("/api/auth/logout", { method: "POST" });
+      releaseHeldProduct();
+      setAuthenticatedUser(null);
+    });
 
     function detectKind(prod) {
       const text = `${prod.name || ""} ${prod.aisle || ""}`.toLowerCase();
@@ -292,7 +404,7 @@
       ctx.fillRect(0, 42, canvas.width, 172);
 
       ctx.fillStyle = "#0f172a";
-      ctx.font = "bold 42px system-ui, sans-serif";
+      ctx.font = "bold 40px system-ui, sans-serif";
       ctx.textAlign = "center";
       ctx.fillText(String(prod.name).slice(0, 22), canvas.width / 2, 118);
 
@@ -317,14 +429,8 @@
           roughness: 0.25,
           metalness: 0.1
         });
-        const labelMat = new THREE.MeshStandardMaterial({
-          map: labelTex,
-          roughness: 0.4
-        });
-        const capMat = new THREE.MeshStandardMaterial({
-          color: 0xeab308,
-          roughness: 0.4
-        });
+        const labelMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.4 });
+        const capMat = new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.4 });
 
         const body = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.62, 24), bodyMat);
         body.position.y = 0.31;
@@ -346,18 +452,9 @@
 
         group.add(body, label, shoulder, neck, cap);
       } else {
-        const boxMat = new THREE.MeshStandardMaterial({
-          color: 0xf8fafc,
-          roughness: 0.55
-        });
-        const frontMat = new THREE.MeshStandardMaterial({
-          map: labelTex,
-          roughness: 0.5
-        });
-        const topMat = new THREE.MeshStandardMaterial({
-          color: 0x38bdf8,
-          roughness: 0.5
-        });
+        const boxMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.55 });
+        const frontMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.5 });
+        const topMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.5 });
 
         const materials = [boxMat, boxMat, topMat, boxMat, frontMat, boxMat];
         const carton = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.78, 0.36), materials);
@@ -375,62 +472,55 @@
       return group;
     }
 
-    function openInspector(prod) {
+    function releaseHeldProduct() {
+      if (heldMeshGroup && heldOriginalPos) {
+        heldMeshGroup.position.copy(heldOriginalPos);
+        heldMeshGroup.rotation.set(0, 0, 0);
+        heldMeshGroup.scale.setScalar(1);
+      }
+      heldProduct = null;
+      heldMeshGroup = null;
+      heldOriginalPos = null;
+      heldBar.classList.remove("active");
+      if (controls) controls.enabled = true;
+    }
+
+    function takeProductInScene(prod) {
       if (!prod) return;
-      inspectingProduct = prod;
-      inspectTitleEl.textContent = prod.name;
-      inspectPriceEl.textContent = `$${prod.price} MXN`;
-      inspectMetaEl.textContent = `Pasillo: ${prod.aisle} · Stock: ${prod.stock} · Arrastra para girar`;
-      modalEl.classList.add("open");
+      if (heldMeshGroup && heldOriginalPos) {
+        heldMeshGroup.position.copy(heldOriginalPos);
+        heldMeshGroup.rotation.set(0, 0, 0);
+        heldMeshGroup.scale.setScalar(1);
+      }
 
-      if (THREE && inspectScene && inspectRenderer) {
-        if (inspectModel) {
-          inspectScene.remove(inspectModel);
-        }
-        const idx = products.findIndex((p) => String(p.id) === String(prod.id));
-        inspectModel = buildProductModel(prod, Math.max(idx, 0));
-        inspectModel.scale.setScalar(1.65);
-        inspectModel.position.set(0, -0.72, 0);
-        inspectScene.add(inspectModel);
+      heldProduct = prod;
+      heldTitle.textContent = prod.name;
+      heldPrice.textContent = `$${prod.price} MXN`;
+      heldMeta.textContent = `Pasillo: ${prod.aisle} · Stock: ${prod.stock} · Arrastra para girar o rota cámara`;
+      heldBar.classList.add("active");
+
+      const grp = productGroups.get(prod.id);
+      if (grp && camera && controls) {
+        heldMeshGroup = grp;
+        heldOriginalPos = grp.position.clone();
+
+        const forward = new THREE.Vector3();
+        camera.getWorldDirection(forward);
+        const holdPos = camera.position.clone().addScaledVector(forward, 2.3);
+        holdPos.y = Math.max(1.1, holdPos.y - 0.35);
+
+        grp.position.copy(holdPos);
+        grp.scale.setScalar(1.35);
+        controls.target.copy(holdPos);
       }
     }
 
-    function closeInspector() {
-      modalEl.classList.remove("open");
-      inspectingProduct = null;
-    }
-
-    inspectCloseBtn.addEventListener("click", closeInspector);
-    modalEl.addEventListener("click", (e) => {
-      if (e.target === modalEl) closeInspector();
-    });
-
-    inspectConfirmBtn.addEventListener("click", () => {
-      if (inspectingProduct) {
-        selectProduct(inspectingProduct.id, true);
-        closeInspector();
+    releaseBtn.addEventListener("click", releaseHeldProduct);
+    confirmBtn.addEventListener("click", () => {
+      if (heldProduct) {
+        selectProduct(heldProduct.id, true);
+        releaseHeldProduct();
       }
-    });
-
-    inspectWrapEl.addEventListener("pointerdown", (e) => {
-      isDraggingInspect = true;
-      prevInspectX = e.clientX;
-      prevInspectY = e.clientY;
-    });
-
-    window.addEventListener("pointerup", () => {
-      isDraggingInspect = false;
-    });
-
-    window.addEventListener("pointermove", (e) => {
-      if (!isDraggingInspect || !inspectModel) return;
-      const dx = e.clientX - prevInspectX;
-      const dy = e.clientY - prevInspectY;
-      prevInspectX = e.clientX;
-      prevInspectY = e.clientY;
-
-      inspectModel.rotation.y += dx * 0.015;
-      inspectModel.rotation.x = Math.max(-0.5, Math.min(0.5, inspectModel.rotation.x + dy * 0.01));
     });
 
     function rebuildMeshes() {
@@ -455,11 +545,6 @@
       selectedId = id;
       const prod = products.find((p) => String(p.id) === String(id));
 
-      productGroups.forEach((grp, key) => {
-        const active = String(key) === String(id);
-        grp.scale.setScalar(active ? 1.15 : 1);
-      });
-
       document.querySelectorAll(".product-card").forEach((card) => {
         card.classList.toggle("active", card.dataset.id === String(id));
       });
@@ -483,11 +568,11 @@
             <strong>${prod.name}</strong>
             <span class="price">$${prod.price}</span>
           </div>
-          <div class="meta">Pasillo: ${prod.aisle} · Stock: ${prod.stock} · Toca para girar</div>
+          <div class="meta">Pasillo: ${prod.aisle} · Stock: ${prod.stock} · Toca para tomar</div>
         `;
         card.addEventListener("click", () => {
           selectProduct(prod.id, true);
-          openInspector(prod);
+          takeProductInScene(prod);
         });
         listEl.appendChild(card);
       });
@@ -525,8 +610,8 @@
       controls.target.set(0, 1.5, 0);
       controls.maxPolarAngle = Math.PI / 2 - 0.04;
 
-      scene.add(new THREE.AmbientLight(0xdbeafe, 0.9));
-      const dirLight = new THREE.DirectionalLight(0xffffff, 1.35);
+      scene.add(new THREE.AmbientLight(0xdbeafe, 0.95));
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
       dirLight.position.set(6, 10, 7);
       dirLight.castShadow = true;
       scene.add(dirLight);
@@ -569,20 +654,6 @@
       scene.add(shelfGroup);
       rebuildMeshes();
 
-      // Escena secundaria para girar el producto de cerca
-      inspectScene = new THREE.Scene();
-      inspectCamera = new THREE.PerspectiveCamera(45, inspectWrapEl.clientWidth / 250, 0.1, 50);
-      inspectCamera.position.set(0, 0.4, 2.5);
-      inspectScene.add(new THREE.AmbientLight(0xffffff, 1.1));
-      const inspectLight = new THREE.DirectionalLight(0xffffff, 1.4);
-      inspectLight.position.set(3, 4, 4);
-      inspectScene.add(inspectLight);
-
-      inspectRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-      inspectRenderer.setSize(inspectWrapEl.clientWidth || 360, 250);
-      inspectRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      inspectWrapEl.appendChild(inspectRenderer.domElement);
-
       raycaster = new THREE.Raycaster();
       pointer = new THREE.Vector2();
 
@@ -592,14 +663,45 @@
         pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
         raycaster.setFromCamera(pointer, camera);
+
+        // Si ya sostienes el producto y tocas sobre él, lo giras con el dedo/mouse
+        if (heldMeshGroup) {
+          const heldHits = raycaster.intersectObjects(heldMeshGroup.children, true);
+          if (heldHits.length > 0) {
+            isDraggingHeld = true;
+            controls.enabled = false;
+            prevX = event.clientX;
+            prevY = event.clientY;
+            return;
+          }
+        }
+
         const hits = raycaster.intersectObjects(Array.from(productGroups.values()), true);
         if (hits.length > 0) {
           const hitId = hits[0].object.userData.productId;
           const prod = products.find((p) => String(p.id) === String(hitId));
           if (prod) {
             selectProduct(prod.id, true);
-            openInspector(prod);
+            takeProductInScene(prod);
           }
+        }
+      });
+
+      window.addEventListener("pointermove", (event) => {
+        if (!isDraggingHeld || !heldMeshGroup) return;
+        const dx = event.clientX - prevX;
+        const dy = event.clientY - prevY;
+        prevX = event.clientX;
+        prevY = event.clientY;
+
+        heldMeshGroup.rotation.y += dx * 0.015;
+        heldMeshGroup.rotation.x = Math.max(-0.6, Math.min(0.6, heldMeshGroup.rotation.x + dy * 0.01));
+      });
+
+      window.addEventListener("pointerup", () => {
+        if (isDraggingHeld) {
+          isDraggingHeld = false;
+          if (controls) controls.enabled = true;
         }
       });
 
@@ -613,21 +715,14 @@
         requestAnimationFrame(animate);
         controls.update();
         renderer.render(scene, camera);
-
-        if (modalEl.classList.contains("open") && inspectModel && !isDraggingInspect) {
-          inspectModel.rotation.y += 0.008;
-        }
-        if (modalEl.classList.contains("open")) {
-          inspectRenderer.render(inspectScene, inspectCamera);
-        }
       }
       animate();
     } catch (err) {
-      console.warn("WebGL no disponible:", err.message);
-      fallbackBanner.style.display = "block";
+      console.warn("Error 3D:", err.message);
     }
 
     renderList();
+    checkSession();
 
     if (typeof window.io === "function") {
       socket = window.io();
