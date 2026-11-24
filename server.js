@@ -142,12 +142,18 @@ app.get("/api/products", (req, res) => {
 
 app.post("/api/cart/checkout", (req, res) => {
   if (!req.session?.userId) {
-    return res.status(401).json({ error: "Debes iniciar sesión para comprar." });
+    return res.status(401).json({ error: "Debes iniciar sesión para pagar en caja." });
   }
 
   const items = Array.isArray(req.body?.items) ? req.body.items : [];
+  const allowedMethods = ["efectivo", "tarjeta", "transferencia"];
+  const paymentMethod = String(req.body?.paymentMethod || "efectivo").toLowerCase();
+
+  if (!allowedMethods.includes(paymentMethod)) {
+    return res.status(400).json({ error: "Método de pago no válido." });
+  }
   if (items.length === 0) {
-    return res.status(400).json({ error: "El carrito está vacío." });
+    return res.status(400).json({ error: "Tu carrito está vacío." });
   }
 
   const store = readStore();
@@ -180,6 +186,19 @@ app.post("/api/cart/checkout", (req, res) => {
     normalized.push({ product, qty });
   }
 
+  let amountPaid = total;
+  let change = 0;
+  if (paymentMethod === "efectivo") {
+    const tendered = Number(req.body?.amountPaid ?? total);
+    if (!Number.isFinite(tendered) || tendered < total) {
+      return res.status(400).json({
+        error: `El efectivo recibido debe ser al menos $${total} MXN.`
+      });
+    }
+    amountPaid = tendered;
+    change = Number((tendered - total).toFixed(2));
+  }
+
   for (const entry of normalized) {
     entry.product.stock -= entry.qty;
   }
@@ -188,7 +207,10 @@ app.post("/api/cart/checkout", (req, res) => {
     id: Date.now().toString(),
     userId: user.id,
     username: user.username,
+    paymentMethod,
     total,
+    amountPaid,
+    change,
     items: normalized.map((e) => ({
       productId: e.product.id,
       name: e.product.name,
@@ -204,7 +226,8 @@ app.post("/api/cart/checkout", (req, res) => {
   io.emit("store:updated", {
     products: store.products,
     lastOrderBy: user.username,
-    total
+    total,
+    paymentMethod
   });
 
   return res.json({
