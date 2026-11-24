@@ -140,6 +140,80 @@ app.get("/api/products", (req, res) => {
   res.json({ products: store.products });
 });
 
+app.post("/api/cart/checkout", (req, res) => {
+  if (!req.session?.userId) {
+    return res.status(401).json({ error: "Debes iniciar sesión para comprar." });
+  }
+
+  const items = Array.isArray(req.body?.items) ? req.body.items : [];
+  if (items.length === 0) {
+    return res.status(400).json({ error: "El carrito está vacío." });
+  }
+
+  const store = readStore();
+  const user = store.users.find((u) => u.id === req.session.userId);
+  if (!user) {
+    return res.status(401).json({ error: "Sesión inválida." });
+  }
+
+  let total = 0;
+  const normalized = [];
+
+  for (const rawItem of items) {
+    const prodId = Number(rawItem?.productId);
+    const qty = Math.floor(Number(rawItem?.qty || 0));
+    if (!Number.isFinite(prodId) || qty <= 0 || qty > 50) {
+      return res.status(400).json({ error: "Cantidad inválida en el carrito." });
+    }
+
+    const product = store.products.find((p) => Number(p.id) === prodId);
+    if (!product) {
+      return res.status(404).json({ error: `Producto ${prodId} no encontrado.` });
+    }
+    if (product.stock < qty) {
+      return res.status(409).json({
+        error: `Stock insuficiente para ${product.name} (disponible: ${product.stock}).`
+      });
+    }
+
+    total += product.price * qty;
+    normalized.push({ product, qty });
+  }
+
+  for (const entry of normalized) {
+    entry.product.stock -= entry.qty;
+  }
+
+  const order = {
+    id: Date.now().toString(),
+    userId: user.id,
+    username: user.username,
+    total,
+    items: normalized.map((e) => ({
+      productId: e.product.id,
+      name: e.product.name,
+      price: e.product.price,
+      qty: e.qty
+    })),
+    createdAt: new Date().toISOString()
+  };
+
+  store.orders.push(order);
+  writeStore(store);
+
+  io.emit("store:updated", {
+    products: store.products,
+    lastOrderBy: user.username,
+    total
+  });
+
+  return res.json({
+    ok: true,
+    order,
+    products: store.products
+  });
+});
+
 io.on("connection", (socket) => {
   const store = readStore();
   socket.emit("store:init", { products: store.products });
