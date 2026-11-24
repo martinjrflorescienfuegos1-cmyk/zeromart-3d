@@ -7,12 +7,13 @@
   <style>
     :root {
       --bg: #0b0e14;
-      --panel: rgba(17, 22, 33, 0.88);
+      --panel: rgba(17, 22, 33, 0.92);
       --border: rgba(255, 255, 255, 0.12);
       --text: #eef2f7;
       --muted: #9aa6b8;
       --accent: #38bdf8;
       --accent-2: #22c55e;
+      --warn: #fbbf24;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -21,9 +22,8 @@
       background: var(--bg);
       color: var(--text);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      overflow: hidden;
-      height: 100vh;
-      width: 100vw;
+      min-height: 100vh;
+      overflow-x: hidden;
     }
 
     #canvas-wrap {
@@ -37,12 +37,13 @@
       top: 14px;
       left: 14px;
       right: 14px;
-      z-index: 10;
+      z-index: 20;
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 12px;
       pointer-events: none;
+      flex-wrap: wrap;
     }
 
     .badge {
@@ -66,14 +67,28 @@
       box-shadow: 0 0 8px var(--accent-2);
     }
 
+    .fallback-banner {
+      position: relative;
+      z-index: 15;
+      margin: 72px auto 14px;
+      width: min(760px, calc(100vw - 28px));
+      background: rgba(251, 191, 36, 0.12);
+      border: 1px solid rgba(251, 191, 36, 0.45);
+      color: #fde68a;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 0.88rem;
+      display: none;
+    }
+
     .panel {
       position: fixed;
       right: 14px;
       bottom: 14px;
-      width: min(350px, calc(100vw - 28px));
-      max-height: 62vh;
+      width: min(360px, calc(100vw - 28px));
+      max-height: 64vh;
       overflow-y: auto;
-      z-index: 10;
+      z-index: 20;
       background: var(--panel);
       backdrop-filter: blur(12px);
       border: 1px solid var(--border);
@@ -81,22 +96,10 @@
       padding: 14px;
     }
 
-    .panel h2 {
-      font-size: 1rem;
-      margin-bottom: 6px;
-    }
+    .panel h2 { font-size: 1rem; margin-bottom: 6px; }
+    .muted { color: var(--muted); font-size: 0.82rem; margin-bottom: 10px; }
 
-    .muted {
-      color: var(--muted);
-      font-size: 0.82rem;
-      margin-bottom: 10px;
-    }
-
-    .product-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+    .product-list { display: flex; flex-direction: column; gap: 8px; }
 
     .product-card {
       border: 1px solid var(--border);
@@ -107,34 +110,25 @@
       transition: border-color 0.15s, transform 0.15s, background 0.15s;
     }
 
-    .product-card:hover {
-      border-color: var(--accent);
-      transform: translateY(-1px);
+    .product-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .product-card.active { border-color: var(--accent); background: rgba(56, 189, 248, 0.14); }
+
+    .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .price { color: #4ade80; font-weight: 700; font-size: 0.9rem; }
+    .meta { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: rgba(56, 189, 248, 0.16);
+      color: var(--text);
+      padding: 7px 11px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      cursor: pointer;
     }
 
-    .product-card.active {
-      border-color: var(--accent);
-      background: rgba(56, 189, 248, 0.14);
-    }
-
-    .row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .price {
-      color: #4ade80;
-      font-weight: 700;
-      font-size: 0.9rem;
-    }
-
-    .meta {
-      font-size: 0.78rem;
-      color: var(--muted);
-      margin-top: 4px;
-    }
+    .btn:hover { border-color: var(--accent); }
+    .btn.primary { background: #0284c7; border-color: #38bdf8; font-weight: 600; }
 
     .live-note {
       margin-top: 10px;
@@ -144,12 +138,58 @@
       color: var(--accent);
       min-height: 22px;
     }
+
+    /* Inspector giratorio del producto */
+    .inspector-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      background: rgba(5, 8, 14, 0.76);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .inspector-modal.open { display: flex; }
+
+    .inspector-card {
+      width: min(440px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #inspect-canvas-wrap {
+      width: 100%;
+      height: 250px;
+      border-radius: 12px;
+      background: radial-gradient(circle at 50% 35%, #1e293b, #0b0e14);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    #inspect-canvas-wrap:active { cursor: grabbing; }
+
+    .inspector-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
   </style>
   <script type="importmap">
     {
       "imports": {
-        "three": "https://unpkg.com/three@0.169.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.169.0/examples/jsm/"
+        "three": "https://esm.sh/three@0.169.0",
+        "three/addons/": "https://esm.sh/three@0.169.0/examples/jsm/"
       }
     }
   </script>
@@ -161,110 +201,263 @@
     <div class="badge">
       <span class="dot"></span>
       <strong>ZeroMart 3D</strong>
-      <span class="muted" style="margin:0;">Arrastra para rotar · Clic en producto</span>
+      <span class="muted" style="margin:0;">Arrastra para rotar · Clic en producto para inspeccionar</span>
     </div>
     <div class="badge" id="status-badge">Conectando...</div>
   </div>
 
+  <div class="fallback-banner" id="fallback-banner">
+    <strong>Aviso WebGL:</strong> Este navegador no pudo iniciar WebGL. El catálogo y la sincronización en tiempo real siguen activos.
+  </div>
+
   <aside class="panel">
     <h2>Catálogo en Pasillo</h2>
-    <p class="muted" id="selected-info">Selecciona un producto en 3D o en la lista.</p>
+    <p class="muted" id="selected-info">Toca un producto en 3D o en la lista para girarlo.</p>
     <div class="product-list" id="product-list"></div>
     <div class="live-note" id="live-note">Esperando eventos en tiempo real...</div>
   </aside>
 
+  <div class="inspector-modal" id="inspector-modal">
+    <div class="inspector-card">
+      <div class="row">
+        <h3 id="inspect-title">Producto</h3>
+        <span class="price" id="inspect-price">$0</span>
+      </div>
+      <p class="muted" id="inspect-meta" style="margin:0;">Arrastra para girar 360°</p>
+      <div id="inspect-canvas-wrap"></div>
+      <div class="inspector-actions">
+        <button class="btn" id="inspect-close">Cerrar</button>
+        <button class="btn primary" id="inspect-confirm">Tomar / Seleccionar en pasillo</button>
+      </div>
+    </div>
+  </div>
+
   <script src="/socket.io/socket.io.js"></script>
   <script type="module">
-    import * as THREE from "three";
-    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-
-    const wrap = document.getElementById("canvas-wrap");
+    const statusBadgeEl = document.getElementById("status-badge");
     const listEl = document.getElementById("product-list");
     const selectedInfoEl = document.getElementById("selected-info");
     const liveNoteEl = document.getElementById("live-note");
-    const statusBadgeEl = document.getElementById("status-badge");
+    const fallbackBanner = document.getElementById("fallback-banner");
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0b0e14);
-    scene.fog = new THREE.Fog(0x0b0e14, 14, 34);
+    const modalEl = document.getElementById("inspector-modal");
+    const inspectTitleEl = document.getElementById("inspect-title");
+    const inspectPriceEl = document.getElementById("inspect-price");
+    const inspectMetaEl = document.getElementById("inspect-meta");
+    const inspectWrapEl = document.getElementById("inspect-canvas-wrap");
+    const inspectCloseBtn = document.getElementById("inspect-close");
+    const inspectConfirmBtn = document.getElementById("inspect-confirm");
 
-    const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(0, 4.2, 8.5);
+    const fallbackProducts = [
+      { id: 1, name: "Refresco Cola 600ml", price: 18, stock: 25, aisle: "Bebidas" },
+      { id: 2, name: "Pan de Caja Blanco", price: 42, stock: 15, aisle: "Panadería" },
+      { id: 3, name: "Leche Entera 1L", price: 26, stock: 20, aisle: "Lácteos" }
+    ];
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    wrap.appendChild(renderer.domElement);
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.target.set(0, 1.4, 0);
-    controls.maxPolarAngle = Math.PI / 2 - 0.04;
-
-    // Iluminación
-    scene.add(new THREE.AmbientLight(0xdbeafe, 0.75));
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    dirLight.position.set(6, 10, 7);
-    dirLight.castShadow = true;
-    scene.add(dirLight);
-
-    // Piso del pasillo
-    const floor = new THREE.Mesh(
-      new THREE.PlaneGeometry(24, 24),
-      new THREE.MeshStandardMaterial({ color: 0x161d2b, roughness: 0.75, metalness: 0.1 })
-    );
-    floor.rotation.x = -Math.PI / 2;
-    floor.receiveShadow = true;
-    scene.add(floor);
-
-    // Rejilla sutil de piso
-    const grid = new THREE.GridHelper(24, 24, 0x283548, 0x1c2536);
-    grid.position.y = 0.01;
-    scene.add(grid);
-
-    // Estante 3D central
-    const shelfGroup = new THREE.Group();
-    const postMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.4, roughness: 0.5 });
-    const boardMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.6 });
-
-    const shelfWidth = 7.2;
-    const shelfHeight = 3.2;
-    const shelfDepth = 1.1;
-
-    [-shelfWidth / 2 + 0.1, shelfWidth / 2 - 0.1].forEach((xPos) => {
-      const post = new THREE.Mesh(new THREE.BoxGeometry(0.14, shelfHeight, shelfDepth), postMat);
-      post.position.set(xPos, shelfHeight / 2, 0);
-      post.castShadow = true;
-      shelfGroup.add(post);
-    });
-
-    [0.75, 1.75, 2.75].forEach((yPos) => {
-      const board = new THREE.Mesh(new THREE.BoxGeometry(shelfWidth, 0.12, shelfDepth), boardMat);
-      board.position.set(0, yPos, 0);
-      board.castShadow = true;
-      board.receiveShadow = true;
-      shelfGroup.add(board);
-    });
-
-    scene.add(shelfGroup);
-
-    const palette = [0x38bdf8, 0xf59e0b, 0x34d399, 0xa78bfa, 0xf87171];
-    const productMeshes = new Map();
-    const raycaster = new THREE.Raycaster();
-    const pointer = new THREE.Vector2();
-
-    let products = [];
+    let products = fallbackProducts;
     let selectedId = null;
+    let inspectingProduct = null;
+    const productGroups = new Map();
+    const labelTextureCache = new Map();
+
+    let THREE, OrbitControls, scene, camera, renderer, controls, raycaster, pointer;
+    let inspectScene, inspectCamera, inspectRenderer, inspectModel;
+    let isDraggingInspect = false;
+    let prevInspectX = 0;
+    let prevInspectY = 0;
+    let socket = null;
+
+    function detectKind(prod) {
+      const text = `${prod.name || ""} ${prod.aisle || ""}`.toLowerCase();
+      if (text.includes("refresco") || text.includes("cola") || text.includes("agua") || text.includes("bebida") || text.includes("jugo")) {
+        return "bottle";
+      }
+      return "carton";
+    }
+
+    function getLabelTexture(prod) {
+      const key = `${prod.name}|${prod.price}`;
+      if (labelTextureCache.has(key)) return labelTextureCache.get(key);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = 512;
+      canvas.height = 256;
+      const ctx = canvas.getContext("2d");
+
+      const kind = detectKind(prod);
+      ctx.fillStyle = kind === "bottle" ? "#b91c1c" : "#1d4ed8";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 42, canvas.width, 172);
+
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 42px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(String(prod.name).slice(0, 22), canvas.width / 2, 118);
+
+      ctx.fillStyle = "#15803d";
+      ctx.font = "bold 46px system-ui, sans-serif";
+      ctx.fillText(`$${prod.price} MXN`, canvas.width / 2, 182);
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      labelTextureCache.set(key, tex);
+      return tex;
+    }
+
+    function buildProductModel(prod, index = 0) {
+      const group = new THREE.Group();
+      const kind = detectKind(prod);
+      const labelTex = getLabelTexture(prod);
+
+      if (kind === "bottle") {
+        const bodyMat = new THREE.MeshStandardMaterial({
+          color: index % 2 === 0 ? 0x7f1d1d : 0x0284c7,
+          roughness: 0.25,
+          metalness: 0.1
+        });
+        const labelMat = new THREE.MeshStandardMaterial({
+          map: labelTex,
+          roughness: 0.4
+        });
+        const capMat = new THREE.MeshStandardMaterial({
+          color: 0xeab308,
+          roughness: 0.4
+        });
+
+        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.62, 24), bodyMat);
+        body.position.y = 0.31;
+        body.castShadow = true;
+
+        const label = new THREE.Mesh(new THREE.CylinderGeometry(0.226, 0.226, 0.32, 24, 1, true), labelMat);
+        label.position.y = 0.31;
+
+        const shoulder = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.22, 0.16, 24), bodyMat);
+        shoulder.position.y = 0.7;
+        shoulder.castShadow = true;
+
+        const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.14, 20), bodyMat);
+        neck.position.y = 0.85;
+
+        const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.092, 0.092, 0.07, 20), capMat);
+        cap.position.y = 0.94;
+        cap.castShadow = true;
+
+        group.add(body, label, shoulder, neck, cap);
+      } else {
+        const boxMat = new THREE.MeshStandardMaterial({
+          color: 0xf8fafc,
+          roughness: 0.55
+        });
+        const frontMat = new THREE.MeshStandardMaterial({
+          map: labelTex,
+          roughness: 0.5
+        });
+        const topMat = new THREE.MeshStandardMaterial({
+          color: 0x38bdf8,
+          roughness: 0.5
+        });
+
+        const materials = [boxMat, boxMat, topMat, boxMat, frontMat, boxMat];
+        const carton = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.78, 0.36), materials);
+        carton.position.y = 0.39;
+        carton.castShadow = true;
+        group.add(carton);
+      }
+
+      group.traverse((child) => {
+        if (child.isMesh) {
+          child.userData.productId = prod.id;
+        }
+      });
+      group.userData.productId = prod.id;
+      return group;
+    }
+
+    function openInspector(prod) {
+      if (!prod) return;
+      inspectingProduct = prod;
+      inspectTitleEl.textContent = prod.name;
+      inspectPriceEl.textContent = `$${prod.price} MXN`;
+      inspectMetaEl.textContent = `Pasillo: ${prod.aisle} · Stock: ${prod.stock} · Arrastra para girar`;
+      modalEl.classList.add("open");
+
+      if (THREE && inspectScene && inspectRenderer) {
+        if (inspectModel) {
+          inspectScene.remove(inspectModel);
+        }
+        const idx = products.findIndex((p) => String(p.id) === String(prod.id));
+        inspectModel = buildProductModel(prod, Math.max(idx, 0));
+        inspectModel.scale.setScalar(1.65);
+        inspectModel.position.set(0, -0.72, 0);
+        inspectScene.add(inspectModel);
+      }
+    }
+
+    function closeInspector() {
+      modalEl.classList.remove("open");
+      inspectingProduct = null;
+    }
+
+    inspectCloseBtn.addEventListener("click", closeInspector);
+    modalEl.addEventListener("click", (e) => {
+      if (e.target === modalEl) closeInspector();
+    });
+
+    inspectConfirmBtn.addEventListener("click", () => {
+      if (inspectingProduct) {
+        selectProduct(inspectingProduct.id, true);
+        closeInspector();
+      }
+    });
+
+    inspectWrapEl.addEventListener("pointerdown", (e) => {
+      isDraggingInspect = true;
+      prevInspectX = e.clientX;
+      prevInspectY = e.clientY;
+    });
+
+    window.addEventListener("pointerup", () => {
+      isDraggingInspect = false;
+    });
+
+    window.addEventListener("pointermove", (e) => {
+      if (!isDraggingInspect || !inspectModel) return;
+      const dx = e.clientX - prevInspectX;
+      const dy = e.clientY - prevInspectY;
+      prevInspectX = e.clientX;
+      prevInspectY = e.clientY;
+
+      inspectModel.rotation.y += dx * 0.015;
+      inspectModel.rotation.x = Math.max(-0.5, Math.min(0.5, inspectModel.rotation.x + dy * 0.01));
+    });
+
+    function rebuildMeshes() {
+      if (!THREE || !scene) return;
+      productGroups.forEach((grp) => scene.remove(grp));
+      productGroups.clear();
+
+      const levels = [0.81, 1.81, 2.81];
+      products.forEach((prod, idx) => {
+        const levelY = levels[idx % levels.length];
+        const col = Math.floor(idx / levels.length);
+        const xPos = -2.2 + ((idx * 1.55) % 4.8) + (col * 0.25);
+
+        const grp = buildProductModel(prod, idx);
+        grp.position.set(xPos, levelY, 0.08);
+        scene.add(grp);
+        productGroups.set(prod.id, grp);
+      });
+    }
 
     function selectProduct(id, emitSocket = true) {
       selectedId = id;
       const prod = products.find((p) => String(p.id) === String(id));
 
-      productMeshes.forEach((mesh, key) => {
+      productGroups.forEach((grp, key) => {
         const active = String(key) === String(id);
-        mesh.scale.setScalar(active ? 1.18 : 1);
-        mesh.material.emissive.setHex(active ? 0x1e293b : 0x000000);
+        grp.scale.setScalar(active ? 1.15 : 1);
       });
 
       document.querySelectorAll(".product-card").forEach((card) => {
@@ -273,10 +466,9 @@
 
       if (prod) {
         selectedInfoEl.textContent = `${prod.name} · $${prod.price} MXN · Stock: ${prod.stock} (${prod.aisle})`;
-      }
-
-      if (emitSocket && prod) {
-        socket.emit("product:select", prod.id);
+        if (emitSocket && socket && socket.connected) {
+          socket.emit("product:select", prod.id);
+        }
       }
     }
 
@@ -291,99 +483,176 @@
             <strong>${prod.name}</strong>
             <span class="price">$${prod.price}</span>
           </div>
-          <div class="meta">Pasillo: ${prod.aisle} · Stock: ${prod.stock}</div>
+          <div class="meta">Pasillo: ${prod.aisle} · Stock: ${prod.stock} · Toca para girar</div>
         `;
-        card.addEventListener("click", () => selectProduct(prod.id, true));
+        card.addEventListener("click", () => {
+          selectProduct(prod.id, true);
+          openInspector(prod);
+        });
         listEl.appendChild(card);
       });
     }
 
-    function rebuildMeshes() {
-      productMeshes.forEach((mesh) => scene.remove(mesh));
-      productMeshes.clear();
+    function setProducts(nextProducts) {
+      if (Array.isArray(nextProducts) && nextProducts.length > 0) {
+        products = nextProducts;
+      }
+      rebuildMeshes();
+      renderList();
+      if (selectedId) selectProduct(selectedId, false);
+    }
 
-      const levels = [1.1, 2.1, 3.05];
-      products.forEach((prod, idx) => {
-        const levelY = levels[idx % levels.length];
-        const col = Math.floor(idx / levels.length);
-        const xPos = -2.2 + ((idx * 1.45) % 4.6) + (col * 0.25);
-        const color = palette[idx % palette.length];
+    try {
+      THREE = await import("three");
+      ({ OrbitControls } = await import("three/addons/controls/OrbitControls.js"));
 
-        const box = new THREE.Mesh(
-          new THREE.BoxGeometry(0.68, 0.56, 0.56),
-          new THREE.MeshStandardMaterial({ color, roughness: 0.35, metalness: 0.15 })
-        );
-        box.position.set(xPos, levelY, 0.08);
-        box.castShadow = true;
-        box.userData.productId = prod.id;
+      const wrap = document.getElementById("canvas-wrap");
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0b0e14);
+      scene.fog = new THREE.Fog(0x0b0e14, 14, 34);
 
-        scene.add(box);
-        productMeshes.set(prod.id, box);
+      camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
+      camera.position.set(0, 3.8, 7.8);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      wrap.appendChild(renderer.domElement);
+
+      controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.target.set(0, 1.5, 0);
+      controls.maxPolarAngle = Math.PI / 2 - 0.04;
+
+      scene.add(new THREE.AmbientLight(0xdbeafe, 0.9));
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1.35);
+      dirLight.position.set(6, 10, 7);
+      dirLight.castShadow = true;
+      scene.add(dirLight);
+
+      const floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(24, 24),
+        new THREE.MeshStandardMaterial({ color: 0x161d2b, roughness: 0.75, metalness: 0.1 })
+      );
+      floor.rotation.x = -Math.PI / 2;
+      floor.receiveShadow = true;
+      scene.add(floor);
+
+      const grid = new THREE.GridHelper(24, 24, 0x283548, 0x1c2536);
+      grid.position.y = 0.01;
+      scene.add(grid);
+
+      const shelfGroup = new THREE.Group();
+      const postMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.4, roughness: 0.5 });
+      const boardMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.6 });
+
+      const shelfWidth = 7.2;
+      const shelfHeight = 3.2;
+      const shelfDepth = 1.1;
+
+      [-shelfWidth / 2 + 0.1, shelfWidth / 2 - 0.1].forEach((xPos) => {
+        const post = new THREE.Mesh(new THREE.BoxGeometry(0.14, shelfHeight, shelfDepth), postMat);
+        post.position.set(xPos, shelfHeight / 2, 0);
+        post.castShadow = true;
+        shelfGroup.add(post);
+      });
+
+      [0.75, 1.75, 2.75].forEach((yPos) => {
+        const board = new THREE.Mesh(new THREE.BoxGeometry(shelfWidth, 0.12, shelfDepth), boardMat);
+        board.position.set(0, yPos, 0);
+        board.castShadow = true;
+        board.receiveShadow = true;
+        shelfGroup.add(board);
+      });
+
+      scene.add(shelfGroup);
+      rebuildMeshes();
+
+      // Escena secundaria para girar el producto de cerca
+      inspectScene = new THREE.Scene();
+      inspectCamera = new THREE.PerspectiveCamera(45, inspectWrapEl.clientWidth / 250, 0.1, 50);
+      inspectCamera.position.set(0, 0.4, 2.5);
+      inspectScene.add(new THREE.AmbientLight(0xffffff, 1.1));
+      const inspectLight = new THREE.DirectionalLight(0xffffff, 1.4);
+      inspectLight.position.set(3, 4, 4);
+      inspectScene.add(inspectLight);
+
+      inspectRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      inspectRenderer.setSize(inspectWrapEl.clientWidth || 360, 250);
+      inspectRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      inspectWrapEl.appendChild(inspectRenderer.domElement);
+
+      raycaster = new THREE.Raycaster();
+      pointer = new THREE.Vector2();
+
+      renderer.domElement.addEventListener("pointerdown", (event) => {
+        const rect = renderer.domElement.getBoundingClientRect();
+        pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        raycaster.setFromCamera(pointer, camera);
+        const hits = raycaster.intersectObjects(Array.from(productGroups.values()), true);
+        if (hits.length > 0) {
+          const hitId = hits[0].object.userData.productId;
+          const prod = products.find((p) => String(p.id) === String(hitId));
+          if (prod) {
+            selectProduct(prod.id, true);
+            openInspector(prod);
+          }
+        }
+      });
+
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+
+        if (modalEl.classList.contains("open") && inspectModel && !isDraggingInspect) {
+          inspectModel.rotation.y += 0.008;
+        }
+        if (modalEl.classList.contains("open")) {
+          inspectRenderer.render(inspectScene, inspectCamera);
+        }
+      }
+      animate();
+    } catch (err) {
+      console.warn("WebGL no disponible:", err.message);
+      fallbackBanner.style.display = "block";
+    }
+
+    renderList();
+
+    if (typeof window.io === "function") {
+      socket = window.io();
+      socket.on("connect", () => {
+        statusBadgeEl.textContent = renderer ? "Online · 3D + Socket" : "Online · Sin WebGL";
+      });
+      socket.on("disconnect", () => {
+        statusBadgeEl.textContent = "Reconectando...";
+      });
+      socket.on("store:init", (payload) => {
+        if (payload?.products) setProducts(payload.products);
+      });
+      socket.on("product:selected", ({ productId, by }) => {
+        const prod = products.find((p) => String(p.id) === String(productId));
+        const label = prod ? prod.name : `ID ${productId}`;
+        liveNoteEl.textContent = `Selección en vivo: ${label} (${by.slice(0, 6)})`;
       });
     }
 
-    function setProducts(nextProducts) {
-      products = Array.isArray(nextProducts) ? nextProducts : [];
-      rebuildMeshes();
-      renderList();
-      if (selectedId) {
-        selectProduct(selectedId, false);
-      }
-    }
-
-    renderer.domElement.addEventListener("pointerdown", (event) => {
-      const rect = renderer.domElement.getBoundingClientRect();
-      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-      raycaster.setFromCamera(pointer, camera);
-      const hits = raycaster.intersectObjects(Array.from(productMeshes.values()), false);
-      if (hits.length > 0) {
-        const hitId = hits[0].object.userData.productId;
-        selectProduct(hitId, true);
-      }
-    });
-
-    window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-
-    // Carga inicial desde API REST
     fetch("/api/products")
       .then((r) => r.json())
       .then((data) => {
         if (data?.products) setProducts(data.products);
       })
       .catch(() => {});
-
-    // Sincronización en tiempo real con Socket.IO
-    const socket = io();
-    socket.on("connect", () => {
-      statusBadgeEl.textContent = "Online · Socket listo";
-    });
-    socket.on("disconnect", () => {
-      statusBadgeEl.textContent = "Reconectando...";
-    });
-    socket.on("store:init", (payload) => {
-      if (payload?.products) setProducts(payload.products);
-    });
-    socket.on("product:selected", ({ productId, by }) => {
-      const prod = products.find((p) => String(p.id) === String(productId));
-      const label = prod ? prod.name : `ID ${productId}`;
-      liveNoteEl.textContent = `Selección en vivo: ${label} (${by.slice(0, 6)})`;
-    });
-
-    function animate() {
-      requestAnimationFrame(animate);
-      productMeshes.forEach((mesh) => {
-        mesh.rotation.y += 0.006;
-      });
-      controls.update();
-      renderer.render(scene, camera);
-    }
-    animate();
   </script>
 </body>
 </html>
