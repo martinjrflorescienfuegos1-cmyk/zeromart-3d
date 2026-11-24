@@ -1,0 +1,14 @@
+{
+  "name": "zeromart-3d",
+  "version": "1.0.0",
+  "description": "Tienda 3D en tiempo real con Node.js, Socket.IO y Three.js",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "socket.io": "^4.7.4"
+  }
+}
