@@ -6,11 +6,11 @@
   <title>ZeroMart 3D</title>
   <style>
     :root {
-      --bg: #0b0e14;
-      --panel: rgba(17, 22, 33, 0.93);
-      --border: rgba(255, 255, 255, 0.14);
-      --text: #eef2f7;
-      --muted: #9aa6b8;
+      --bg: #111827;
+      --panel: rgba(17, 24, 39, 0.92);
+      --border: rgba(255, 255, 255, 0.16);
+      --text: #f3f4f6;
+      --muted: #9ca3af;
       --accent: #38bdf8;
       --accent-2: #22c55e;
       --warn: #f59e0b;
@@ -37,7 +37,7 @@
       position: fixed;
       inset: 0;
       z-index: 50;
-      background: radial-gradient(circle at 50% 25%, #172236, #090c12 75%);
+      background: radial-gradient(circle at 50% 25%, #1e293b, #090d16 75%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -144,8 +144,8 @@
       position: fixed;
       right: 12px;
       bottom: 12px;
-      width: min(370px, calc(100vw - 24px));
-      max-height: 74vh;
+      width: min(375px, calc(100vw - 24px));
+      max-height: 75vh;
       overflow-y: auto;
       z-index: 20;
       background: var(--panel);
@@ -231,6 +231,16 @@
       gap: 8px;
     }
 
+    .npc-log {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      color: #e0f2fe;
+      min-height: 36px;
+    }
+
     .ticket {
       background: rgba(34, 197, 94, 0.12);
       border: 1px solid rgba(34, 197, 94, 0.45);
@@ -255,7 +265,7 @@
       left: 12px;
       bottom: 12px;
       z-index: 25;
-      width: min(360px, calc(100vw - 24px));
+      width: min(370px, calc(100vw - 24px));
       background: var(--panel);
       backdrop-filter: blur(12px);
       border: 1px solid var(--accent);
@@ -297,7 +307,7 @@
     <form class="auth-card" id="auth-form">
       <div>
         <h1>ZeroMart 3D</h1>
-        <p>Camina con WASD, mantén clic para girar la vista y recorre pasillos y refrigeradores.</p>
+        <p>Camina con WASD, gira productos 360° y pasa con el cajero NPC a pagar.</p>
       </div>
       <div class="field">
         <label for="username">Usuario</label>
@@ -331,12 +341,12 @@
   </div>
 
   <div class="checkout-zone-banner" id="checkout-zone-banner">
-    <span>Zona de Cajas · Listo para cobrar tu carrito</span>
-    <button class="btn primary" id="open-cashier-btn">Pagar en caja</button>
+    <span>Cajero NPC listo · Escaneando tu carrito</span>
+    <button class="btn primary" id="open-cashier-btn">Ver caja y pagar</button>
   </div>
 
   <div class="controls-hint" id="controls-hint">
-    Moverse: <strong>W A S D</strong> · Vista: <strong>Mantener clic + mover</strong> · Agarrar: <strong>Clic en producto</strong>
+    Moverse: <strong>W A S D</strong> · Vista: <strong>Mantener clic + mover</strong> · Producto: <strong>Clic para tomar y girar 360°</strong>
   </div>
 
   <div class="held-bar" id="held-bar">
@@ -344,10 +354,12 @@
       <strong id="held-title">Producto</strong>
       <span class="price" id="held-price">$0</span>
     </div>
-    <p class="muted" id="held-meta" style="margin:0;">Si te alejas, vuelve solo · Al echar al carrito se quita</p>
+    <p class="muted" id="held-meta" style="margin:0;">Arrastra el producto para girarlo 360° · Q/E o botones rotan</p>
     <div class="row">
-      <button class="btn" id="release-btn">Devolver al estante</button>
-      <button class="btn success" id="add-cart-btn">+ Echar al carrito</button>
+      <button class="btn" id="spin-left-btn">↺ Girar</button>
+      <button class="btn" id="spin-right-btn">Girar ↻</button>
+      <button class="btn" id="release-btn">Devolver</button>
+      <button class="btn success" id="add-cart-btn">+ Carrito</button>
     </div>
   </div>
 
@@ -359,7 +371,7 @@
     </div>
 
     <div id="view-catalog">
-      <p class="muted" id="selected-info">Cada unidad del estante cuenta: si agarras una, queda su espacio vacío.</p>
+      <p class="muted" id="selected-info">Toca un producto para tomarlo, girarlo 360° y dejar su hueco vacío al meterlo al carrito.</p>
       <div class="product-list" id="product-list"></div>
     </div>
 
@@ -369,13 +381,13 @@
         <strong>Total acumulado:</strong>
         <span class="price" id="cart-total">$0 MXN</span>
       </div>
-      <button class="btn warn" id="go-checkout-btn" style="width:100%; margin-top:8px;">Ir a cajas a pagar</button>
+      <button class="btn warn" id="go-checkout-btn" style="width:100%; margin-top:8px;">Ir con el cajero NPC</button>
     </div>
 
     <div id="view-cashier" style="display:none;">
-      <p class="muted" id="cashier-zone-status">Acércate con WASD a las cajas del fondo o cobra desde aquí.</p>
-      <div class="row">
-        <strong>Total a pagar:</strong>
+      <div class="npc-log" id="npc-log">Cajero NPC: ¡Hola! Acércate a la caja o revisa tus artículos para escanearlos.</div>
+      <div class="row" style="margin-top:8px;">
+        <strong>Total escaneado:</strong>
         <span class="price" id="cashier-total">$0 MXN</span>
       </div>
 
@@ -395,7 +407,7 @@
 
         <div class="meta" id="method-detail" style="display:none;"></div>
 
-        <button class="btn success" id="checkout-btn" style="width:100%;">Finalizar pago</button>
+        <button class="btn success" id="checkout-btn" style="width:100%;">Pagar al cajero NPC</button>
       </div>
 
       <div class="ticket" id="receipt-box"></div>
@@ -436,7 +448,7 @@
 
     const checkoutZoneBanner = document.getElementById("checkout-zone-banner");
     const openCashierBtn = document.getElementById("open-cashier-btn");
-    const cashierZoneStatus = document.getElementById("cashier-zone-status");
+    const npcLogEl = document.getElementById("npc-log");
     const cashierTotalEl = document.getElementById("cashier-total");
     const payMethodsEl = document.getElementById("pay-methods");
     const cashInputWrap = document.getElementById("cash-input-wrap");
@@ -450,6 +462,8 @@
     const heldTitle = document.getElementById("held-title");
     const heldPrice = document.getElementById("held-price");
     const heldMeta = document.getElementById("held-meta");
+    const spinLeftBtn = document.getElementById("spin-left-btn");
+    const spinRightBtn = document.getElementById("spin-right-btn");
     const releaseBtn = document.getElementById("release-btn");
     const addCartBtn = document.getElementById("add-cart-btn");
     const controlsHint = document.getElementById("controls-hint");
@@ -458,10 +472,9 @@
     const CEILING_HEIGHT = 5.4;
     const AUTO_RETURN_DISTANCE = 4.8;
 
-    // Tienda amplia con pasillos y zona de refrigeradores
     const AISLE_LAYOUT = [
-      { name: "Refrigeradores", x: -10.5, z: -8.0, color: "#0369a1", cooler: true },
-      { name: "Bebidas", x: 0.0, z: -8.0, color: "#0284c7", cooler: false },
+      { name: "Refrigeradores", x: -10.5, z: -8.0, color: "#0284c7", cooler: true },
+      { name: "Bebidas", x: 0.0, z: -8.0, color: "#0369a1", cooler: false },
       { name: "Lácteos", x: 10.5, z: -8.0, color: "#1d4ed8", cooler: true },
       { name: "Panadería", x: -10.5, z: 3.5, color: "#d97706", cooler: false },
       { name: "Botanas", x: 0.0, z: 3.5, color: "#15803d", cooler: false },
@@ -488,6 +501,7 @@
     let selectedId = null;
     let selectedPaymentMethod = "efectivo";
     let isNearCashier = false;
+    let scanTimer = null;
 
     let heldProduct = null;
     let heldSlot = null;
@@ -495,15 +509,18 @@
     let heldAnchorPos = null;
 
     const aisleGroups = new Map();
+    const npcCashiers = [];
+    let beltScanPropGroup = null;
     const labelTextureCache = new Map();
     let sharedGeometries = null;
 
     let THREE, scene, camera, renderer, raycaster, pointer;
     let yaw = 0;
     let pitch = -0.04;
-    let isLookingWithClick = false;
-    let prevMouseX = null;
-    let prevMouseY = null;
+    let isLookingCamera = false;
+    let isRotatingHeld = false;
+    let prevPointerX = null;
+    let prevPointerY = null;
 
     let shoppingCartGroup = null;
     let cartCargoGroup = null;
@@ -517,6 +534,8 @@
       KeyA: false,
       KeyS: false,
       KeyD: false,
+      KeyQ: false,
+      KeyE: false,
       ArrowUp: false,
       ArrowLeft: false,
       ArrowDown: false,
@@ -529,9 +548,11 @@
       }
       if (e.code in keysPressed) {
         keysPressed[e.code] = true;
-        cameraGoalPos = null;
-        cameraGoalYaw = null;
-        cameraGoalPitch = null;
+        if (["KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) {
+          cameraGoalPos = null;
+          cameraGoalYaw = null;
+          cameraGoalPitch = null;
+        }
       }
     });
 
@@ -540,6 +561,57 @@
         keysPressed[e.code] = false;
       }
     });
+
+    function runNpcScanSequence() {
+      if (scanTimer) {
+        clearInterval(scanTimer);
+        scanTimer = null;
+      }
+
+      const entries = [];
+      cart.forEach((qty, prodId) => {
+        const prod = products.find((p) => Number(p.id) === Number(prodId));
+        if (prod) {
+          for (let i = 0; i < qty; i++) entries.push(prod);
+        }
+      });
+
+      if (entries.length === 0) {
+        npcLogEl.textContent = "Cajero NPC: Tu carrito está vacío. Toma productos de los pasillos y vuelve aquí.";
+        if (beltScanPropGroup) {
+          while (beltScanPropGroup.children.length > 0) beltScanPropGroup.remove(beltScanPropGroup.children[0]);
+        }
+        return;
+      }
+
+      let idx = 0;
+      let runningTotal = 0;
+      npcLogEl.textContent = `Cajero NPC: Pasando ${entries.length} artículo(s) por el escáner...`;
+
+      const stepScan = () => {
+        if (idx >= entries.length) {
+          clearInterval(scanTimer);
+          scanTimer = null;
+          npcLogEl.textContent = `Cajero NPC: Listo, son $${getCartTotal()} MXN. Elige cómo quieres pagar.`;
+          return;
+        }
+        const item = entries[idx];
+        runningTotal += item.price;
+        npcLogEl.textContent = `Cajero NPC escaneó: ${item.name} ($${item.price}) · Subtotal: $${runningTotal} MXN`;
+
+        if (beltScanPropGroup && THREE) {
+          while (beltScanPropGroup.children.length > 0) beltScanPropGroup.remove(beltScanPropGroup.children[0]);
+          const mini = buildProductModel(item);
+          mini.scale.setScalar(0.65);
+          mini.position.set(0, 0.94, 0.35);
+          beltScanPropGroup.add(mini);
+        }
+        idx++;
+      };
+
+      stepScan();
+      scanTimer = setInterval(stepScan, 650);
+    }
 
     function switchTab(tabName) {
       tabCatalogBtn.classList.toggle("active", tabName === "catalog");
@@ -551,7 +623,10 @@
       viewCashier.style.display = tabName === "cashier" ? "block" : "none";
 
       if (tabName === "cart") renderCart();
-      if (tabName === "cashier") updateCashierUI();
+      if (tabName === "cashier") {
+        updateCashierUI();
+        runNpcScanSequence();
+      }
     }
 
     tabCatalogBtn.addEventListener("click", () => switchTab("catalog"));
@@ -692,7 +767,7 @@
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.strokeStyle = "rgba(255,255,255,0.45)";
+      ctx.strokeStyle = "rgba(255,255,255,0.55)";
       ctx.lineWidth = 6;
       ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
 
@@ -716,11 +791,11 @@
       if (shape === "bottle") {
         const bodyMat = new THREE.MeshStandardMaterial({
           color: baseColor,
-          roughness: 0.22,
+          roughness: 0.2,
           metalness: 0.1
         });
-        const labelMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.4 });
-        const capMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.4 });
+        const labelMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.35 });
+        const capMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.35 });
 
         const body = new THREE.Mesh(sharedGeometries.bottleBody, bodyMat);
         body.castShadow = true;
@@ -734,9 +809,9 @@
 
         group.add(body, label, cap);
       } else if (shape === "carton") {
-        const sideMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.55 });
-        const frontMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.5 });
-        const roofMat = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.5 });
+        const sideMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.5 });
+        const frontMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.45 });
+        const roofMat = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.45 });
 
         const body = new THREE.Mesh(sharedGeometries.cartonBody, [
           sideMat, sideMat, roofMat, sideMat, frontMat, sideMat
@@ -754,14 +829,14 @@
 
         group.add(body, roof, cap);
       } else if (shape === "bag") {
-        const bagMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.38 });
+        const bagMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.35 });
         const bag = new THREE.Mesh(sharedGeometries.bagBody, bagMat);
         bag.position.y = 0.25;
         bag.castShadow = true;
         group.add(bag);
       } else {
-        const sideMat = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.55 });
-        const frontMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.5 });
+        const sideMat = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.5 });
+        const frontMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.45 });
         const box = new THREE.Mesh(sharedGeometries.boxBody, [
           sideMat, sideMat, sideMat, sideMat, frontMat, sideMat
         ]);
@@ -779,51 +854,70 @@
       return group;
     }
 
-    // Techo del súper con vigas y lámparas LED
-    function buildStoreCeilingAndWalls() {
+    // Iluminación completa de supermercado + techo + muros
+    function buildStoreEnvironmentAndLighting() {
       const envGroup = new THREE.Group();
 
+      // Luz ambiental clara y luz direccional principal
+      scene.add(new THREE.AmbientLight(0xf1f5f9, 1.35));
+
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x334155, 1.15);
+      hemiLight.position.set(0, CEILING_HEIGHT, 0);
+      scene.add(hemiLight);
+
+      const mainDirLight = new THREE.DirectionalLight(0xfffbeb, 1.45);
+      mainDirLight.position.set(12, 20, 14);
+      mainDirLight.castShadow = true;
+      mainDirLight.shadow.mapSize.set(1024, 1024);
+      scene.add(mainDirLight);
+
+      const fillLight = new THREE.DirectionalLight(0xbae6fd, 0.7);
+      fillLight.position.set(-14, 10, -12);
+      scene.add(fillLight);
+
       const ceilingMat = new THREE.MeshStandardMaterial({
-        color: 0x111827,
-        roughness: 0.85,
-        metalness: 0.1
+        color: 0x1e293b,
+        roughness: 0.75,
+        metalness: 0.15
       });
       const beamMat = new THREE.MeshStandardMaterial({
-        color: 0x1f2937,
-        roughness: 0.6,
-        metalness: 0.4
+        color: 0x334155,
+        roughness: 0.55,
+        metalness: 0.35
       });
       const lampMat = new THREE.MeshStandardMaterial({
-        color: 0xe0f2fe,
-        emissive: 0x7dd3fc,
-        emissiveIntensity: 0.65,
-        roughness: 0.2
+        color: 0xffffff,
+        emissive: 0xe0f2fe,
+        emissiveIntensity: 1.35,
+        roughness: 0.15
       });
 
-      const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(52, 52), ceilingMat);
+      const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(54, 54), ceilingMat);
       ceiling.rotation.x = Math.PI / 2;
       ceiling.position.y = CEILING_HEIGHT;
       envGroup.add(ceiling);
 
-      // Vigas transversales y lámparas
       [-12, -4, 4, 12].forEach((zPos) => {
-        const beam = new THREE.Mesh(new THREE.BoxGeometry(52, 0.28, 0.36), beamMat);
+        const beam = new THREE.Mesh(new THREE.BoxGeometry(54, 0.28, 0.36), beamMat);
         beam.position.set(0, CEILING_HEIGHT - 0.14, zPos);
         envGroup.add(beam);
 
         [-10.5, 0, 10.5].forEach((xPos) => {
-          const lamp = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.08, 0.45), lampMat);
-          lamp.position.set(xPos, CEILING_HEIGHT - 0.30, zPos);
+          const lamp = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.1, 0.52), lampMat);
+          lamp.position.set(xPos, CEILING_HEIGHT - 0.32, zPos);
           envGroup.add(lamp);
+
+          const point = new THREE.PointLight(0xfff7ed, 2.2, 13, 1.5);
+          point.position.set(xPos, CEILING_HEIGHT - 0.55, zPos);
+          scene.add(point);
         });
       });
 
-      // Muros perimetrales amplios
-      const wallMat = new THREE.MeshStandardMaterial({ color: 0x131c2e, roughness: 0.8 });
-      const backWall = new THREE.Mesh(new THREE.BoxGeometry(52, CEILING_HEIGHT, 0.4), wallMat);
+      const wallMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.75 });
+      const backWall = new THREE.Mesh(new THREE.BoxGeometry(54, CEILING_HEIGHT, 0.4), wallMat);
       backWall.position.set(0, CEILING_HEIGHT / 2, -24);
 
-      const frontWall = new THREE.Mesh(new THREE.BoxGeometry(52, CEILING_HEIGHT, 0.4), wallMat);
+      const frontWall = new THREE.Mesh(new THREE.BoxGeometry(54, CEILING_HEIGHT, 0.4), wallMat);
       frontWall.position.set(0, CEILING_HEIGHT / 2, 24);
 
       const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.4, CEILING_HEIGHT, 48), wallMat);
@@ -839,13 +933,13 @@
     function createShoppingCart3D() {
       const group = new THREE.Group();
       const metalMat = new THREE.MeshStandardMaterial({
-        color: 0xcbd5e1,
-        metalness: 0.75,
+        color: 0xe2e8f0,
+        metalness: 0.7,
         roughness: 0.25
       });
       const wireMat = new THREE.MeshStandardMaterial({
         color: 0x94a3b8,
-        metalness: 0.65,
+        metalness: 0.6,
         roughness: 0.3,
         wireframe: true
       });
@@ -907,24 +1001,61 @@
       });
     }
 
+    function createNpcCashierModel() {
+      const npc = new THREE.Group();
+      const shirtMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.5 });
+      const pantsMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.65 });
+      const skinMat = new THREE.MeshStandardMaterial({ color: 0xf1c27d, roughness: 0.6 });
+      const capMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.5 });
+
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.72, 0.30), shirtMat);
+      torso.position.y = 1.12;
+      torso.castShadow = true;
+
+      const legs = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.76, 0.28), pantsMat);
+      legs.position.y = 0.38;
+      legs.castShadow = true;
+
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 16), skinMat);
+      head.position.y = 1.72;
+      head.castShadow = true;
+
+      const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.23, 0.24, 0.11, 16), capMat);
+      cap.position.y = 1.88;
+
+      const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.52, 0.16), shirtMat);
+      rightArm.position.set(0.38, 1.16, 0.12);
+      rightArm.rotation.x = -0.55;
+
+      const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.52, 0.16), shirtMat);
+      leftArm.position.set(-0.38, 1.14, 0.05);
+
+      npc.add(torso, legs, head, cap, rightArm, leftArm);
+      npc.userData.rightArm = rightArm;
+      npc.userData.head = head;
+      return npc;
+    }
+
     function buildCashierZone3D() {
       const zoneGroup = new THREE.Group();
       zoneGroup.position.set(CASHIER_POS.x, 0, CASHIER_POS.z);
 
-      const counterMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.45, metalness: 0.3 });
-      const beltMat = new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.8 });
+      const counterMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.45, metalness: 0.3 });
+      const beltMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8 });
       const scannerMat = new THREE.MeshStandardMaterial({
         color: 0x22c55e,
-        emissive: 0x15803d,
+        emissive: 0x22c55e,
+        emissiveIntensity: 0.6,
         roughness: 0.2
       });
       const screenMat = new THREE.MeshStandardMaterial({
         color: 0x38bdf8,
-        emissive: 0x0369a1,
+        emissive: 0x38bdf8,
+        emissiveIntensity: 0.5,
         roughness: 0.25
       });
 
-      [-3.4, 0, 3.4].forEach((offsetX) => {
+      [-3.4, 0, 3.4].forEach((offsetX, laneIdx) => {
         const lane = new THREE.Group();
         lane.position.x = offsetX;
 
@@ -949,17 +1080,29 @@
         monitor.rotation.y = -0.35;
         lane.add(stand, monitor);
 
+        // NPC cajero detrás del mostrador mirando hacia la entrada de la caja
+        const npc = createNpcCashierModel();
+        npc.position.set(0, 0, 1.75);
+        npc.rotation.y = Math.PI;
+        lane.add(npc);
+        npcCashiers.push(npc);
+
+        if (laneIdx === 1) {
+          beltScanPropGroup = new THREE.Group();
+          lane.add(beltScanPropGroup);
+        }
+
         zoneGroup.add(lane);
       });
 
-      const pillarMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.5, roughness: 0.4 });
+      const pillarMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.5, roughness: 0.4 });
       [-4.8, 4.8].forEach((px) => {
         const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.16, 3.0, 0.16), pillarMat);
         pillar.position.set(px, 1.5, 0);
         zoneGroup.add(pillar);
       });
 
-      const signTex = createSignTexture("Cajas de Pago · Checkout", "#15803d");
+      const signTex = createSignTexture("Cajas de Pago · NPC", "#15803d");
       const banner = new THREE.Mesh(
         new THREE.BoxGeometry(9.6, 0.58, 0.14),
         new THREE.MeshStandardMaterial({ map: signTex, roughness: 0.35 })
@@ -989,6 +1132,7 @@
       heldSlot = null;
       heldMeshGroup = null;
       heldAnchorPos = null;
+      isRotatingHeld = false;
       heldBar.classList.remove("active");
       controlsHint.style.display = "block";
     }
@@ -1048,16 +1192,17 @@
       }
       scene.add(heldMeshGroup);
       heldMeshGroup.visible = true;
-      heldMeshGroup.scale.setScalar(1.12);
+      heldMeshGroup.rotation.set(0, 0, 0);
+      heldMeshGroup.scale.setScalar(1.22);
 
       const lookDir = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(pitch, yaw, 0, "YXZ")).normalize();
-      const holdPos = camera.position.clone().addScaledVector(lookDir, 1.35);
-      holdPos.y = PLAYER_EYE_HEIGHT - 0.16;
+      const holdPos = camera.position.clone().addScaledVector(lookDir, 1.3);
+      holdPos.y = PLAYER_EYE_HEIGHT - 0.14;
       heldMeshGroup.position.copy(holdPos);
 
       heldTitle.textContent = prod.name;
       heldPrice.textContent = `$${prod.price} MXN`;
-      heldMeta.textContent = `Quedan ${getAvailableCount(prod)} en estante · Si te alejas, vuelve solo`;
+      heldMeta.textContent = `Arrastra el producto 360° o usa ↺ / ↻ · Quedan ${getAvailableCount(prod)}`;
       heldBar.classList.add("active");
       controlsHint.style.display = "none";
       renderList();
@@ -1072,6 +1217,14 @@
       }
       takeSpecificSlot(prod, freeSlot);
     }
+
+    spinLeftBtn.addEventListener("click", () => {
+      if (heldMeshGroup) heldMeshGroup.rotation.y -= 0.55;
+    });
+
+    spinRightBtn.addEventListener("click", () => {
+      if (heldMeshGroup) heldMeshGroup.rotation.y += 0.55;
+    });
 
     releaseBtn.addEventListener("click", () => {
       const name = heldProduct?.name;
@@ -1116,7 +1269,7 @@
 
       const cashierBtn = document.createElement("button");
       cashierBtn.className = "btn warn";
-      cashierBtn.textContent = "Cajas";
+      cashierBtn.textContent = "Cajas NPC";
       cashierBtn.addEventListener("click", goToCashier);
       aisleNavEl.appendChild(cashierBtn);
     }
@@ -1210,12 +1363,6 @@
       const total = getCartTotal();
       cashierTotalEl.textContent = `$${total} MXN`;
 
-      if (isNearCashier) {
-        cashierZoneStatus.textContent = "Estás frente a las cajas de cobro. Elige tu forma de pago:";
-      } else {
-        cashierZoneStatus.textContent = "Tip: Camina con WASD hacia las cajas del fondo (o paga aquí directo).";
-      }
-
       if (selectedPaymentMethod === "efectivo") {
         cashInputWrap.style.display = "flex";
         methodDetailEl.style.display = "none";
@@ -1274,6 +1421,14 @@
           return;
         }
 
+        if (scanTimer) {
+          clearInterval(scanTimer);
+          scanTimer = null;
+        }
+        if (beltScanPropGroup) {
+          while (beltScanPropGroup.children.length > 0) beltScanPropGroup.remove(beltScanPropGroup.children[0]);
+        }
+
         cart.clear();
         productSlotsMap.clear();
         updateCartBadge();
@@ -1282,9 +1437,11 @@
         renderCart();
         updateCashierUI();
 
+        npcLogEl.textContent = `Cajero NPC: ¡Gracias por tu compra! Aquí tienes tu ticket #${data.order.id.slice(-5)}.`;
         receiptBox.style.display = "block";
         receiptBox.innerHTML = `
           <strong>Ticket #${data.order.id.slice(-5)}</strong><br/>
+          Atendió: Cajero NPC<br/>
           Método: ${data.order.paymentMethod.toUpperCase()}<br/>
           Total pagado: $${data.order.total} MXN<br/>
           ${data.order.paymentMethod === "efectivo" ? `Recibido: $${data.order.amountPaid} · Cambio: $${data.order.change} MXN` : "Pago exacto aprobado"}
@@ -1301,17 +1458,17 @@
       aisleGroups.clear();
       productSlotsMap.clear();
 
-      const postMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.4, roughness: 0.5 });
-      const boardMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.6 });
+      const postMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.4, roughness: 0.5 });
+      const boardMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.55 });
       const coolerFrameMat = new THREE.MeshStandardMaterial({
-        color: 0x0f172a,
+        color: 0x1e293b,
         metalness: 0.55,
         roughness: 0.35
       });
       const coolerGlassMat = new THREE.MeshStandardMaterial({
-        color: 0x38bdf8,
+        color: 0x7dd3fc,
         transparent: true,
-        opacity: 0.14,
+        opacity: 0.12,
         roughness: 0.1
       });
 
@@ -1338,7 +1495,6 @@
           aisleGroup.add(board);
         });
 
-        // Si el pasillo es zona de refrigeradores, agrega vitrina/puertas de refrigeración
         if (aisleCfg.cooler) {
           const topHood = new THREE.Mesh(new THREE.BoxGeometry(shelfWidth + 0.12, 0.22, shelfDepth + 0.12), coolerFrameMat);
           topHood.position.set(0, shelfHeight + 0.06, 0);
@@ -1467,8 +1623,8 @@
 
       const wrap = document.getElementById("canvas-wrap");
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x0b0e14);
-      scene.fog = new THREE.Fog(0x0b0e14, 18, 48);
+      scene.background = new THREE.Color(0x1e293b);
+      scene.fog = new THREE.Fog(0x1e293b, 22, 54);
 
       camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 120);
       camera.position.set(-10.5, PLAYER_EYE_HEIGHT, -4.0);
@@ -1478,27 +1634,25 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.shadowMap.enabled = true;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.12;
       wrap.appendChild(renderer.domElement);
 
-      scene.add(new THREE.AmbientLight(0xdbeafe, 1.0));
-      const dirLight = new THREE.DirectionalLight(0xffffff, 1.35);
-      dirLight.position.set(10, 18, 12);
-      dirLight.castShadow = true;
-      scene.add(dirLight);
+      buildStoreEnvironmentAndLighting();
 
+      // Piso claro tipo loseta comercial
       const floor = new THREE.Mesh(
-        new THREE.PlaneGeometry(52, 52),
-        new THREE.MeshStandardMaterial({ color: 0x161d2b, roughness: 0.75, metalness: 0.1 })
+        new THREE.PlaneGeometry(54, 54),
+        new THREE.MeshStandardMaterial({ color: 0x273549, roughness: 0.55, metalness: 0.12 })
       );
       floor.rotation.x = -Math.PI / 2;
       floor.receiveShadow = true;
       scene.add(floor);
 
-      const grid = new THREE.GridHelper(52, 52, 0x283548, 0x1c2536);
+      const grid = new THREE.GridHelper(54, 54, 0x475569, 0x334155);
       grid.position.y = 0.01;
       scene.add(grid);
 
-      buildStoreCeilingAndWalls();
       buildCashierZone3D();
       shoppingCartGroup = createShoppingCart3D();
       scene.add(shoppingCartGroup);
@@ -1510,12 +1664,24 @@
         cameraGoalPos = null;
         cameraGoalYaw = null;
         cameraGoalPitch = null;
+        prevPointerX = event.clientX;
+        prevPointerY = event.clientY;
 
         const rect = renderer.domElement.getBoundingClientRect();
         pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
         raycaster.setFromCamera(pointer, camera);
+
+        // Si ya sostienes el producto y tocas sobre él, entras en modo girar 360°
+        if (heldMeshGroup) {
+          const heldHits = raycaster.intersectObjects(heldMeshGroup.children, true);
+          if (heldHits.length > 0) {
+            isRotatingHeld = true;
+            isLookingCamera = false;
+            return;
+          }
+        }
 
         const visibleAisles = Array.from(aisleGroups.values()).filter((g) => g.visible);
         const hits = raycaster.intersectObjects(visibleAisles, true);
@@ -1537,30 +1703,37 @@
           }
         }
 
-        // Activa giro de cámara solo mientras mantienes presionado el clic
-        isLookingWithClick = true;
-        prevMouseX = event.clientX;
-        prevMouseY = event.clientY;
+        isLookingCamera = true;
+        isRotatingHeld = false;
       });
 
       window.addEventListener("pointermove", (event) => {
-        if (!isLookingWithClick) return;
-        if (prevMouseX !== null && prevMouseY !== null) {
-          const dx = event.clientX - prevMouseX;
-          const dy = event.clientY - prevMouseY;
+        if (prevPointerX === null || prevPointerY === null) return;
+        const dx = event.clientX - prevPointerX;
+        const dy = event.clientY - prevPointerY;
+        prevPointerX = event.clientX;
+        prevPointerY = event.clientY;
+
+        if (isRotatingHeld && heldMeshGroup) {
+          // Rotación libre 360° en eje Y y X del producto
+          heldMeshGroup.rotation.y += dx * 0.018;
+          heldMeshGroup.rotation.x += dy * 0.015;
+          return;
+        }
+
+        if (isLookingCamera) {
           yaw -= dx * 0.0038;
           pitch = Math.max(-1.05, Math.min(1.05, pitch - dy * 0.0032));
           cameraGoalYaw = null;
           cameraGoalPitch = null;
         }
-        prevMouseX = event.clientX;
-        prevMouseY = event.clientY;
       });
 
       window.addEventListener("pointerup", () => {
-        isLookingWithClick = false;
-        prevMouseX = null;
-        prevMouseY = null;
+        isLookingCamera = false;
+        isRotatingHeld = false;
+        prevPointerX = null;
+        prevPointerY = null;
       });
 
       window.addEventListener("resize", () => {
@@ -1572,9 +1745,11 @@
       const moveForward = new THREE.Vector3();
       const moveRight = new THREE.Vector3();
       const moveDelta = new THREE.Vector3();
+      const clock = new THREE.Clock();
 
       function animate() {
         requestAnimationFrame(animate);
+        const elapsed = clock.getElapsedTime();
 
         if (cameraGoalPos) {
           camera.position.lerp(cameraGoalPos, 0.08);
@@ -1604,8 +1779,22 @@
           camera.position.y = PLAYER_EYE_HEIGHT;
         }
 
+        // Rotación asistida por teclado cuando sostienes un producto (Q / E)
+        if (heldMeshGroup) {
+          if (keysPressed.KeyQ) heldMeshGroup.rotation.y -= 0.04;
+          if (keysPressed.KeyE) heldMeshGroup.rotation.y += 0.04;
+        }
+
         camera.rotation.y = yaw;
         camera.rotation.x = pitch;
+
+        // Animación sutil de los NPC cajeros
+        npcCashiers.forEach((npc, i) => {
+          const arm = npc.userData?.rightArm;
+          const head = npc.userData?.head;
+          if (arm) arm.rotation.x = -0.55 + Math.sin(elapsed * 3.2 + i) * 0.25;
+          if (head) head.rotation.y = Math.sin(elapsed * 1.6 + i) * 0.18;
+        });
 
         if (heldProduct && heldMeshGroup && heldAnchorPos) {
           const distWalked = camera.position.distanceTo(heldAnchorPos);
@@ -1615,8 +1804,8 @@
             liveNoteEl.textContent = `Te alejaste: ${returnedName} volvió solo al estante.`;
           } else {
             const lookDir = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(pitch, yaw, 0, "YXZ")).normalize();
-            const holdTarget = camera.position.clone().addScaledVector(lookDir, 1.35);
-            holdTarget.y = PLAYER_EYE_HEIGHT - 0.16;
+            const holdTarget = camera.position.clone().addScaledVector(lookDir, 1.3);
+            holdTarget.y = PLAYER_EYE_HEIGHT - 0.14;
             heldMeshGroup.position.lerp(holdTarget, 0.25);
           }
         }
@@ -1637,12 +1826,15 @@
         if (nowNear !== isNearCashier) {
           isNearCashier = nowNear;
           checkoutZoneBanner.classList.toggle("visible", isNearCashier);
+          if (isNearCashier) {
+            runNpcScanSequence();
+          }
           updateCashierUI();
         }
 
         aisleGroups.forEach((grp) => {
           const dist = camera.position.distanceTo(grp.position);
-          grp.visible = dist < 26;
+          grp.visible = dist < 28;
         });
 
         renderer.render(scene, camera);
@@ -1659,7 +1851,7 @@
     if (typeof window.io === "function") {
       socket = window.io();
       socket.on("connect", () => {
-        statusBadgeEl.textContent = renderer ? "Online · Súper 3D" : "Online · Sin WebGL";
+        statusBadgeEl.textContent = renderer ? "Online · Súper 3D + NPC" : "Online · Sin WebGL";
       });
       socket.on("disconnect", () => {
         statusBadgeEl.textContent = "Reconectando...";
