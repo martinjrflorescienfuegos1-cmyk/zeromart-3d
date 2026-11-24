@@ -144,8 +144,8 @@
       position: fixed;
       right: 12px;
       bottom: 12px;
-      width: min(375px, calc(100vw - 24px));
-      max-height: 75vh;
+      width: min(380px, calc(100vw - 24px));
+      max-height: 76vh;
       overflow-y: auto;
       z-index: 20;
       background: var(--panel);
@@ -241,6 +241,20 @@
       min-height: 36px;
     }
 
+    .terminal-box {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      color: #bae6fd;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .terminal-box.active { display: flex; }
+
     .ticket {
       background: rgba(34, 197, 94, 0.12);
       border: 1px solid rgba(34, 197, 94, 0.45);
@@ -307,7 +321,7 @@
     <form class="auth-card" id="auth-form">
       <div>
         <h1>ZeroMart 3D</h1>
-        <p>Camina rápido con WASD, gira productos 360° y paga con el cajero de tu caja.</p>
+        <p>Spawnea afuera viendo el centro comercial, entra por las puertas y recorre pasillos y electrodomésticos.</p>
       </div>
       <div class="field">
         <label for="username">Usuario</label>
@@ -342,11 +356,11 @@
 
   <div class="checkout-zone-banner" id="checkout-zone-banner">
     <span id="checkout-banner-text">Cajero listo · Escaneando tu carrito</span>
-    <button class="btn primary" id="open-cashier-btn">Ver caja y pagar</button>
+    <button class="btn primary" id="open-cashier-btn">Pagar</button>
   </div>
 
   <div class="controls-hint" id="controls-hint">
-    Moverse: <strong>W A S D</strong> · Vista: <strong>Mantener clic + mover</strong> · Producto: <strong>Clic para tomar y girar 360°</strong>
+    Moverse: <strong>W A S D</strong> · Vista: <strong>Mantener clic + mover</strong> · Producto: <strong>Clic para acercar y girar 360°</strong>
   </div>
 
   <div class="held-bar" id="held-bar">
@@ -371,7 +385,7 @@
     </div>
 
     <div id="view-catalog">
-      <p class="muted" id="selected-info">Toca un producto para tomarlo, girarlo 360° y dejar su hueco vacío al meterlo al carrito.</p>
+      <p class="muted" id="selected-info">Camina hacia la entrada para abrir las puertas o selecciona un producto.</p>
       <div class="product-list" id="product-list"></div>
     </div>
 
@@ -385,9 +399,9 @@
     </div>
 
     <div id="view-cashier" style="display:none;">
-      <div class="npc-log" id="npc-log">Cajero: ¡Hola! Acércate a la caja que gustes para escanear tus artículos.</div>
+      <div class="npc-log" id="npc-log">Cajero: ¡Hola! Pasa por aquí cuando tengas tus productos.</div>
       <div class="row" style="margin-top:8px;">
-        <strong>Total escaneado:</strong>
+        <strong>Total a pagar:</strong>
         <span class="price" id="cashier-total">$0 MXN</span>
       </div>
 
@@ -400,14 +414,21 @@
         </div>
 
         <div class="field" id="cash-input-wrap">
-          <label for="cash-tendered">¿Con cuánto pagas en efectivo? (MXN)</label>
-          <input id="cash-tendered" type="number" min="0" step="1" placeholder="ej. 100" />
+          <label for="cash-tendered">Monto en efectivo (MXN)</label>
+          <input id="cash-tendered" type="number" min="0" step="1" placeholder="ej. 500" />
           <span class="meta" id="change-preview">Cambio: $0 MXN</span>
+        </div>
+
+        <div class="terminal-box" id="terminal-box">
+          <strong>Terminal Bancaria ZeroMart</strong>
+          <span class="meta" style="margin:0;">Inserta o acerca tu tarjeta virtual para autorizar el cobro.</span>
+          <button type="button" class="btn primary" id="insert-card-btn">Insertar tarjeta</button>
+          <span class="meta" id="card-status" style="margin:0; color:#4ade80;">Tarjeta no insertada</span>
         </div>
 
         <div class="meta" id="method-detail" style="display:none;"></div>
 
-        <button class="btn success" id="checkout-btn" style="width:100%;">Pagar y abrir cajón</button>
+        <button class="btn success" id="checkout-btn" style="width:100%;">Pagar</button>
       </div>
 
       <div class="ticket" id="receipt-box"></div>
@@ -455,6 +476,9 @@
     const cashInputWrap = document.getElementById("cash-input-wrap");
     const cashTenderedInput = document.getElementById("cash-tendered");
     const changePreviewEl = document.getElementById("change-preview");
+    const terminalBox = document.getElementById("terminal-box");
+    const insertCardBtn = document.getElementById("insert-card-btn");
+    const cardStatusEl = document.getElementById("card-status");
     const methodDetailEl = document.getElementById("method-detail");
     const checkoutBtn = document.getElementById("checkout-btn");
     const receiptBox = document.getElementById("receipt-box");
@@ -470,33 +494,44 @@
     const controlsHint = document.getElementById("controls-hint");
 
     const PLAYER_EYE_HEIGHT = 1.8;
-    const CEILING_HEIGHT = 5.4;
-    const AUTO_RETURN_DISTANCE = 4.8;
-    const MOVE_SPEED = 0.26;
+    const CEILING_HEIGHT = 6.2;
+    const AUTO_RETURN_DISTANCE = 5.5;
+    const MOVE_SPEED = 0.28;
 
+    // Centro comercial y supermercado grande con pasillos, fríos, TV, lavadoras y electrodomésticos
     const AISLE_LAYOUT = [
-      { name: "Refrigeradores", x: -10.5, z: -8.0, color: "#0284c7", cooler: true },
-      { name: "Bebidas", x: 0.0, z: -8.0, color: "#0369a1", cooler: false },
-      { name: "Lácteos", x: 10.5, z: -8.0, color: "#1d4ed8", cooler: true },
-      { name: "Panadería", x: -10.5, z: 3.5, color: "#d97706", cooler: false },
-      { name: "Botanas", x: 0.0, z: 3.5, color: "#15803d", cooler: false },
-      { name: "Abarrotes", x: 10.5, z: 3.5, color: "#7e22ce", cooler: false }
+      { name: "Refrigeradores", x: -13.0, z: -11.0, color: "#0284c7", cooler: true },
+      { name: "Bebidas", x: 0.0, z: -11.0, color: "#0369a1", cooler: false },
+      { name: "Lácteos", x: 13.0, z: -11.0, color: "#1d4ed8", cooler: true },
+      { name: "Televisiones", x: -13.0, z: 0.0, color: "#0f766e", cooler: false },
+      { name: "Lavadoras", x: 0.0, z: 0.0, color: "#b45309", cooler: false },
+      { name: "Electrodomésticos", x: 13.0, z: 0.0, color: "#7e22ce", cooler: false },
+      { name: "Panadería", x: -13.0, z: 10.5, color: "#d97706", cooler: false },
+      { name: "Botanas", x: 0.0, z: 10.5, color: "#15803d", cooler: false },
+      { name: "Abarrotes", x: 13.0, z: 10.5, color: "#4338ca", cooler: false }
     ];
 
     const EXTRA_PRODUCTS = [
       { id: 101, name: "Refresco Frío 600ml", price: 20, stock: 12, aisle: "Refrigeradores", shape: "bottle", color: "#0ea5e9" },
       { id: 102, name: "Agua Helada 1L", price: 16, stock: 14, aisle: "Refrigeradores", shape: "bottle", color: "#0284c7" },
       { id: 103, name: "Jugo Frío 500ml", price: 22, stock: 10, aisle: "Refrigeradores", shape: "carton", color: "#f97316" },
+      { id: 201, name: "Smart TV 55\" 4K", price: 8990, stock: 6, aisle: "Televisiones", shape: "tv", color: "#0f172a" },
+      { id: 202, name: "TV LED 43\" FHD", price: 5490, stock: 8, aisle: "Televisiones", shape: "tv", color: "#1e293b" },
+      { id: 203, name: "TV QLED 65\"", price: 12490, stock: 5, aisle: "Televisiones", shape: "tv", color: "#0284c7" },
+      { id: 301, name: "Lavadora 18kg Carga Sup.", price: 7890, stock: 6, aisle: "Lavadoras", shape: "washer", color: "#e2e8f0" },
+      { id: 302, name: "Lavadora 22kg Inverter", price: 10290, stock: 5, aisle: "Lavadoras", shape: "washer", color: "#cbd5e1" },
+      { id: 401, name: "Horno Microondas 1.1p³", price: 2450, stock: 8, aisle: "Electrodomésticos", shape: "appliance", color: "#475569" },
+      { id: 402, name: "Licuadora Acero 10 Vel.", price: 1180, stock: 10, aisle: "Electrodomésticos", shape: "appliance", color: "#7e22ce" },
       { id: 104, name: "Arroz Blanco 1kg", price: 29, stock: 15, aisle: "Abarrotes", shape: "bag", color: "#64748b" },
-      { id: 105, name: "Frijol Negro 1kg", price: 35, stock: 12, aisle: "Abarrotes", shape: "bag", color: "#4c1d95" },
-      { id: 106, name: "Cereal Caja 500g", price: 48, stock: 10, aisle: "Abarrotes", shape: "box", color: "#ca8a04" }
+      { id: 105, name: "Frijol Negro 1kg", price: 35, stock: 12, aisle: "Abarrotes", shape: "bag", color: "#4c1d95" }
     ];
 
-    const CASHIER_POS = { x: 0, z: 15.5 };
+    const ENTRANCE_Z = 21.0;
+    const CASHIER_POS = { x: 0, z: 16.2 };
     const REGISTER_OFFSETS = [
-      { index: 0, offsetX: -3.4, label: "Caja Izquierda" },
+      { index: 0, offsetX: -3.6, label: "Caja Izquierda" },
       { index: 1, offsetX: 0.0, label: "Caja Central" },
-      { index: 2, offsetX: 3.4, label: "Caja Derecha" }
+      { index: 2, offsetX: 3.6, label: "Caja Derecha" }
     ];
 
     let activeAisle = "Refrigeradores";
@@ -507,6 +542,7 @@
     let cart = new Map();
     let selectedId = null;
     let selectedPaymentMethod = "efectivo";
+    let isCardInserted = false;
     let isNearCashier = false;
     let activeRegisterIndex = 1;
     let scanTimer = null;
@@ -519,12 +555,14 @@
 
     const aisleGroups = new Map();
     const registerStates = [];
+    let leftDoorMesh = null;
+    let rightDoorMesh = null;
     const labelTextureCache = new Map();
     let sharedGeometries = null;
 
     let THREE, scene, camera, renderer, raycaster, pointer;
     let yaw = 0;
-    let pitch = -0.04;
+    let pitch = -0.02;
     let isLookingCamera = false;
     let isRotatingHeld = false;
     let prevPointerX = null;
@@ -614,14 +652,14 @@
       });
 
       if (entries.length === 0) {
-        npcLogEl.textContent = `${regCfg.label} NPC: Tu carrito está vacío. Toma productos de los pasillos.`;
+        npcLogEl.textContent = `${regCfg.label} NPC: Tu carrito está vacío. Recorre los pasillos para tomar productos.`;
         return;
       }
 
       let idx = 0;
       let runningTotal = 0;
       if (regState) regState.isScanning = true;
-      npcLogEl.textContent = `${regCfg.label} NPC: Pasando ${entries.length} artículo(s) por el lector rojo...`;
+      npcLogEl.textContent = `${regCfg.label} NPC: Escaneando ${entries.length} artículo(s)...`;
 
       const stepScan = () => {
         if (idx >= entries.length) {
@@ -631,7 +669,7 @@
             regState.isScanning = false;
             if (regState.redBeam) regState.redBeam.visible = false;
           }
-          npcLogEl.textContent = `${regCfg.label} NPC: Listo, son $${getCartTotal()} MXN. Elige tu método de pago.`;
+          npcLogEl.textContent = `${regCfg.label} NPC: Total $${getCartTotal()} MXN. Listo para cobrar.`;
           return;
         }
 
@@ -645,7 +683,7 @@
         if (regState && regState.beltGroup && THREE) {
           while (regState.beltGroup.children.length > 0) regState.beltGroup.remove(regState.beltGroup.children[0]);
           const mini = buildProductModel(item);
-          mini.scale.setScalar(0.62);
+          mini.scale.setScalar(0.55);
           mini.position.set(0, 0.94, 0.35);
           regState.beltGroup.add(mini);
         }
@@ -653,7 +691,7 @@
       };
 
       stepScan();
-      scanTimer = setInterval(stepScan, 580);
+      scanTimer = setInterval(stepScan, 560);
     }
 
     function switchTab(tabName) {
@@ -767,12 +805,17 @@
         cartonRoof: new THREE.CylinderGeometry(0.02, 0.22, 0.12, 4),
         cartonCap: new THREE.CylinderGeometry(0.04, 0.04, 0.035, 12),
         boxBody: new THREE.BoxGeometry(0.42, 0.52, 0.22),
-        bagBody: new THREE.CylinderGeometry(0.16, 0.18, 0.50, 14)
+        bagBody: new THREE.CylinderGeometry(0.16, 0.18, 0.50, 14),
+        tvScreen: new THREE.BoxGeometry(0.76, 0.44, 0.06),
+        tvStand: new THREE.BoxGeometry(0.34, 0.04, 0.18),
+        washerBody: new THREE.BoxGeometry(0.56, 0.64, 0.52),
+        washerDrum: new THREE.CylinderGeometry(0.19, 0.19, 0.06, 20),
+        applianceBody: new THREE.BoxGeometry(0.48, 0.36, 0.36)
       };
       sharedGeometries.bagBody.scale(1.1, 1, 0.48);
+      sharedGeometries.washerDrum.rotateX(Math.PI / 2);
     }
 
-    // Carátula de producto estilo empaque comercial con franja superior, título y precio
     function getLabelTexture(prod) {
       const key = `${prod.name}|${prod.price}|${prod.color || ""}|${prod.aisle || ""}`;
       if (labelTextureCache.has(key)) return labelTextureCache.get(key);
@@ -798,16 +841,16 @@
       ctx.fillText(`ZEROMART · ${(prod.aisle || "TIENDA").toUpperCase()}`, canvas.width / 2, 34);
 
       ctx.fillStyle = "#0f172a";
-      ctx.font = "bold 36px system-ui, sans-serif";
-      ctx.fillText(String(prod.name).slice(0, 22), canvas.width / 2, 118);
+      ctx.font = "bold 34px system-ui, sans-serif";
+      ctx.fillText(String(prod.name).slice(0, 24), canvas.width / 2, 118);
 
       ctx.fillStyle = "#15803d";
       ctx.font = "bold 42px system-ui, sans-serif";
       ctx.fillText(`$${prod.price} MXN`, canvas.width / 2, 178);
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 22px system-ui, sans-serif";
-      ctx.fillText("CONT. NETO · CALIDAD ORIGINAL", canvas.width / 2, 238);
+      ctx.font = "bold 21px system-ui, sans-serif";
+      ctx.fillText("GARANTÍA ZEROMART · ORIGINAL", canvas.width / 2, 238);
 
       const tex = new THREE.CanvasTexture(canvas);
       tex.colorSpace = THREE.SRGBColorSpace;
@@ -829,7 +872,7 @@
       ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 40px system-ui, sans-serif";
+      ctx.font = "bold 38px system-ui, sans-serif";
       ctx.textAlign = "center";
       ctx.fillText(text.toUpperCase(), canvas.width / 2, 80);
 
@@ -846,26 +889,45 @@
       const baseColor = new THREE.Color(prod.color || "#38bdf8");
 
       if (shape === "bottle") {
-        const bodyMat = new THREE.MeshStandardMaterial({
-          color: baseColor,
-          roughness: 0.22,
-          metalness: 0.08
-        });
-        const labelMat = new THREE.MeshStandardMaterial({
-          map: labelTex,
-          roughness: 0.35,
-          side: THREE.DoubleSide
-        });
+        const bodyMat = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.22, metalness: 0.08 });
+        const labelMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.35, side: THREE.DoubleSide });
         const capMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.35 });
 
         const body = new THREE.Mesh(sharedGeometries.bottleBody, bodyMat);
         const label = new THREE.Mesh(sharedGeometries.bottleLabel, labelMat);
         label.position.y = 0.25;
-
         const cap = new THREE.Mesh(sharedGeometries.bottleCap, capMat);
         cap.position.y = 0.74;
-
         group.add(body, label, cap);
+      } else if (shape === "tv") {
+        const bezelMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3, metalness: 0.4 });
+        const screenMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.25 });
+        const panel = new THREE.Mesh(sharedGeometries.tvScreen, [
+          bezelMat, bezelMat, bezelMat, bezelMat, screenMat, bezelMat
+        ]);
+        panel.position.y = 0.28;
+        const stand = new THREE.Mesh(sharedGeometries.tvStand, bezelMat);
+        stand.position.y = 0.02;
+        group.add(panel, stand);
+      } else if (shape === "washer") {
+        const bodyMat = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.35, metalness: 0.3 });
+        const drumMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.25, metalness: 0.6 });
+        const labelMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.4 });
+        const body = new THREE.Mesh(sharedGeometries.washerBody, bodyMat);
+        body.position.y = 0.32;
+        const drum = new THREE.Mesh(sharedGeometries.washerDrum, drumMat);
+        drum.position.set(0, 0.32, 0.27);
+        const tag = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.14, 0.02), labelMat);
+        tag.position.set(0, 0.56, 0.27);
+        group.add(body, drum, tag);
+      } else if (shape === "appliance") {
+        const bodyMat = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.4, metalness: 0.35 });
+        const frontMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.4 });
+        const box = new THREE.Mesh(sharedGeometries.applianceBody, [
+          bodyMat, bodyMat, bodyMat, bodyMat, frontMat, frontMat
+        ]);
+        box.position.y = 0.18;
+        group.add(box);
       } else if (shape === "carton") {
         const sideMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.5 });
         const frontMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.45 });
@@ -875,15 +937,12 @@
           sideMat, sideMat, roofMat, sideMat, frontMat, frontMat
         ]);
         body.position.y = 0.25;
-
         const roof = new THREE.Mesh(sharedGeometries.cartonRoof, roofMat);
         roof.position.y = 0.56;
         roof.rotation.y = Math.PI / 4;
-
         const cap = new THREE.Mesh(sharedGeometries.cartonCap, sideMat);
         cap.position.set(0.05, 0.60, 0.04);
         cap.rotation.x = 0.35;
-
         group.add(body, roof, cap);
       } else if (shape === "bag") {
         const bagMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.35 });
@@ -913,12 +972,12 @@
       const envGroup = new THREE.Group();
 
       scene.add(new THREE.AmbientLight(0xf1f5f9, 1.45));
-      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x334155, 1.2);
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x334155, 1.25);
       hemiLight.position.set(0, CEILING_HEIGHT, 0);
       scene.add(hemiLight);
 
-      const mainDirLight = new THREE.DirectionalLight(0xfffbeb, 1.45);
-      mainDirLight.position.set(12, 20, 14);
+      const mainDirLight = new THREE.DirectionalLight(0xfffbeb, 1.5);
+      mainDirLight.position.set(14, 22, 24);
       scene.add(mainDirLight);
 
       const ceilingMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.75 });
@@ -930,37 +989,81 @@
         roughness: 0.15
       });
 
-      const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(54, 54), ceilingMat);
+      const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(62, 54), ceilingMat);
       ceiling.rotation.x = Math.PI / 2;
-      ceiling.position.y = CEILING_HEIGHT;
+      ceiling.position.set(0, CEILING_HEIGHT, -2);
       envGroup.add(ceiling);
 
-      [-12, -4, 4, 12].forEach((zPos) => {
-        const beam = new THREE.Mesh(new THREE.BoxGeometry(54, 0.28, 0.36), beamMat);
+      [-14, -5, 5, 14].forEach((zPos) => {
+        const beam = new THREE.Mesh(new THREE.BoxGeometry(62, 0.28, 0.36), beamMat);
         beam.position.set(0, CEILING_HEIGHT - 0.14, zPos);
         envGroup.add(beam);
 
-        [-10.5, 0, 10.5].forEach((xPos) => {
-          const lamp = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.1, 0.52), lampMat);
+        [-13, 0, 13].forEach((xPos) => {
+          const lamp = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.1, 0.52), lampMat);
           lamp.position.set(xPos, CEILING_HEIGHT - 0.32, zPos);
           envGroup.add(lamp);
         });
       });
 
       const wallMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.75 });
-      const backWall = new THREE.Mesh(new THREE.BoxGeometry(54, CEILING_HEIGHT, 0.4), wallMat);
+      const glassFacadeMat = new THREE.MeshStandardMaterial({
+        color: 0x7dd3fc,
+        transparent: true,
+        opacity: 0.22,
+        roughness: 0.1
+      });
+      const doorMat = new THREE.MeshStandardMaterial({
+        color: 0x38bdf8,
+        transparent: true,
+        opacity: 0.36,
+        roughness: 0.15
+      });
+
+      const backWall = new THREE.Mesh(new THREE.BoxGeometry(62, CEILING_HEIGHT, 0.4), wallMat);
       backWall.position.set(0, CEILING_HEIGHT / 2, -24);
 
-      const frontWall = new THREE.Mesh(new THREE.BoxGeometry(54, CEILING_HEIGHT, 0.4), wallMat);
-      frontWall.position.set(0, CEILING_HEIGHT / 2, 24);
+      const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.4, CEILING_HEIGHT, 44), wallMat);
+      leftWall.position.set(-28, CEILING_HEIGHT / 2, -2);
 
-      const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.4, CEILING_HEIGHT, 48), wallMat);
-      leftWall.position.set(-24, CEILING_HEIGHT / 2, 0);
+      const rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.4, CEILING_HEIGHT, 44), wallMat);
+      rightWall.position.set(28, CEILING_HEIGHT / 2, -2);
 
-      const rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.4, CEILING_HEIGHT, 48), wallMat);
-      rightWall.position.set(24, CEILING_HEIGHT / 2, 0);
+      // Fachada frontal con ventanales y puertas corredizas automáticas en z = ENTRANCE_Z
+      const leftFacade = new THREE.Mesh(new THREE.BoxGeometry(25.5, CEILING_HEIGHT, 0.4), wallMat);
+      leftFacade.position.set(-18.25, CEILING_HEIGHT / 2, ENTRANCE_Z);
 
-      envGroup.add(backWall, frontWall, leftWall, rightWall);
+      const rightFacade = new THREE.Mesh(new THREE.BoxGeometry(25.5, CEILING_HEIGHT, 0.4), wallMat);
+      rightFacade.position.set(18.25, CEILING_HEIGHT / 2, ENTRANCE_Z);
+
+      const headerFacade = new THREE.Mesh(new THREE.BoxGeometry(11.0, 2.2, 0.45), wallMat);
+      headerFacade.position.set(0, CEILING_HEIGHT - 1.1, ENTRANCE_Z);
+
+      const leftWindow = new THREE.Mesh(new THREE.PlaneGeometry(18, 3.2), glassFacadeMat);
+      leftWindow.position.set(-16, 2.1, ENTRANCE_Z + 0.22);
+
+      const rightWindow = new THREE.Mesh(new THREE.PlaneGeometry(18, 3.2), glassFacadeMat);
+      rightWindow.position.set(16, 2.1, ENTRANCE_Z + 0.22);
+
+      leftDoorMesh = new THREE.Mesh(new THREE.BoxGeometry(2.7, 3.8, 0.12), doorMat);
+      leftDoorMesh.position.set(-1.35, 1.9, ENTRANCE_Z);
+
+      rightDoorMesh = new THREE.Mesh(new THREE.BoxGeometry(2.7, 3.8, 0.12), doorMat);
+      rightDoorMesh.position.set(1.35, 1.9, ENTRANCE_Z);
+
+      const mallSignTex = createSignTexture("CENTRO COMERCIAL ZEROMART", "#0284c7");
+      const mallSign = new THREE.Mesh(
+        new THREE.BoxGeometry(12.0, 1.1, 0.2),
+        new THREE.MeshStandardMaterial({ map: mallSignTex, roughness: 0.35 })
+      );
+      mallSign.position.set(0, CEILING_HEIGHT + 0.65, ENTRANCE_Z);
+
+      envGroup.add(
+        backWall, leftWall, rightWall,
+        leftFacade, rightFacade, headerFacade,
+        leftWindow, rightWindow,
+        leftDoorMesh, rightDoorMesh, mallSign
+      );
       scene.add(envGroup);
     }
 
@@ -1015,7 +1118,7 @@
         if (!prod) return;
         for (let i = 0; i < qty && slot < 12; i++) {
           const mini = buildProductModel(prod);
-          mini.scale.setScalar(0.38);
+          mini.scale.setScalar(0.35);
           const col = slot % 3;
           const row = Math.floor(slot / 3) % 2;
           const layer = Math.floor(slot / 6);
@@ -1035,20 +1138,15 @@
 
       const torso = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.72, 0.30), shirtMat);
       torso.position.y = 1.12;
-
       const legs = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.76, 0.28), pantsMat);
       legs.position.y = 0.38;
-
       const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 14, 14), skinMat);
       head.position.y = 1.72;
-
       const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.23, 0.24, 0.11, 14), capMat);
       cap.position.y = 1.88;
-
       const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.52, 0.16), shirtMat);
       rightArm.position.set(0.38, 1.16, 0.12);
       rightArm.rotation.x = -0.55;
-
       const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.52, 0.16), shirtMat);
       leftArm.position.set(-0.38, 1.14, 0.05);
 
@@ -1066,13 +1164,10 @@
       const counterMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.45, metalness: 0.3 });
       const beltMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8 });
       const scannerMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.3 });
-      const redLaserMat = new THREE.MeshBasicMaterial({
-        color: 0xff1e1e,
-        transparent: true,
-        opacity: 0.85
-      });
+      const redLaserMat = new THREE.MeshBasicMaterial({ color: 0xff1e1e, transparent: true, opacity: 0.85 });
       const drawerMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.5, roughness: 0.35 });
       const cashMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.4 });
+      const posTerminalMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.35, metalness: 0.5 });
       const screenMat = new THREE.MeshStandardMaterial({
         color: 0x38bdf8,
         emissive: 0x38bdf8,
@@ -1096,13 +1191,17 @@
         scanner.position.set(0, 0.915, 0.35);
         lane.add(scanner);
 
-        // Luz roja de escáner que se enciende al pasar productos
         const redBeam = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.36, 0.03), redLaserMat);
         redBeam.position.set(0, 1.09, 0.35);
         redBeam.visible = false;
         lane.add(redBeam);
 
-        // Cajón de dinero deslizable hacia afuera al pagar
+        // Terminal física para tarjeta sobre el mostrador
+        const cardTerminal = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.07, 0.24), posTerminalMat);
+        cardTerminal.position.set(-0.28, 0.915, -0.45);
+        lane.add(cardTerminal);
+
+        // Cajón de dinero deslizable que abre el empleado NPC al pagar
         const drawerGroup = new THREE.Group();
         drawerGroup.position.set(0, 0.72, 0.95);
         const drawerBox = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.14, 0.48), drawerMat);
@@ -1143,16 +1242,9 @@
         zoneGroup.add(lane);
       });
 
-      const pillarMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.5, roughness: 0.4 });
-      [-4.8, 4.8].forEach((px) => {
-        const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.16, 3.0, 0.16), pillarMat);
-        pillar.position.set(px, 1.5, 0);
-        zoneGroup.add(pillar);
-      });
-
-      const signTex = createSignTexture("Cajas de Pago · NPC", "#15803d");
+      const signTex = createSignTexture("Cajas de Pago", "#15803d");
       const banner = new THREE.Mesh(
-        new THREE.BoxGeometry(9.6, 0.58, 0.14),
+        new THREE.BoxGeometry(10.2, 0.58, 0.14),
         new THREE.MeshStandardMaterial({ map: signTex, roughness: 0.35 })
       );
       banner.position.set(0, 2.9, 0);
@@ -1219,21 +1311,29 @@
       updateCartBadge();
       renderList();
       updateCashierUI();
-      liveNoteEl.textContent = `Agregado al carrito: ${prod.name} (quedan ${getAvailableCount(prod)} unidades).`;
+      liveNoteEl.textContent = `Agregado al carrito: ${prod.name} (quedan ${getAvailableCount(prod)}).`;
     }
 
-    function takeSpecificSlot(prod, slotObj) {
+    // Al agarrar un producto, te trasladas/acercas automáticamente frente a él para inspeccionarlo en 360°
+    function focusAndTakeSlot(prod, slotObj) {
       if (!prod || !slotObj || slotObj.taken) return;
 
       if (heldProduct && heldSlot) {
         cancelHeldToShelf();
       }
 
+      if (slotObj.homeParent && slotObj.homePos) {
+        const worldShelfPos = slotObj.homePos.clone().applyMatrix4(slotObj.homeParent.matrixWorld);
+        cameraGoalPos = new THREE.Vector3(worldShelfPos.x, PLAYER_EYE_HEIGHT, worldShelfPos.z + 2.35);
+        cameraGoalYaw = 0;
+        cameraGoalPitch = -0.05;
+      }
+
       slotObj.taken = true;
       heldProduct = prod;
       heldSlot = slotObj;
       heldMeshGroup = slotObj.mesh;
-      heldAnchorPos = camera.position.clone();
+      heldAnchorPos = (cameraGoalPos || camera.position).clone();
 
       if (heldMeshGroup.parent) {
         heldMeshGroup.parent.remove(heldMeshGroup);
@@ -1241,12 +1341,10 @@
       scene.add(heldMeshGroup);
       heldMeshGroup.visible = true;
       heldMeshGroup.rotation.set(0, 0, 0);
-      heldMeshGroup.scale.setScalar(1.22);
+      heldMeshGroup.scale.setScalar(1.25);
 
-      const lookDir = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(pitch, yaw, 0, "YXZ")).normalize();
-      const holdPos = camera.position.clone().addScaledVector(lookDir, 1.3);
-      holdPos.y = PLAYER_EYE_HEIGHT - 0.14;
-      heldMeshGroup.position.copy(holdPos);
+      const baseCam = cameraGoalPos || camera.position;
+      heldMeshGroup.position.set(baseCam.x, PLAYER_EYE_HEIGHT - 0.14, baseCam.z - 1.3);
 
       heldTitle.textContent = prod.name;
       heldPrice.textContent = `$${prod.price} MXN`;
@@ -1263,7 +1361,7 @@
         liveNoteEl.textContent = `Ya no quedan unidades disponibles de ${prod.name}.`;
         return;
       }
-      takeSpecificSlot(prod, freeSlot);
+      focusAndTakeSlot(prod, freeSlot);
     }
 
     spinLeftBtn.addEventListener("click", () => {
@@ -1290,7 +1388,7 @@
 
       const cfg = AISLE_LAYOUT.find((a) => a.name === aisleName);
       if (cfg && camera) {
-        cameraGoalPos = new THREE.Vector3(cfg.x, PLAYER_EYE_HEIGHT, cfg.z + 3.8);
+        cameraGoalPos = new THREE.Vector3(cfg.x, PLAYER_EYE_HEIGHT, cfg.z + 3.6);
         cameraGoalYaw = 0;
         cameraGoalPitch = -0.05;
       }
@@ -1319,7 +1417,7 @@
 
       const cashierBtn = document.createElement("button");
       cashierBtn.className = "btn warn";
-      cashierBtn.textContent = "Cajas NPC";
+      cashierBtn.textContent = "Cajas";
       cashierBtn.addEventListener("click", goToCashier);
       aisleNavEl.appendChild(cashierBtn);
     }
@@ -1342,7 +1440,7 @@
     function renderCart() {
       cartListEl.innerHTML = "";
       if (cart.size === 0) {
-        cartListEl.innerHTML = `<p class="muted">Tu carrito está vacío. Toma unidades del estante para llenarlo.</p>`;
+        cartListEl.innerHTML = `<p class="muted">Tu carrito está vacío. Toma productos del estante para llenarlo.</p>`;
         cartTotalEl.textContent = "$0 MXN";
         return;
       }
@@ -1397,9 +1495,19 @@
     goCheckoutBtn.addEventListener("click", goToCashier);
     openCashierBtn.addEventListener("click", () => switchTab("cashier"));
 
+    insertCardBtn.addEventListener("click", () => {
+      isCardInserted = true;
+      cardStatusEl.textContent = "Tarjeta insertada · Chip leído y listo para cobrar";
+      npcLogEl.textContent = "Cajero NPC: Tarjeta detectada en la terminal. Pulsa Pagar para aprobar.";
+    });
+
     payMethodsEl.querySelectorAll("button").forEach((btn) => {
       btn.addEventListener("click", () => {
         selectedPaymentMethod = btn.dataset.method;
+        if (selectedPaymentMethod !== "tarjeta") {
+          isCardInserted = false;
+          cardStatusEl.textContent = "Tarjeta no insertada";
+        }
         payMethodsEl.querySelectorAll("button").forEach((b) => {
           b.classList.toggle("active", b.dataset.method === selectedPaymentMethod);
         });
@@ -1415,6 +1523,7 @@
 
       if (selectedPaymentMethod === "efectivo") {
         cashInputWrap.style.display = "flex";
+        terminalBox.classList.remove("active");
         methodDetailEl.style.display = "none";
         const tendered = Number(cashTenderedInput.value || 0);
         if (tendered >= total && total > 0) {
@@ -1426,10 +1535,11 @@
         }
       } else if (selectedPaymentMethod === "tarjeta") {
         cashInputWrap.style.display = "none";
-        methodDetailEl.style.display = "block";
-        methodDetailEl.textContent = "Terminal bancaria lista: cobro exacto con tarjeta de débito o crédito.";
+        terminalBox.classList.add("active");
+        methodDetailEl.style.display = "none";
       } else {
         cashInputWrap.style.display = "none";
+        terminalBox.classList.remove("active");
         methodDetailEl.style.display = "block";
         methodDetailEl.textContent = "Transferencia SPEI / QR ZeroMart: confirmación instantánea por monto exacto.";
       }
@@ -1439,6 +1549,11 @@
       const total = getCartTotal();
       if (cart.size === 0 || total <= 0) {
         liveNoteEl.textContent = "Tu carrito está vacío.";
+        return;
+      }
+
+      if (selectedPaymentMethod === "tarjeta" && !isCardInserted) {
+        npcLogEl.textContent = "Cajero NPC: Primero inserta tu tarjeta en la terminal.";
         return;
       }
 
@@ -1477,7 +1592,7 @@
         }
         clearAllRegisterProps();
 
-        // Abre el cajón de dinero de la caja actual y guarda el dinero
+        // El empleado NPC abre el cajón de dinero y deposita el cobro
         const regIdx = getNearestRegisterIndex();
         const regCfg = REGISTER_OFFSETS[regIdx] || REGISTER_OFFSETS[1];
         const regState = registerStates[regIdx];
@@ -1485,6 +1600,8 @@
           regState.drawerOpenUntil = performance.now() + 3600;
         }
 
+        isCardInserted = false;
+        cardStatusEl.textContent = "Tarjeta no insertada";
         cart.clear();
         productSlotsMap.clear();
         updateCartBadge();
@@ -1493,14 +1610,14 @@
         renderCart();
         updateCashierUI();
 
-        npcLogEl.textContent = `${regCfg.label} NPC: ¡Pago recibido! Abriendo cajón y guardando $${data.order.total} MXN.`;
+        npcLogEl.textContent = `${regCfg.label} NPC abrió el cajón, registró $${data.order.total} MXN y emitió tu ticket.`;
         receiptBox.style.display = "block";
         receiptBox.innerHTML = `
           <strong>Ticket #${data.order.id.slice(-5)}</strong><br/>
           Atendió: ${regCfg.label} NPC<br/>
           Método: ${data.order.paymentMethod.toUpperCase()}<br/>
           Total pagado: $${data.order.total} MXN<br/>
-          ${data.order.paymentMethod === "efectivo" ? `Recibido: $${data.order.amountPaid} · Cambio: $${data.order.change} MXN` : "Pago exacto aprobado"}
+          ${data.order.paymentMethod === "efectivo" ? `Recibido: $${data.order.amountPaid} · Cambio: $${data.order.change} MXN` : "Cobro aprobado"}
         `;
         liveNoteEl.textContent = `Pago aprobado en ${regCfg.label} por $${data.order.total} MXN.`;
       } catch {
@@ -1524,9 +1641,9 @@
         roughness: 0.1
       });
 
-      const shelfWidth = 6.4;
-      const shelfHeight = 2.55;
-      const shelfDepth = 1.15;
+      const shelfWidth = 6.8;
+      const shelfHeight = 2.65;
+      const shelfDepth = 1.25;
 
       AISLE_LAYOUT.forEach((aisleCfg) => {
         const aisleGroup = new THREE.Group();
@@ -1538,7 +1655,7 @@
           aisleGroup.add(post);
         });
 
-        [0.62, 1.42, 2.22].forEach((yPos) => {
+        [0.62, 1.44, 2.26].forEach((yPos) => {
           const board = new THREE.Mesh(new THREE.BoxGeometry(shelfWidth, 0.09, shelfDepth), boardMat);
           board.position.set(0, yPos, 0);
           aisleGroup.add(board);
@@ -1556,25 +1673,27 @@
 
         const signTex = createSignTexture(aisleCfg.name, aisleCfg.color);
         const sign = new THREE.Mesh(
-          new THREE.BoxGeometry(3.1, 0.50, 0.10),
+          new THREE.BoxGeometry(3.3, 0.52, 0.10),
           new THREE.MeshStandardMaterial({ map: signTex, roughness: 0.4 })
         );
         sign.position.set(0, shelfHeight + (aisleCfg.cooler ? 0.55 : 0.38), 0);
         aisleGroup.add(sign);
 
         const aisleProducts = products.filter((p) => p.aisle === aisleCfg.name);
-        const levels = [0.67, 1.47, 2.27];
+        const levels = [0.67, 1.49, 2.31];
 
         aisleProducts.forEach((prod, idx) => {
           const levelY = levels[idx % levels.length];
           const unitCount = Math.max(0, Number(prod.stock || 0));
           const slots = [];
+          const stepX = ["tv", "washer", "appliance"].includes(prod.shape) ? 1.15 : 0.54;
+          const colsPerRow = Math.max(1, Math.floor(5.4 / stepX));
 
           for (let i = 0; i < unitCount; i++) {
-            const col = i % 10;
-            const depthRow = Math.floor(i / 10);
-            const xPos = -2.35 + col * 0.52;
-            const zPos = 0.24 - depthRow * 0.42;
+            const col = i % colsPerRow;
+            const depthRow = Math.floor(i / colsPerRow);
+            const xPos = -2.4 + col * stepX;
+            const zPos = 0.24 - depthRow * 0.52;
 
             const model = buildProductModel(prod);
             const homePos = new THREE.Vector3(xPos, levelY, zPos);
@@ -1673,10 +1792,11 @@
       const wrap = document.getElementById("canvas-wrap");
       scene = new THREE.Scene();
       scene.background = new THREE.Color(0x1e293b);
-      scene.fog = new THREE.Fog(0x1e293b, 24, 56);
+      scene.fog = new THREE.Fog(0x1e293b, 26, 62);
 
-      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 120);
-      camera.position.set(-10.5, PLAYER_EYE_HEIGHT, -4.0);
+      // Spawnear afuera viendo la fachada del centro comercial y las puertas de entrada
+      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 140);
+      camera.position.set(0, PLAYER_EYE_HEIGHT, ENTRANCE_Z + 4.2);
       camera.rotation.order = "YXZ";
 
       renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
@@ -1689,14 +1809,15 @@
       buildStoreEnvironmentAndLighting();
 
       const floor = new THREE.Mesh(
-        new THREE.PlaneGeometry(54, 54),
+        new THREE.PlaneGeometry(66, 66),
         new THREE.MeshStandardMaterial({ color: 0x273549, roughness: 0.55, metalness: 0.12 })
       );
       floor.rotation.x = -Math.PI / 2;
+      floor.position.set(0, 0, 2);
       scene.add(floor);
 
-      const grid = new THREE.GridHelper(54, 54, 0x475569, 0x334155);
-      grid.position.y = 0.01;
+      const grid = new THREE.GridHelper(66, 66, 0x475569, 0x334155);
+      grid.position.set(0, 0.01, 2);
       scene.add(grid);
 
       buildCashierZone3D();
@@ -1743,7 +1864,7 @@
             renderAisleNav();
             renderList();
             selectProduct(prod.id, true);
-            takeSpecificSlot(prod, slotObj);
+            focusAndTakeSlot(prod, slotObj);
             return;
           }
         }
@@ -1790,6 +1911,7 @@
       const moveRight = new THREE.Vector3();
       const moveDelta = new THREE.Vector3();
       const clock = new THREE.Clock();
+      let doorOpenFactor = 0;
 
       function animate() {
         requestAnimationFrame(animate);
@@ -1819,10 +1941,17 @@
           moveDelta.addScaledVector(moveRight, rightInput);
           moveDelta.normalize().multiplyScalar(MOVE_SPEED);
 
-          camera.position.x = Math.max(-22, Math.min(22, camera.position.x + moveDelta.x));
-          camera.position.z = Math.max(-22, Math.min(22, camera.position.z + moveDelta.z));
+          camera.position.x = Math.max(-26.5, Math.min(26.5, camera.position.x + moveDelta.x));
+          camera.position.z = Math.max(-22.5, Math.min(28.0, camera.position.z + moveDelta.z));
           camera.position.y = PLAYER_EYE_HEIGHT;
         }
+
+        // Puertas automáticas de entrada al acercarse
+        const distToDoor = Math.hypot(camera.position.x, camera.position.z - ENTRANCE_Z);
+        const targetDoor = distToDoor < 5.5 ? 1 : 0;
+        doorOpenFactor += (targetDoor - doorOpenFactor) * 0.12;
+        if (leftDoorMesh) leftDoorMesh.position.x = -1.35 - doorOpenFactor * 2.2;
+        if (rightDoorMesh) rightDoorMesh.position.x = 1.35 + doorOpenFactor * 2.2;
 
         if (heldMeshGroup) {
           if (keysPressed.KeyQ) heldMeshGroup.rotation.y -= 0.045;
@@ -1835,7 +1964,6 @@
         const nearestRegIdx = getNearestRegisterIndex();
         const nearestRegCfg = REGISTER_OFFSETS[nearestRegIdx] || REGISTER_OFFSETS[1];
 
-        // Animación de NPC cajero, luz roja de escáner y cajón de dinero por caja
         registerStates.forEach((st) => {
           const arm = st.npc?.userData?.rightArm;
           const head = st.npc?.userData?.head;
@@ -1857,7 +1985,7 @@
           }
 
           const shouldOpen = nowMs < st.drawerOpenUntil;
-          const targetOpen = shouldOpen ? 0.34 : 0;
+          const targetOpen = shouldOpen ? 0.36 : 0;
           st.drawerOpenAmount += (targetOpen - st.drawerOpenAmount) * 0.12;
           if (st.drawerGroup) {
             st.drawerGroup.position.z = 0.95 + st.drawerOpenAmount;
@@ -1897,7 +2025,9 @@
           checkoutZoneBanner.classList.toggle("visible", isNearCashier);
           if (isNearCashier) {
             checkoutBannerText.textContent = `${nearestRegCfg.label} NPC listo · Escaneando tu carrito`;
-            if (registerChanged || viewCashier.style.display !== "none") {
+            if (viewCashier.style.display === "none" && cart.size > 0) {
+              switchTab("cashier");
+            } else if (registerChanged || viewCashier.style.display !== "none") {
               runNpcScanSequence(nearestRegIdx);
             }
           }
@@ -1906,7 +2036,7 @@
 
         aisleGroups.forEach((grp) => {
           const dist = camera.position.distanceTo(grp.position);
-          grp.visible = dist < 30;
+          grp.visible = dist < 34;
         });
 
         renderer.render(scene, camera);
@@ -1923,7 +2053,7 @@
     if (typeof window.io === "function") {
       socket = window.io();
       socket.on("connect", () => {
-        statusBadgeEl.textContent = renderer ? "Online · Súper 3D Fluido" : "Online · Sin WebGL";
+        statusBadgeEl.textContent = renderer ? "Online · Centro Comercial 3D" : "Online · Sin WebGL";
       });
       socket.on("disconnect", () => {
         statusBadgeEl.textContent = "Reconectando...";
