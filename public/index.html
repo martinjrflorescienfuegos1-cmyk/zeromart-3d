@@ -369,7 +369,6 @@
     </div>
   </div>
 
-  <!-- Diálogo con NPC Guía -->
   <div class="guide-box" id="guide-box">
     <div class="row">
       <strong id="guide-name">Empleado Guía</strong>
@@ -387,7 +386,7 @@
   </div>
 
   <div class="controls-hint" id="controls-hint">
-    Moverse: <strong>W A S D</strong> · Vista: <strong>Mantener clic + mover</strong> · Clic en NPC Guía para pedir ayuda o en producto para acercar
+    Moverse: <strong>W A S D</strong> · Vista: <strong>Mantener clic + mover</strong> · Clic en NPC Guía o en producto
   </div>
 
   <div class="held-bar" id="held-bar">
@@ -426,7 +425,7 @@
     </div>
 
     <div id="view-cashier" style="display:none;">
-      <div class="npc-log" id="npc-log">Cajero: ¡Hola! Cuando llegues aquí con tus productos te los escaneo todos.</div>
+      <div class="npc-log" id="npc-log">Cajero: ¡Hola! Cuando llegues aquí con tus productos los paso a la banda y te los escaneo todos.</div>
       <div class="row" style="margin-top:8px;">
         <strong>Total a pagar:</strong>
         <span class="price" id="cashier-total">$0 MXN</span>
@@ -539,12 +538,9 @@
     const PLAYER_EYE_HEIGHT = 1.8;
     const CEILING_HEIGHT = 7.2;
     const AUTO_RETURN_DISTANCE = 5.5;
-    const MOVE_SPEED = 0.30;
+    const MOVE_SPEED = 0.28;
+    const PLAYER_RADIUS = 0.55;
 
-    // Secciones bien separadas:
-    // Izquierda: Comida (Panadería, Botanas, Abarrotes, Bebidas)
-    // Fondo: Refrigeradores Grandes (cámaras refrigeradas verticales)
-    // Derecha: Electrodomésticos, Estufas, Lavadoras, Televisiones
     const AISLE_LAYOUT = [
       { name: "Panadería", x: -18.0, z: 6.0, color: "#d97706", zoneType: "food" },
       { name: "Botanas", x: -18.0, z: -2.0, color: "#15803d", zoneType: "food" },
@@ -566,9 +562,10 @@
       { id: 103, name: "Jugo Naranja 500ml", price: 22, stock: 10, aisle: "Bebidas", shape: "carton", color: "#f97316" },
       { id: 104, name: "Arroz Blanco 1kg", price: 29, stock: 12, aisle: "Abarrotes", shape: "bag", color: "#64748b" },
       { id: 105, name: "Frijol Negro 1kg", price: 35, stock: 12, aisle: "Abarrotes", shape: "bag", color: "#4c1d95" },
-      { id: 501, name: "Refrigerador Duplex 22p³", price: 14990, stock: 5, aisle: "Refrigeradores Grandes", shape: "fridgeUnit", color: "#cbd5e1" },
-      { id: 502, name: "Refrigerador Vertical 16p³", price: 10490, stock: 6, aisle: "Refrigeradores Grandes", shape: "fridgeUnit", color: "#94a3b8" },
-      { id: 503, name: "Leche Entera Refrigerada", price: 26, stock: 10, aisle: "Lácteos y Fríos", shape: "carton", color: "#e2e8f0" },
+      { id: 501, name: "Refrigerador Duplex 22p³", price: 14990, stock: 4, aisle: "Refrigeradores Grandes", shape: "fridgeUnit", color: "#f1f5f9" },
+      { id: 502, name: "Refrigerador Vertical 16p³", price: 10490, stock: 4, aisle: "Refrigeradores Grandes", shape: "fridgeUnit", color: "#e2e8f0" },
+      { id: 503, name: "Leche Entera Refrigerada", price: 26, stock: 6, aisle: "Lácteos y Fríos", shape: "carton", color: "#38bdf8" },
+      { id: 504, name: "Agua Helada Refri 1.5L", price: 24, stock: 6, aisle: "Lácteos y Fríos", shape: "bottle", color: "#0284c7" },
       { id: 601, name: "Estufa 6 Quemadores Acero", price: 8490, stock: 5, aisle: "Estufas", shape: "stove", color: "#334155" },
       { id: 602, name: "Estufa con Horno y Capelo", price: 9650, stock: 5, aisle: "Estufas", shape: "stove", color: "#475569" },
       { id: 301, name: "Lavadora 18kg Carga Sup.", price: 7890, stock: 6, aisle: "Lavadoras", shape: "washer", color: "#e2e8f0" },
@@ -581,12 +578,64 @@
 
     const ENTRANCE_Z = 24.0;
     const WAREHOUSE_Z = -26.5;
-    // Cajas apartadas en el pasillo lateral derecho-frontal, lejos de la puerta
     const CASHIER_POS = { x: 8.5, z: 15.5 };
     const REGISTER_OFFSETS = [
       { index: 0, offsetX: -2.2, label: "Caja 1" },
       { index: 1, offsetX: 2.2, label: "Caja 2" }
     ];
+
+    // Cajas AABB de colisión en XZ para muros, bodega, pasillos y cajas registradoras
+    const COLLIDER_BOXES = [
+      // Muros exteriores y bodega
+      { minX: -31.5, maxX: 31.5, minZ: -31.5, maxZ: -30.5 },
+      { minX: -31.5, maxX: -30.5, minZ: -31.5, maxZ: 24.5 },
+      { minX: 30.5, maxX: 31.5, minZ: -31.5, maxZ: 24.5 },
+      { minX: -31.5, maxX: -2.2, minZ: -22.9, maxZ: -22.1 },
+      { minX: 2.2, maxX: 31.5, minZ: -22.9, maxZ: -22.1 },
+      // Fachada con hueco de puerta en x [-2.5, 2.5]
+      { minX: -31.5, maxX: -2.5, minZ: ENTRANCE_Z - 0.3, maxZ: ENTRANCE_Z + 0.3 },
+      { minX: 2.5, maxX: 31.5, minZ: ENTRANCE_Z - 0.3, maxZ: ENTRANCE_Z + 0.3 },
+      // Mostradores de cajas
+      { minX: CASHIER_POS.x - 4.2, maxX: CASHIER_POS.x + 4.2, minZ: CASHIER_POS.z - 1.4, maxZ: CASHIER_POS.z + 1.4 }
+    ];
+
+    AISLE_LAYOUT.forEach((a) => {
+      const halfW = a.zoneType === "fridge" ? 3.8 : 3.6;
+      const halfD = a.zoneType === "fridge" ? 0.85 : 0.72;
+      COLLIDER_BOXES.push({
+        minX: a.x - halfW,
+        maxX: a.x + halfW,
+        minZ: a.z - halfD,
+        maxZ: a.z + halfD
+      });
+    });
+
+    function resolveCircleCollision(pos, radius) {
+      for (const box of COLLIDER_BOXES) {
+        const closestX = Math.max(box.minX, Math.min(pos.x, box.maxX));
+        const closestZ = Math.max(box.minZ, Math.min(pos.z, box.maxZ));
+        const dx = pos.x - closestX;
+        const dz = pos.z - closestZ;
+        const distSq = dx * dx + dz * dz;
+        if (distSq < radius * radius) {
+          const dist = Math.sqrt(distSq) || 0.001;
+          const overlap = radius - dist;
+          pos.x += (dx / dist) * overlap;
+          pos.z += (dz / dist) * overlap;
+        }
+      }
+    }
+
+    function wouldCollideAt(x, z, radius) {
+      for (const box of COLLIDER_BOXES) {
+        const closestX = Math.max(box.minX, Math.min(x, box.maxX));
+        const closestZ = Math.max(box.minZ, Math.min(z, box.maxZ));
+        const dx = x - closestX;
+        const dz = z - closestZ;
+        if (dx * dx + dz * dz < radius * radius) return true;
+      }
+      return false;
+    }
 
     let activeAisle = "Panadería";
     let currentUser = null;
@@ -594,6 +643,8 @@
 
     const productSlotsMap = new Map();
     let cart = new Map();
+    let beltItemsQueue = [];
+    let baggedItemsList = [];
     let pendingRestockQueue = [];
     let selectedId = null;
     let selectedPaymentMethod = "efectivo";
@@ -661,6 +712,10 @@
           cameraGoalPos = null;
           cameraGoalYaw = null;
           cameraGoalPitch = null;
+          if (activeGuideNpc && activeGuideNpc.isEscorting) {
+            activeGuideNpc.isEscorting = false;
+            guidingTargetPos = null;
+          }
         }
       }
     });
@@ -696,7 +751,41 @@
       }
     }
 
-    function runNpcScanSequence(registerIdx = activeRegisterIndex) {
+    function rebuildBag3D(regState) {
+      if (!regState || !regState.bagGroup || !THREE) return;
+      while (regState.bagGroup.children.length > 0) {
+        regState.bagGroup.remove(regState.bagGroup.children[0]);
+      }
+      if (baggedItemsList.length === 0) return;
+
+      const bagMat = new THREE.MeshStandardMaterial({
+        color: 0xf8fafc,
+        transparent: true,
+        opacity: 0.72,
+        roughness: 0.35
+      });
+      const handleMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.4 });
+
+      const bagBody = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.42, 0.30), bagMat);
+      bagBody.position.set(0, 0.21, 0);
+      regState.bagGroup.add(bagBody);
+
+      [-0.14, 0.14].forEach((hx) => {
+        const handle = new THREE.Mesh(new THREE.TorusGeometry(0.08, 0.015, 8, 16, Math.PI), handleMat);
+        handle.position.set(hx, 0.42, 0);
+        regState.bagGroup.add(handle);
+      });
+
+      baggedItemsList.slice(0, 4).forEach((item, idx) => {
+        const mini = buildProductModel(item);
+        mini.scale.setScalar(0.28);
+        mini.position.set(-0.10 + (idx % 2) * 0.20, 0.08 + Math.floor(idx / 2) * 0.14, 0);
+        regState.bagGroup.add(mini);
+      });
+    }
+
+    // Saca todos los productos del carrito, los pone en la banda y los escanea uno por uno
+    function unloadCartToBeltAndScan(registerIdx = activeRegisterIndex) {
       if (scanTimer) {
         clearInterval(scanTimer);
         scanTimer = null;
@@ -719,14 +808,36 @@
       });
 
       if (entries.length === 0) {
-        npcLogEl.textContent = `${regCfg.label} NPC: Tu carrito está vacío. Recorre las secciones para tomar productos.`;
+        if (beltItemsQueue.length === 0) {
+          npcLogEl.textContent = `${regCfg.label} NPC: No tienes productos en el carrito ni en la banda.`;
+        }
         return;
+      }
+
+      // Vaciar carrito de inmediato para poner los productos en la banda
+      beltItemsQueue = [...entries];
+      cart.clear();
+      updateCartBadge();
+      syncCartCargo3D();
+      renderCart();
+      updateCashierUI();
+
+      // Colocar todos los artículos en la banda
+      if (regState && regState.beltGroup && THREE) {
+        beltItemsQueue.forEach((item, i) => {
+          const mini = buildProductModel(item);
+          mini.scale.setScalar(0.45);
+          const offsetZ = Math.max(-0.95, Math.min(0.95, -0.85 + i * 0.16));
+          mini.position.set(0, 0.94, offsetZ);
+          mini.userData.scanIndex = i;
+          regState.beltGroup.add(mini);
+        });
       }
 
       let idx = 0;
       let runningTotal = 0;
       if (regState) regState.isScanning = true;
-      npcLogEl.textContent = `${regCfg.label} NPC: Escaneando ${entries.length} producto(s)...`;
+      npcLogEl.textContent = `${regCfg.label} NPC sacó ${entries.length} producto(s) del carrito a la banda y empezó a escanear...`;
 
       const stepScan = () => {
         if (currentSession !== scanSessionId) return;
@@ -740,7 +851,7 @@
             regState.isScanning = false;
             if (regState.redBeam) regState.redBeam.visible = false;
           }
-          npcLogEl.textContent = `${regCfg.label} NPC: ${entries.length}/${entries.length} leídos · Total: $${runningTotal} MXN. Elige tu pago.`;
+          npcLogEl.textContent = `${regCfg.label} NPC terminó de pasar ${entries.length} producto(s) en la banda · Total: $${runningTotal} MXN.`;
           return;
         }
 
@@ -749,20 +860,19 @@
         scanLaserPulseUntil = performance.now() + 240;
         if (regState && regState.redBeam) regState.redBeam.visible = true;
 
-        npcLogEl.textContent = `${regCfg.label} NPC [${idx + 1}/${entries.length}]: ${item.name} ($${item.price}) · Suma: $${runningTotal} MXN`;
+        npcLogEl.textContent = `${regCfg.label} NPC pasó [${idx + 1}/${entries.length}]: ${item.name} ($${item.price}) · Total: $${runningTotal} MXN`;
 
-        if (regState && regState.beltGroup && THREE) {
-          while (regState.beltGroup.children.length > 0) regState.beltGroup.remove(regState.beltGroup.children[0]);
-          const mini = buildProductModel(item);
-          mini.scale.setScalar(0.55);
-          mini.position.set(0, 0.94, 0.35);
-          regState.beltGroup.add(mini);
+        if (regState && regState.beltGroup) {
+          const passedMesh = regState.beltGroup.children[idx];
+          if (passedMesh) {
+            passedMesh.position.z = 0.75;
+          }
         }
         idx++;
       };
 
       stepScan();
-      const paceMs = entries.length > 10 ? 170 : 340;
+      const paceMs = entries.length > 10 ? 180 : 360;
       scanTimer = setInterval(stepScan, paceMs);
     }
 
@@ -779,7 +889,7 @@
       if (tabName === "cashier") {
         const nearIdx = getNearestRegisterIndex();
         updateCashierUI();
-        runNpcScanSequence(nearIdx);
+        if (cart.size > 0) unloadCartToBeltAndScan(nearIdx);
       }
     }
 
@@ -852,7 +962,6 @@
       setAuthenticatedUser(null);
     });
 
-    // Lógica de NPC Guía
     function openGuideDialog(npcObj) {
       activeGuideNpc = npcObj;
       suggestedAisleName = null;
@@ -880,16 +989,16 @@
       } else if (q.includes("refri") || q.includes("hielo") || q.includes("frío") || q.includes("frio")) {
         targetAisle = "Refrigeradores Grandes";
         itemLabel = "un refrigerador grande";
-      } else if (q.includes("leche") || q.includes("queso") || q.includes("lácteo") || q.includes("lacteo")) {
+      } else if (q.includes("leche") || q.includes("queso") || q.includes("lácteo") || q.includes("lacteo") || q.includes("agua")) {
         targetAisle = "Lácteos y Fríos";
-        itemLabel = "lácteos fríos";
+        itemLabel = "lácteos y fríos";
       } else if (q.includes("pan")) {
         targetAisle = "Panadería";
         itemLabel = "panadería";
       } else if (q.includes("botana") || q.includes("papas") || q.includes("snack")) {
         targetAisle = "Botanas";
         itemLabel = "botanas";
-      } else if (q.includes("bebida") || q.includes("agua") || q.includes("refresco") || q.includes("jugo")) {
+      } else if (q.includes("bebida") || q.includes("refresco") || q.includes("jugo")) {
         targetAisle = "Bebidas";
         itemLabel = "bebidas";
       } else if (q.includes("comida") || q.includes("arroz") || q.includes("frijol") || q.includes("abarrote")) {
@@ -923,7 +1032,7 @@
       const cfg = AISLE_LAYOUT.find((a) => a.name === suggestedAisleName);
       if (!cfg || !activeGuideNpc) return;
       guidingTargetAisle = cfg.name;
-      guidingTargetPos = new THREE.Vector3(cfg.x, 0, cfg.z + 3.4);
+      guidingTargetPos = new THREE.Vector3(cfg.x, 0, cfg.z + 2.8);
       activeGuideNpc.isEscorting = true;
       activeAisle = cfg.name;
       renderAisleNav();
@@ -931,7 +1040,7 @@
       switchTab("catalog");
       guideMsgEl.textContent = `¡Sí! Caminando hacia ${cfg.name}, sígueme detrás.`;
       guideConfirmRow.style.display = "none";
-      setTimeout(() => guideBox.classList.remove("active"), 1400);
+      setTimeout(() => guideBox.classList.remove("active"), 1300);
     });
 
     function initSharedGeometries() {
@@ -1183,7 +1292,6 @@
     function buildStoreEnvironmentAndLighting() {
       const envGroup = new THREE.Group();
 
-      // Iluminación más clara y uniforme en todo el centro comercial
       scene.add(new THREE.AmbientLight(0xf8fafc, 1.75));
       const hemiLight = new THREE.HemisphereLight(0xffffff, 0x475569, 1.55);
       hemiLight.position.set(0, CEILING_HEIGHT, 0);
@@ -1228,7 +1336,7 @@
       const glassFacadeMat = new THREE.MeshStandardMaterial({
         color: 0x7dd3fc,
         transparent: true,
-        opacity: 0.2,
+        opacity: 0.18,
         roughness: 0.1
       });
       const doorMat = new THREE.MeshStandardMaterial({
@@ -1238,7 +1346,6 @@
         roughness: 0.15
       });
 
-      // Bodega trasera en z < -22.5
       const backWall = new THREE.Mesh(new THREE.BoxGeometry(66, CEILING_HEIGHT, 0.4), wallMat);
       backWall.position.set(0, CEILING_HEIGHT / 2, -31);
 
@@ -1292,7 +1399,6 @@
       );
       mallSign.position.set(0, CEILING_HEIGHT + 0.7, ENTRANCE_Z);
 
-      // Rótulos de macro-zonas
       const foodZoneSign = new THREE.Mesh(
         new THREE.BoxGeometry(6.5, 0.7, 0.16),
         new THREE.MeshStandardMaterial({ map: createSignTexture("ZONA DE COMIDA", "#15803d") })
@@ -1449,11 +1555,17 @@
         const beltGroup = new THREE.Group();
         lane.add(beltGroup);
 
+        // Bolsa 3D en el mostrador donde el cajero embolsa los productos pagados
+        const bagGroup = new THREE.Group();
+        bagGroup.position.set(0, 0.91, 0.92);
+        lane.add(bagGroup);
+
         registerStates.push({
           index: regCfg.index,
           label: regCfg.label,
           npc,
           beltGroup,
+          bagGroup,
           redBeam,
           drawerGroup,
           drawerOpenAmount: 0,
@@ -1475,7 +1587,6 @@
       scene.add(zoneGroup);
     }
 
-    // Crear NPCs guías y NPCs reacomodadores
     function buildStaffNpcs3D() {
       guideNpcs.length = 0;
       restockerNpcs.length = 0;
@@ -1514,7 +1625,7 @@
           homePos: new THREE.Vector3(spot.x, 0, spot.z),
           targetSlot: null,
           targetProd: null,
-          phase: "idle" // "idle" | "toShelf" | "returning"
+          phase: "idle"
         });
       });
     }
@@ -1531,7 +1642,7 @@
         worker.targetSlot = entry.slot;
         worker.phase = "toShelf";
       });
-      liveNoteEl.textContent = "Personal de bodega salió a reacomodar los productos que llevabas en el carrito.";
+      liveNoteEl.textContent = "Personal de bodega salió a reacomodar los productos que compraste.";
     }
 
     function getSlotsForProduct(productId) {
@@ -1594,7 +1705,7 @@
       updateCartBadge();
       renderList();
       updateCashierUI();
-      liveNoteEl.textContent = `Agregado al carrito: ${prod.name}. El NPC reacomodador lo repondrá al pagar.`;
+      liveNoteEl.textContent = `Agregado al carrito: ${prod.name}. Un NPC lo repondrá tras pagar.`;
     }
 
     function focusAndTakeSlot(prod, slotObj) {
@@ -1607,6 +1718,7 @@
       if (slotObj.homeParent && slotObj.homePos) {
         const worldShelfPos = slotObj.homePos.clone().applyMatrix4(slotObj.homeParent.matrixWorld);
         cameraGoalPos = new THREE.Vector3(worldShelfPos.x, PLAYER_EYE_HEIGHT, worldShelfPos.z + 2.4);
+        resolveCircleCollision(cameraGoalPos, PLAYER_RADIUS);
         cameraGoalYaw = 0;
         cameraGoalPitch = -0.05;
       }
@@ -1623,7 +1735,7 @@
       scene.add(heldMeshGroup);
       heldMeshGroup.visible = true;
       heldMeshGroup.rotation.set(0, 0, 0);
-      heldMeshGroup.scale.setScalar(1.2);
+      heldMeshGroup.scale.setScalar(1.15);
 
       const baseCam = cameraGoalPos || camera.position;
       heldMeshGroup.position.set(baseCam.x, PLAYER_EYE_HEIGHT - 0.14, baseCam.z - 1.3);
@@ -1670,7 +1782,9 @@
 
       const cfg = AISLE_LAYOUT.find((a) => a.name === aisleName);
       if (cfg && camera) {
-        cameraGoalPos = new THREE.Vector3(cfg.x, PLAYER_EYE_HEIGHT, cfg.z + 3.8);
+        const goal = new THREE.Vector3(cfg.x, PLAYER_EYE_HEIGHT, cfg.z + 3.5);
+        resolveCircleCollision(goal, PLAYER_RADIUS);
+        cameraGoalPos = goal;
         cameraGoalYaw = 0;
         cameraGoalPitch = -0.05;
       }
@@ -1681,7 +1795,9 @@
       const regCfg = REGISTER_OFFSETS[nearIdx] || REGISTER_OFFSETS[0];
       switchTab("cashier");
       if (camera) {
-        cameraGoalPos = new THREE.Vector3(CASHIER_POS.x + regCfg.offsetX, PLAYER_EYE_HEIGHT, CASHIER_POS.z - 3.2);
+        const goal = new THREE.Vector3(CASHIER_POS.x + regCfg.offsetX, PLAYER_EYE_HEIGHT, CASHIER_POS.z - 3.1);
+        resolveCircleCollision(goal, PLAYER_RADIUS);
+        cameraGoalPos = goal;
         cameraGoalYaw = 0;
         cameraGoalPitch = -0.08;
       }
@@ -1809,7 +1925,8 @@
     cashTenderedInput.addEventListener("input", updateCashierUI);
 
     function updateCashierUI() {
-      const total = getCartTotal();
+      const pendingBeltTotal = beltItemsQueue.reduce((acc, it) => acc + Number(it.price || 0), 0);
+      const total = getCartTotal() + pendingBeltTotal;
       cashierTotalEl.textContent = `$${total} MXN`;
 
       if (selectedPaymentMethod === "efectivo") {
@@ -1837,9 +1954,10 @@
     }
 
     checkoutBtn.addEventListener("click", async () => {
-      const total = getCartTotal();
-      if (cart.size === 0 || total <= 0) {
-        liveNoteEl.textContent = "Tu carrito está vacío.";
+      const pendingBeltTotal = beltItemsQueue.reduce((acc, it) => acc + Number(it.price || 0), 0);
+      const total = getCartTotal() + pendingBeltTotal;
+      if ((cart.size === 0 && beltItemsQueue.length === 0) || total <= 0) {
+        liveNoteEl.textContent = "No hay productos por cobrar.";
         return;
       }
 
@@ -1854,8 +1972,15 @@
         }
       }
 
+      const itemsMap = new Map();
+      beltItemsQueue.forEach((it) => {
+        itemsMap.set(it.id, (itemsMap.get(it.id) || 0) + 1);
+      });
+      cart.forEach((qty, productId) => {
+        itemsMap.set(productId, (itemsMap.get(productId) || 0) + qty);
+      });
       const items = [];
-      cart.forEach((qty, productId) => items.push({ productId, qty }));
+      itemsMap.forEach((qty, productId) => items.push({ productId, qty }));
 
       const payload = {
         items,
@@ -1887,7 +2012,6 @@
           clearInterval(scanTimer);
           scanTimer = null;
         }
-        clearAllRegisterProps();
 
         const regIdx = getNearestRegisterIndex();
         const regCfg = REGISTER_OFFSETS[regIdx] || REGISTER_OFFSETS[0];
@@ -1895,6 +2019,12 @@
         if (regState && selectedPaymentMethod === "efectivo") {
           regState.drawerOpenUntil = performance.now() + 3600;
         }
+
+        // Embolsar productos en bolsa 3D en el mostrador
+        baggedItemsList = [...beltItemsQueue];
+        beltItemsQueue = [];
+        clearAllRegisterProps();
+        rebuildBag3D(regState);
 
         isCardInserted = false;
         cardNipInput.value = "";
@@ -1908,16 +2038,16 @@
         renderCart();
         updateCashierUI();
 
-        npcLogEl.textContent = `${regCfg.label} NPC: ¡Pago aprobado! Aquí tienes tu ticket #${data.order.id.slice(-5)}.`;
+        npcLogEl.textContent = `${regCfg.label} NPC: ¡Pago listo! Ya te embolsé ${baggedItemsList.length} producto(s) en tu bolsa.`;
         receiptBox.style.display = "block";
         receiptBox.innerHTML = `
           <strong>Ticket #${data.order.id.slice(-5)}</strong><br/>
-          Atendió: ${regCfg.label} NPC<br/>
+          Atendió: ${regCfg.label} NPC · Embolsados: ${baggedItemsList.length}<br/>
           Método: ${data.order.paymentMethod.toUpperCase()}<br/>
           Total pagado: $${data.order.total} MXN<br/>
           ${data.order.paymentMethod === "efectivo" ? `Recibido: $${data.order.amountPaid} · Cambio: $${data.order.change} MXN` : "NIP validado · Cobro aprobado"}
         `;
-        liveNoteEl.textContent = `Pago aprobado en ${regCfg.label} por $${data.order.total} MXN.`;
+        liveNoteEl.textContent = `Pago aprobado y embolsado en ${regCfg.label} por $${data.order.total} MXN.`;
       } catch {
         liveNoteEl.textContent = "Error de red al procesar el pago en caja.";
       }
@@ -1931,11 +2061,11 @@
 
       const postMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.45, roughness: 0.45 });
       const boardMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.5 });
-      const bigFridgeMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.5, roughness: 0.25 });
+      const bigFridgeMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 0.35, roughness: 0.35 });
       const fridgeGlassMat = new THREE.MeshStandardMaterial({
-        color: 0xbae6fd,
+        color: 0xe0f2fe,
         transparent: true,
-        opacity: 0.22,
+        opacity: 0.08,
         roughness: 0.1
       });
 
@@ -1948,17 +2078,27 @@
         aisleGroup.position.set(aisleCfg.x, 0, aisleCfg.z);
 
         if (aisleCfg.zoneType === "fridge") {
-          // Refrigeradores grandes verticales (cámaras refrigeradas)
-          const cabinet = new THREE.Mesh(new THREE.BoxGeometry(shelfWidth + 0.4, 3.1, 1.5), bigFridgeMat);
-          cabinet.position.set(0, 1.55, 0);
-          aisleGroup.add(cabinet);
+          // Estructura trasera y laterales del refrigerador grande dejando el frente abierto para ver todo
+          const backPanel = new THREE.Mesh(new THREE.BoxGeometry(shelfWidth + 0.3, 3.0, 0.25), bigFridgeMat);
+          backPanel.position.set(0, 1.5, -0.55);
+          aisleGroup.add(backPanel);
 
-          const glassPanel = new THREE.Mesh(new THREE.PlaneGeometry(shelfWidth, 2.5), fridgeGlassMat);
-          glassPanel.position.set(0, 1.55, 0.77);
+          [-shelfWidth / 2 - 0.1, shelfWidth / 2 + 0.1].forEach((sx) => {
+            const sidePanel = new THREE.Mesh(new THREE.BoxGeometry(0.22, 3.0, 1.3), bigFridgeMat);
+            sidePanel.position.set(sx, 1.5, 0.05);
+            aisleGroup.add(sidePanel);
+          });
+
+          const topHood = new THREE.Mesh(new THREE.BoxGeometry(shelfWidth + 0.42, 0.24, 1.35), bigFridgeMat);
+          topHood.position.set(0, 3.08, 0.05);
+          aisleGroup.add(topHood);
+
+          const glassPanel = new THREE.Mesh(new THREE.PlaneGeometry(shelfWidth, 2.7), fridgeGlassMat);
+          glassPanel.position.set(0, 1.6, 0.68);
           aisleGroup.add(glassPanel);
 
-          [0.72, 1.58, 2.44].forEach((yPos) => {
-            const rack = new THREE.Mesh(new THREE.BoxGeometry(shelfWidth - 0.3, 0.07, 1.15), boardMat);
+          [0.62, 1.44, 2.26].forEach((yPos) => {
+            const rack = new THREE.Mesh(new THREE.BoxGeometry(shelfWidth - 0.2, 0.08, 1.15), boardMat);
             rack.position.set(0, yPos, 0.05);
             aisleGroup.add(rack);
           });
@@ -1991,14 +2131,14 @@
           const levelY = levels[idx % levels.length];
           const unitCount = Math.max(0, Number(prod.stock || 0));
           const slots = [];
-          const stepX = ["tv", "washer", "stove", "fridgeUnit", "appliance"].includes(prod.shape) ? 1.25 : 0.56;
+          const stepX = ["tv", "washer", "stove", "fridgeUnit", "appliance"].includes(prod.shape) ? 1.25 : 0.58;
           const colsPerRow = Math.max(1, Math.floor(5.6 / stepX));
 
           for (let i = 0; i < unitCount; i++) {
             const col = i % colsPerRow;
             const depthRow = Math.floor(i / colsPerRow);
             const xPos = -2.5 + col * stepX;
-            const zPos = 0.25 - depthRow * 0.52;
+            const zPos = (aisleCfg.zoneType === "fridge" ? 0.35 : 0.25) - depthRow * 0.48;
 
             const model = buildProductModel(prod);
             const homePos = new THREE.Vector3(xPos, levelY, zPos);
@@ -2091,6 +2231,34 @@
       if (selectedId) selectProduct(selectedId, false);
     }
 
+    // Movimiento inteligente de NPC con rodeo de obstáculos (nunca atraviesa paredes ni estantes)
+    function moveNpcAvoidObstacles(npcPos, targetPos, speed, radius) {
+      const toGoal = targetPos.clone().sub(npcPos);
+      toGoal.y = 0;
+      const dist = toGoal.length();
+      if (dist < 0.25) return { arrived: true, dir: toGoal };
+
+      toGoal.normalize();
+      const testX = npcPos.x + toGoal.x * speed;
+      const testZ = npcPos.z + toGoal.z * speed;
+
+      let moveDir = toGoal;
+      if (wouldCollideAt(testX, testZ, radius)) {
+        // Probar rodear por derecha o izquierda
+        const leftDir = new THREE.Vector3(-toGoal.z, 0, toGoal.x);
+        const rightDir = new THREE.Vector3(toGoal.z, 0, -toGoal.x);
+        const leftClear = !wouldCollideAt(npcPos.x + leftDir.x * speed * 1.4, npcPos.z + leftDir.z * speed * 1.4, radius);
+        const rightClear = !wouldCollideAt(npcPos.x + rightDir.x * speed * 1.4, npcPos.z + rightDir.z * speed * 1.4, radius);
+        if (leftClear) moveDir = leftDir;
+        else if (rightClear) moveDir = rightDir;
+      }
+
+      npcPos.x += moveDir.x * speed;
+      npcPos.z += moveDir.z * speed;
+      resolveCircleCollision(npcPos, radius);
+      return { arrived: false, dir: moveDir };
+    }
+
     try {
       THREE = await import("three");
 
@@ -2154,7 +2322,6 @@
           }
         }
 
-        // Clic en NPC Guía para abrir diálogo de "¿Qué necesitas?"
         const guideMeshes = guideNpcs.map((g) => g.mesh);
         const guideHits = raycaster.intersectObjects(guideMeshes, true);
         if (guideHits.length > 0) {
@@ -2237,6 +2404,7 @@
 
         if (cameraGoalPos) {
           camera.position.lerp(cameraGoalPos, 0.14);
+          resolveCircleCollision(camera.position, PLAYER_RADIUS);
           if (cameraGoalYaw !== null) yaw += (cameraGoalYaw - yaw) * 0.14;
           if (cameraGoalPitch !== null) pitch += (cameraGoalPitch - pitch) * 0.14;
           if (camera.position.distanceTo(cameraGoalPos) < 0.06) {
@@ -2258,8 +2426,9 @@
           moveDelta.addScaledVector(moveRight, rightInput);
           moveDelta.normalize().multiplyScalar(MOVE_SPEED);
 
-          camera.position.x = Math.max(-29.0, Math.min(29.0, camera.position.x + moveDelta.x));
-          camera.position.z = Math.max(-29.0, Math.min(29.5, camera.position.z + moveDelta.z));
+          camera.position.x = Math.max(-30.0, Math.min(30.0, camera.position.x + moveDelta.x));
+          camera.position.z = Math.max(-30.0, Math.min(29.5, camera.position.z + moveDelta.z));
+          resolveCircleCollision(camera.position, PLAYER_RADIUS);
           camera.position.y = PLAYER_EYE_HEIGHT;
         }
 
@@ -2270,22 +2439,16 @@
         if (leftDoorMesh) leftDoorMesh.position.x = -1.35 - doorOpenFactor * 2.2;
         if (rightDoorMesh) rightDoorMesh.position.x = 1.35 + doorOpenFactor * 2.2;
 
-        // NPC Guía acompañando al usuario hasta la sección pedida
+        // NPC Guía rodeando obstáculos y acompañando al jugador
         guideNpcs.forEach((gNpc) => {
           if (gNpc.isEscorting && guidingTargetPos) {
-            const toDest = guidingTargetPos.clone().sub(gNpc.mesh.position);
-            toDest.y = 0;
-            const distDest = toDest.length();
-
-            if (distDest > 0.35) {
-              toDest.normalize();
-              gNpc.mesh.position.addScaledVector(toDest, 0.11);
-              gNpc.mesh.rotation.y = Math.atan2(toDest.x, toDest.z);
-
-              // El jugador camina detrás del NPC guía
-              const followGoal = gNpc.mesh.position.clone().addScaledVector(toDest, -2.5);
+            const res = moveNpcAvoidObstacles(gNpc.mesh.position, guidingTargetPos, 0.11, 0.5);
+            if (!res.arrived) {
+              gNpc.mesh.rotation.y = Math.atan2(res.dir.x, res.dir.z);
+              const followGoal = gNpc.mesh.position.clone().addScaledVector(res.dir, -2.4);
               followGoal.y = PLAYER_EYE_HEIGHT;
-              camera.position.lerp(followGoal, 0.05);
+              resolveCircleCollision(followGoal, PLAYER_RADIUS);
+              camera.position.lerp(followGoal, 0.055);
             } else {
               gNpc.isEscorting = false;
               liveNoteEl.textContent = `${gNpc.label} te guió hasta ${guidingTargetAisle || "la sección"}.`;
@@ -2294,17 +2457,14 @@
           }
         });
 
-        // NPCs reacomodadores reponiendo huecos tras pagar
+        // NPCs reacomodadores rodeando obstáculos al reponer tras pagar
         restockerNpcs.forEach((rNpc) => {
           if (rNpc.phase === "toShelf" && rNpc.targetSlot && rNpc.targetSlot.homeParent && rNpc.targetSlot.homePos) {
             const worldTarget = rNpc.targetSlot.homePos.clone().applyMatrix4(rNpc.targetSlot.homeParent.matrixWorld);
-            const goal = new THREE.Vector3(worldTarget.x, 0, worldTarget.z + 1.2);
-            const delta = goal.clone().sub(rNpc.mesh.position);
-            delta.y = 0;
-            if (delta.length() > 0.35) {
-              delta.normalize();
-              rNpc.mesh.position.addScaledVector(delta, 0.14);
-              rNpc.mesh.rotation.y = Math.atan2(delta.x, delta.z);
+            const goal = new THREE.Vector3(worldTarget.x, 0, worldTarget.z + 1.35);
+            const res = moveNpcAvoidObstacles(rNpc.mesh.position, goal, 0.13, 0.5);
+            if (!res.arrived) {
+              rNpc.mesh.rotation.y = Math.atan2(res.dir.x, res.dir.z);
             } else {
               rNpc.targetSlot.taken = false;
               rNpc.targetSlot.mesh.visible = true;
@@ -2315,12 +2475,9 @@
               rNpc.phase = "returning";
             }
           } else if (rNpc.phase === "returning") {
-            const delta = rNpc.homePos.clone().sub(rNpc.mesh.position);
-            delta.y = 0;
-            if (delta.length() > 0.35) {
-              delta.normalize();
-              rNpc.mesh.position.addScaledVector(delta, 0.14);
-              rNpc.mesh.rotation.y = Math.atan2(delta.x, delta.z);
+            const res = moveNpcAvoidObstacles(rNpc.mesh.position, rNpc.homePos, 0.13, 0.5);
+            if (!res.arrived) {
+              rNpc.mesh.rotation.y = Math.atan2(res.dir.x, res.dir.z);
             } else {
               rNpc.phase = "idle";
               rNpc.targetSlot = null;
@@ -2386,20 +2543,21 @@
           const rgt = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw)).normalize();
 
           const cartPos = camera.position.clone()
-            .addScaledVector(fwd, 1.55)
-            .addScaledVector(rgt, -0.62);
+            .addScaledVector(fwd, 1.45)
+            .addScaledVector(rgt, -0.58);
+          resolveCircleCollision(cartPos, 0.35);
           shoppingCartGroup.position.set(cartPos.x, 0, cartPos.z);
           shoppingCartGroup.rotation.y = Math.atan2(fwd.x, fwd.z);
         }
 
-        // Detectar proximidad a la zona de cajas apartada SIN forzar teletransporte al entrar
+        // Al acercarte a la caja con productos, vacía automáticamente el carrito hacia la banda y los escanea
         const distToCashier = Math.hypot(camera.position.x - CASHIER_POS.x, camera.position.z - CASHIER_POS.z);
         const nowNear = distToCashier < 4.5;
         if (nowNear !== isNearCashier) {
           isNearCashier = nowNear;
           if (isNearCashier && cart.size > 0) {
             switchTab("cashier");
-            liveNoteEl.textContent = `${nearestRegCfg.label} NPC está escaneando tus productos.`;
+            unloadCartToBeltAndScan(nearestRegIdx);
           }
           updateCashierUI();
         }
