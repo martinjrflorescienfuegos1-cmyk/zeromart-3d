@@ -336,7 +336,7 @@
     <form class="auth-card" id="auth-form">
       <div>
         <h1>ZeroMart 3D</h1>
-        <p>Sucursal ampliada con más secciones, más productos, vitrinas bajo llave y empleados con IA.</p>
+        <p>Sucursal ampliada con más productos, vitrinas bajo llave, guardias e IA de navegación.</p>
       </div>
       <div class="field">
         <label for="username">Usuario</label>
@@ -374,7 +374,7 @@
       <strong id="guide-name">Empleado</strong>
       <button type="button" class="btn" id="guide-close-btn">✕</button>
     </div>
-    <p class="muted" id="guide-msg" style="margin:0; color:var(--text);">¡Hola! ¿Buscas algún producto o quieres que te lleve a alguna sección?</p>
+    <p class="muted" id="guide-msg" style="margin:0; color:var(--text);">¡Hola! ¿Buscas algún producto o quieres que te lleve a una sección?</p>
     <div class="row">
       <input id="guide-query" type="text" placeholder="Ej. frutas, pollo, detergente, cel..." style="flex:1; background:rgba(255,255,255,0.08); border:1px solid var(--border); border-radius:8px; padding:6px 8px; color:var(--text); font-size:0.8rem;" />
       <button type="button" class="btn primary" id="guide-ask-btn">Preguntar</button>
@@ -414,7 +414,7 @@
     </div>
 
     <div id="view-catalog">
-      <p class="muted" id="selected-info">Recorre la sucursal ampliada o habla con los empleados.</p>
+      <p class="muted" id="selected-info">Recorre la sucursal ampliada o habla con los empleados y guardias.</p>
       <div class="product-list" id="product-list"></div>
     </div>
 
@@ -572,6 +572,16 @@
       { name: "Televisiones", x: 22.0, z: 14.0, color: "#0f766e", zoneType: "shelf" }
     ];
 
+    // Corredores libres para que los NPCs rodeen estantes sin atorarse
+    const CORRIDOR_NODES = [
+      { x: -14.0, z: 22.0 }, { x: 0.0, z: 22.0 }, { x: 14.0, z: 22.0 },
+      { x: -14.0, z: 10.0 }, { x: 0.0, z: 10.0 }, { x: 14.0, z: 10.0 },
+      { x: -14.0, z: 2.0 },  { x: 0.0, z: 2.0 },  { x: 14.0, z: 2.0 },
+      { x: -14.0, z: -6.0 }, { x: 0.0, z: -6.0 }, { x: 14.0, z: -6.0 },
+      { x: -14.0, z: -14.0 }, { x: 0.0, z: -14.0 }, { x: 14.0, z: -14.0 },
+      { x: 0.0, z: -23.5 }, { x: 0.0, z: -28.5 }
+    ];
+
     const EXTRA_PRODUCTS = [
       { id: 101, name: "Refresco 600ml", price: 20, stock: 12, aisle: "Bebidas", shape: "bottle", color: "#0ea5e9" },
       { id: 102, name: "Agua Purificada 1L", price: 16, stock: 12, aisle: "Bebidas", shape: "bottle", color: "#0284c7" },
@@ -682,6 +692,7 @@
     const registerStates = [];
     const restockerNpcs = [];
     const guideNpcs = [];
+    const securityGuards = [];
     let janitorNpc = null;
     let activeGuideNpc = null;
     let suggestedAisleName = null;
@@ -725,6 +736,7 @@
           cameraGoalPitch = null;
           if (activeGuideNpc && activeGuideNpc.isEscorting) {
             activeGuideNpc.isEscorting = false;
+            activeGuideNpc.navQueue = [];
             guidingTargetPos = null;
           }
         }
@@ -967,7 +979,7 @@
     function openGuideDialog(npcObj, customGreeting = null) {
       activeGuideNpc = npcObj;
       suggestedAisleName = null;
-      guideNameEl.textContent = `${npcObj.label} (Empleado ZeroMart)`;
+      guideNameEl.textContent = `${npcObj.label} (${npcObj.roleLabel || "Empleado ZeroMart"})`;
       guideMsgEl.textContent = customGreeting || "¡Hola! ¿Buscas algún producto o quieres que te lleve a una sección?";
       guideQueryInput.value = "";
       guideConfirmRow.style.display = "none";
@@ -1046,14 +1058,15 @@
       const cfg = AISLE_LAYOUT.find((a) => a.name === suggestedAisleName);
       if (!cfg || !activeGuideNpc) return;
       guidingTargetAisle = cfg.name;
-      guidingTargetPos = new THREE.Vector3(cfg.x, 0, cfg.z + 2.6);
+      guidingTargetPos = new THREE.Vector3(cfg.x, 0, cfg.z + 2.5);
       activeGuideNpc.isEscorting = true;
+      activeGuideNpc.navQueue = buildPathToTarget(activeGuideNpc.mesh.position, guidingTargetPos);
       activeGuideNpc.stuckTimer = 0;
       activeAisle = cfg.name;
       renderAisleNav();
       renderList();
       switchTab("catalog");
-      guideMsgEl.textContent = `¡Vamos! Te guío a ${cfg.name} rodeando los estantes.`;
+      guideMsgEl.textContent = `¡Vamos! Te guío a ${cfg.name} por los pasillos libres.`;
       guideConfirmRow.style.display = "none";
       setTimeout(() => guideBox.classList.remove("active"), 1300);
     });
@@ -1278,28 +1291,43 @@
       return group;
     }
 
-    function createHumanoidNpc(shirtHex, hatHex) {
+    function createHumanoidNpc(shirtHex, hatHex, isGuard = false) {
       const npc = new THREE.Group();
       const shirtMat = new THREE.MeshStandardMaterial({ color: shirtHex, roughness: 0.5 });
-      const pantsMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.65 });
+      const pantsMat = new THREE.MeshStandardMaterial({ color: isGuard ? 0x0f172a : 0x1e293b, roughness: 0.65 });
       const skinMat = new THREE.MeshStandardMaterial({ color: 0xf1c27d, roughness: 0.6 });
       const capMat = new THREE.MeshStandardMaterial({ color: hatHex, roughness: 0.5 });
 
-      const torso = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.72, 0.30), shirtMat);
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(isGuard ? 0.62 : 0.56, 0.74, 0.32), shirtMat);
       torso.position.y = 1.12;
-      const legs = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.76, 0.28), pantsMat);
+      const legs = new THREE.Mesh(new THREE.BoxGeometry(0.50, 0.76, 0.28), pantsMat);
       legs.position.y = 0.38;
       const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 14, 14), skinMat);
       head.position.y = 1.72;
-      const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.23, 0.24, 0.11, 14), capMat);
+      const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.23, 0.24, 0.12, 14), capMat);
       cap.position.y = 1.88;
       const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.52, 0.16), shirtMat);
-      rightArm.position.set(0.38, 1.16, 0.12);
+      rightArm.position.set(isGuard ? 0.41 : 0.38, 1.16, 0.12);
       rightArm.rotation.x = -0.55;
       const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.52, 0.16), shirtMat);
-      leftArm.position.set(-0.38, 1.14, 0.05);
+      leftArm.position.set(isGuard ? -0.41 : -0.38, 1.14, 0.05);
 
       npc.add(torso, legs, head, cap, rightArm, leftArm);
+
+      if (isGuard) {
+        const belt = new THREE.Mesh(
+          new THREE.BoxGeometry(0.64, 0.08, 0.34),
+          new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.4 })
+        );
+        belt.position.y = 0.80;
+        const badge = new THREE.Mesh(
+          new THREE.BoxGeometry(0.10, 0.12, 0.03),
+          new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.8, roughness: 0.2 })
+        );
+        badge.position.set(0.14, 1.24, 0.17);
+        npc.add(belt, badge);
+      }
+
       npc.userData.rightArm = rightArm;
       npc.userData.head = head;
       return npc;
@@ -1577,7 +1605,7 @@
         monitor.rotation.y = -0.35;
         lane.add(stand, monitor);
 
-        const npc = createHumanoidNpc(0x0284c7, 0x0f172a);
+        const npc = createHumanoidNpc(0x0284c7, 0x0f172a, false);
         npc.position.set(0, 0, 1.65);
         npc.rotation.y = Math.PI;
         lane.add(npc);
@@ -1619,8 +1647,8 @@
     function buildStaffNpcs3D() {
       guideNpcs.length = 0;
       restockerNpcs.length = 0;
+      securityGuards.length = 0;
 
-      // Más empleados guías en la tienda ampliada
       const guideSpots = [
         { label: "Lucía", x: -14.0, z: 4.0 },
         { label: "Luis", x: -4.0, z: -6.0 },
@@ -1629,25 +1657,64 @@
       ];
 
       guideSpots.forEach((spot) => {
-        const mesh = createHumanoidNpc(0xf59e0b, 0x78350f);
+        const mesh = createHumanoidNpc(0xf59e0b, 0x78350f, false);
         mesh.position.set(spot.x, 0, spot.z);
         mesh.userData.guideId = spot.label;
         mesh.traverse((c) => { if (c.isMesh) c.userData.guideId = spot.label; });
         scene.add(mesh);
         guideNpcs.push({
           label: spot.label,
+          roleLabel: "Empleado ZeroMart",
           mesh,
           homePos: new THREE.Vector3(spot.x, 0, spot.z),
           isEscorting: false,
           unlockTarget: null,
           unlockCallback: null,
           greetingTarget: null,
-          stuckTimer: 0,
-          lastPos: new THREE.Vector3(spot.x, 0, spot.z)
+          navQueue: [],
+          stuckTimer: 0
         });
       });
 
-      // Más empleados reacomodadores en bodega
+      // Guardias de seguridad patrullando entrada y zonas clave
+      const guardConfigs = [
+        {
+          label: "Guardia 1",
+          waypoints: [
+            new THREE.Vector3(-5.5, 0, ENTRANCE_Z - 2.2),
+            new THREE.Vector3(5.5, 0, ENTRANCE_Z - 2.2),
+            new THREE.Vector3(14.0, 0, 12.0),
+            new THREE.Vector3(0.0, 0, 12.0)
+          ]
+        },
+        {
+          label: "Guardia 2",
+          waypoints: [
+            new THREE.Vector3(14.0, 0, 8.0),
+            new THREE.Vector3(14.0, 0, -12.0),
+            new THREE.Vector3(0.0, 0, -12.0),
+            new THREE.Vector3(-14.0, 0, -12.0)
+          ]
+        }
+      ];
+
+      guardConfigs.forEach((gCfg) => {
+        const mesh = createHumanoidNpc(0x1e293b, 0x090d16, true);
+        mesh.position.copy(gCfg.waypoints[0]);
+        mesh.userData.guideId = gCfg.label;
+        mesh.traverse((c) => { if (c.isMesh) c.userData.guideId = gCfg.label; });
+        scene.add(mesh);
+        securityGuards.push({
+          label: gCfg.label,
+          roleLabel: "Seguridad ZeroMart",
+          mesh,
+          waypoints: gCfg.waypoints,
+          wpIndex: 1,
+          navQueue: [],
+          stuckTimer: 0
+        });
+      });
+
       const restockSpots = [
         { label: "Reacomodador 1", x: -8.0, z: WAREHOUSE_Z + 2.0 },
         { label: "Reacomodador 2", x: 0.0, z: WAREHOUSE_Z + 2.0 },
@@ -1655,7 +1722,7 @@
       ];
 
       restockSpots.forEach((spot) => {
-        const mesh = createHumanoidNpc(0x16a34a, 0x14532d);
+        const mesh = createHumanoidNpc(0x16a34a, 0x14532d, false);
         mesh.position.set(spot.x, 0, spot.z);
         scene.add(mesh);
         restockerNpcs.push({
@@ -1665,12 +1732,12 @@
           targetSlot: null,
           targetProd: null,
           phase: "idle",
-          stuckTimer: 0,
-          lastPos: new THREE.Vector3(spot.x, 0, spot.z)
+          navQueue: [],
+          stuckTimer: 0
         });
       });
 
-      const janitorMesh = createHumanoidNpc(0x06b6d4, 0x164e63);
+      const janitorMesh = createHumanoidNpc(0x06b6d4, 0x164e63, false);
       const mopStick = new THREE.Mesh(
         new THREE.CylinderGeometry(0.025, 0.025, 1.45, 10),
         new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.6, roughness: 0.3 })
@@ -1697,7 +1764,9 @@
           new THREE.Vector3(14.0, 0, -8.0),
           new THREE.Vector3(14.0, 0, 10.0)
         ],
-        wpIndex: 1
+        wpIndex: 1,
+        navQueue: [],
+        stuckTimer: 0
       };
     }
 
@@ -1712,6 +1781,7 @@
         worker.targetProd = entry.prod;
         worker.targetSlot = entry.slot;
         worker.phase = "toShelf";
+        worker.navQueue = [];
         worker.stuckTimer = 0;
       });
       liveNoteEl.textContent = "Reacomodadores salieron de bodega a rellenar los huecos de los estantes.";
@@ -1839,13 +1909,28 @@
       openUnlockedProduct(prod, slotObj);
     }
 
-    // Busca el empleado guía más cercano y libre para abrir la vitrina sin quedarse atorado
+    // Ruta segura por pasillos libres para que Luis u otro empleado nunca intente atravesar paredes ni estantes
+    function buildPathToTarget(startVec, goalVec) {
+      const corridorX = goalVec.x > 12 ? 14.0 : goalVec.x < -12 ? -14.0 : 0.0;
+      const waypoints = [];
+
+      if (Math.abs(startVec.x - corridorX) > 3.5) {
+        const midZ = Math.abs(startVec.z - goalVec.z) > 8 ? 2.0 : startVec.z;
+        waypoints.push(new THREE.Vector3(corridorX, 0, midZ));
+      }
+
+      const approachZ = goalVec.z > 0 ? Math.min(goalVec.z + 1.8, ENTRANCE_Z - 1.5) : Math.max(goalVec.z - 1.8, WAREHOUSE_WALL_Z + 1.5);
+      waypoints.push(new THREE.Vector3(corridorX, 0, approachZ));
+      waypoints.push(new THREE.Vector3(goalVec.x, 0, goalVec.z));
+      return waypoints;
+    }
+
     callUnlockBtn.addEventListener("click", () => {
       if (!pendingUnlockProduct || !pendingUnlockSlot) return;
       const targetProd = pendingUnlockProduct;
       const targetSlot = pendingUnlockSlot;
 
-      let bestWorker = guideNpcs[0];
+      let bestWorker = guideNpcs.find((g) => g.label === "Luis") || guideNpcs[0];
       let bestDist = Infinity;
       guideNpcs.forEach((g) => {
         const d = g.mesh.position.distanceTo(camera.position);
@@ -1859,18 +1944,20 @@
 
       const aisleCfg = AISLE_LAYOUT.find((a) => a.name === targetProd.aisle);
       const frontX = aisleCfg ? aisleCfg.x : 22.0;
-      const frontZ = aisleCfg ? aisleCfg.z + 1.85 : 7.85;
+      const frontZ = aisleCfg ? aisleCfg.z + 1.9 : 7.9;
+      const finalDest = new THREE.Vector3(frontX, 0, frontZ);
 
       bestWorker.isEscorting = false;
       bestWorker.greetingTarget = null;
       bestWorker.stuckTimer = 0;
-      bestWorker.unlockTarget = new THREE.Vector3(frontX, 0, frontZ);
+      bestWorker.unlockTarget = finalDest;
+      bestWorker.navQueue = buildPathToTarget(bestWorker.mesh.position, finalDest);
       bestWorker.unlockCallback = () => {
-        liveNoteEl.textContent = `${bestWorker.label} abrió la vitrina con llave para ${targetProd.name}.`;
+        liveNoteEl.textContent = `${bestWorker.label} rodeó los pasillos y abrió la vitrina para ${targetProd.name}.`;
         openUnlockedProduct(targetProd, targetSlot);
       };
       lockedCallRow.style.display = "none";
-      liveNoteEl.textContent = `${bestWorker.label} va por el pasillo hacia la vitrina para abrirla...`;
+      liveNoteEl.textContent = `${bestWorker.label} va por el pasillo libre hacia la vitrina...`;
     });
 
     function takeFirstFreeSlot(prod) {
@@ -2349,56 +2436,57 @@
       if (selectedId) selectProduct(selectedId, false);
     }
 
-    // IA de navegación con rodeo lateral y desatasco anti-bug para que ningún NPC entre en estantes
-    function moveNpcSmart(npcObj, targetPos, speed, radius) {
+    // Sigue waypoints por pasillos libres y evita que cualquier NPC se quede pegado a un muro o estante
+    function stepNpcAlongQueue(npcObj, finalGoal, speed, radius) {
+      if (!npcObj.navQueue || npcObj.navQueue.length === 0) {
+        npcObj.navQueue = buildPathToTarget(npcObj.mesh.position, finalGoal);
+      }
+
+      const currentWaypoint = npcObj.navQueue[0] || finalGoal;
       const npcPos = npcObj.mesh.position;
-      const toGoal = targetPos.clone().sub(npcPos);
-      toGoal.y = 0;
-      const dist = toGoal.length();
-      if (dist < 0.35) {
+      const toWp = currentWaypoint.clone().sub(npcPos);
+      toWp.y = 0;
+      const distWp = toWp.length();
+
+      if (distWp < 0.55) {
+        npcObj.navQueue.shift();
         npcObj.stuckTimer = 0;
-        return { arrived: true, dir: toGoal };
-      }
-
-      toGoal.normalize();
-      let moveDir = toGoal;
-
-      if (wouldCollideAt(npcPos.x + toGoal.x * speed * 1.5, npcPos.z + toGoal.z * speed * 1.5, radius)) {
-        const leftDir = new THREE.Vector3(-toGoal.z, 0, toGoal.x);
-        const rightDir = new THREE.Vector3(toGoal.z, 0, -toGoal.x);
-        const leftClear = !wouldCollideAt(npcPos.x + leftDir.x * speed * 1.8, npcPos.z + leftDir.z * speed * 1.8, radius);
-        const rightClear = !wouldCollideAt(npcPos.x + rightDir.x * speed * 1.8, npcPos.z + rightDir.z * speed * 1.8, radius);
-
-        if (leftClear && rightClear) {
-          moveDir = npcPos.x < targetPos.x ? rightDir : leftDir;
-        } else if (leftClear) {
-          moveDir = leftDir;
-        } else if (rightClear) {
-          moveDir = rightDir;
-        } else {
-          // Deslizarse hacia el pasillo central si está bloqueado
-          moveDir = new THREE.Vector3(-npcPos.x * 0.15, 0, 0.85).normalize();
+        const distFinal = Math.hypot(finalGoal.x - npcPos.x, finalGoal.z - npcPos.z);
+        if (npcObj.navQueue.length === 0 && distFinal < 0.65) {
+          return { arrived: true, dir: new THREE.Vector3(0, 0, 1) };
         }
+        return { arrived: false, dir: new THREE.Vector3(0, 0, 1) };
       }
 
+      toWp.normalize();
       const prevX = npcPos.x;
       const prevZ = npcPos.z;
-      npcPos.x += moveDir.x * speed;
-      npcPos.z += moveDir.z * speed;
+
+      npcPos.x += toWp.x * speed;
+      npcPos.z += toWp.z * speed;
       resolveCircleCollision(npcPos, radius);
 
-      if (Math.hypot(npcPos.x - prevX, npcPos.z - prevZ) < speed * 0.25) {
+      const moved = Math.hypot(npcPos.x - prevX, npcPos.z - prevZ);
+      if (moved < speed * 0.25) {
         npcObj.stuckTimer = (npcObj.stuckTimer || 0) + 1;
-        if (npcObj.stuckTimer > 35) {
-          npcPos.z += (npcPos.z < 0 ? 1.2 : -1.2);
+        if (npcObj.stuckTimer > 22) {
+          // Salta directo al pasillo libre más cercano y recalcula
+          const safeNode = CORRIDOR_NODES.reduce((best, n) => {
+            const dBest = Math.hypot(best.x - npcPos.x, best.z - npcPos.z);
+            const dCurr = Math.hypot(n.x - npcPos.x, n.z - npcPos.z);
+            return dCurr < dBest ? n : best;
+          }, CORRIDOR_NODES[0]);
+          npcPos.x = safeNode.x;
+          npcPos.z = safeNode.z;
           resolveCircleCollision(npcPos, radius);
+          npcObj.navQueue = buildPathToTarget(npcPos, finalGoal);
           npcObj.stuckTimer = 0;
         }
       } else {
         npcObj.stuckTimer = 0;
       }
 
-      return { arrived: false, dir: moveDir };
+      return { arrived: false, dir: toWp };
     }
 
     try {
@@ -2464,11 +2552,11 @@
           }
         }
 
-        const guideMeshes = guideNpcs.map((g) => g.mesh);
-        const guideHits = raycaster.intersectObjects(guideMeshes, true);
+        const talkableMeshes = [...guideNpcs.map((g) => g.mesh), ...securityGuards.map((s) => s.mesh)];
+        const guideHits = raycaster.intersectObjects(talkableMeshes, true);
         if (guideHits.length > 0) {
           const gId = guideHits[0].object?.userData?.guideId;
-          const foundGuide = guideNpcs.find((g) => g.label === gId);
+          const foundGuide = guideNpcs.find((g) => g.label === gId) || securityGuards.find((s) => s.label === gId);
           if (foundGuide) {
             openGuideDialog(foundGuide);
             return;
@@ -2580,7 +2668,6 @@
         if (leftDoorMesh) leftDoorMesh.position.x = -1.3 - doorOpenFactor * 2.2;
         if (rightDoorMesh) rightDoorMesh.position.x = 1.3 + doorOpenFactor * 2.2;
 
-        // Iniciativa de empleados: si pasas cerca y no hay diálogo abierto, un empleado se acerca a saludar
         if (
           currentUser &&
           !guideBox.classList.contains("active") &&
@@ -2592,25 +2679,28 @@
             (g) => !g.isEscorting && !g.unlockTarget && !g.greetingTarget && g.mesh.position.distanceTo(camera.position) < 6.5
           );
           if (candidate) {
-            candidate.greetingTarget = new THREE.Vector3(camera.position.x, 0, camera.position.z);
+            const stopPos = new THREE.Vector3(camera.position.x, 0, camera.position.z);
+            candidate.greetingTarget = stopPos;
+            candidate.navQueue = buildPathToTarget(candidate.mesh.position, stopPos);
             lastGreetingTime = nowMs;
           }
         }
 
-        // IA de empleados guías: abrir vitrina, escoltar o acercarse a preguntar si buscas algo
         guideNpcs.forEach((gNpc) => {
           if (gNpc.unlockTarget) {
-            const res = moveNpcSmart(gNpc, gNpc.unlockTarget, 0.14, 0.5);
+            const res = stepNpcAlongQueue(gNpc, gNpc.unlockTarget, 0.16, 0.48);
             if (!res.arrived) {
               gNpc.mesh.rotation.y = Math.atan2(res.dir.x, res.dir.z);
             } else {
+              gNpc.mesh.rotation.y = 0;
               const cb = gNpc.unlockCallback;
               gNpc.unlockTarget = null;
               gNpc.unlockCallback = null;
+              gNpc.navQueue = [];
               if (typeof cb === "function") cb();
             }
           } else if (gNpc.isEscorting && guidingTargetPos) {
-            const res = moveNpcSmart(gNpc, guidingTargetPos, 0.12, 0.5);
+            const res = stepNpcAlongQueue(gNpc, guidingTargetPos, 0.13, 0.48);
             if (!res.arrived) {
               gNpc.mesh.rotation.y = Math.atan2(res.dir.x, res.dir.z);
               const followGoal = gNpc.mesh.position.clone().addScaledVector(res.dir, -2.5);
@@ -2619,33 +2709,42 @@
               camera.position.lerp(followGoal, 0.055);
             } else {
               gNpc.isEscorting = false;
+              gNpc.navQueue = [];
               liveNoteEl.textContent = `${gNpc.label} te guió hasta ${guidingTargetAisle || "la sección"}.`;
               guidingTargetPos = null;
             }
           } else if (gNpc.greetingTarget) {
-            const stopGoal = gNpc.greetingTarget.clone();
-            const toPlayer = stopGoal.clone().sub(gNpc.mesh.position);
+            const toPlayer = gNpc.greetingTarget.clone().sub(gNpc.mesh.position);
             toPlayer.y = 0;
-            const d = toPlayer.length();
-            if (d > 1.8) {
-              toPlayer.normalize();
-              stopGoal.sub(toPlayer.clone().multiplyScalar(1.7));
-              const res = moveNpcSmart(gNpc, stopGoal, 0.10, 0.5);
+            if (toPlayer.length() > 1.85) {
+              const res = stepNpcAlongQueue(gNpc, gNpc.greetingTarget, 0.11, 0.48);
               if (!res.arrived) gNpc.mesh.rotation.y = Math.atan2(res.dir.x, res.dir.z);
             } else {
               gNpc.mesh.rotation.y = Math.atan2(camera.position.x - gNpc.mesh.position.x, camera.position.z - gNpc.mesh.position.z);
               gNpc.greetingTarget = null;
+              gNpc.navQueue = [];
               openGuideDialog(gNpc, `¡Hola! Soy ${gNpc.label}. ¿Buscas algún producto en especial o te ayudo con alguna sección?`);
             }
           }
         });
 
-        // Reacomodadores con evasión y regreso a bodega
+        // Guardias patrullando con waypoints seguros
+        securityGuards.forEach((guard) => {
+          const wp = guard.waypoints[guard.wpIndex];
+          const res = stepNpcAlongQueue(guard, wp, 0.085, 0.48);
+          if (!res.arrived) {
+            guard.mesh.rotation.y = Math.atan2(res.dir.x, res.dir.z);
+          } else {
+            guard.wpIndex = (guard.wpIndex + 1) % guard.waypoints.length;
+            guard.navQueue = buildPathToTarget(guard.mesh.position, guard.waypoints[guard.wpIndex]);
+          }
+        });
+
         restockerNpcs.forEach((rNpc) => {
           if (rNpc.phase === "toShelf" && rNpc.targetSlot && rNpc.targetSlot.homeParent && rNpc.targetSlot.homePos) {
             const worldTarget = rNpc.targetSlot.homePos.clone().applyMatrix4(rNpc.targetSlot.homeParent.matrixWorld);
-            const goal = new THREE.Vector3(worldTarget.x, 0, worldTarget.z + 1.5);
-            const res = moveNpcSmart(rNpc, goal, 0.13, 0.5);
+            const goal = new THREE.Vector3(worldTarget.x, 0, worldTarget.z + 1.6);
+            const res = stepNpcAlongQueue(rNpc, goal, 0.14, 0.48);
             if (!res.arrived) {
               rNpc.mesh.rotation.y = Math.atan2(res.dir.x, res.dir.z);
             } else {
@@ -2656,27 +2755,29 @@
               rNpc.targetSlot.mesh.scale.setScalar(1);
               renderList();
               rNpc.phase = "returning";
+              rNpc.navQueue = buildPathToTarget(rNpc.mesh.position, rNpc.homePos);
             }
           } else if (rNpc.phase === "returning") {
-            const res = moveNpcSmart(rNpc, rNpc.homePos, 0.13, 0.5);
+            const res = stepNpcAlongQueue(rNpc, rNpc.homePos, 0.14, 0.48);
             if (!res.arrived) {
               rNpc.mesh.rotation.y = Math.atan2(res.dir.x, res.dir.z);
             } else {
               rNpc.phase = "idle";
+              rNpc.navQueue = [];
               rNpc.targetSlot = null;
               rNpc.targetProd = null;
             }
           }
         });
 
-        // Limpieza recorriendo pasillos sin atravesar obstáculos
         if (janitorNpc) {
           const wp = janitorNpc.waypoints[janitorNpc.wpIndex];
-          const res = moveNpcSmart(janitorNpc, wp, 0.07, 0.5);
+          const res = stepNpcAlongQueue(janitorNpc, wp, 0.075, 0.48);
           if (!res.arrived) {
             janitorNpc.mesh.rotation.y = Math.atan2(res.dir.x, res.dir.z);
           } else {
             janitorNpc.wpIndex = (janitorNpc.wpIndex + 1) % janitorNpc.waypoints.length;
+            janitorNpc.navQueue = buildPathToTarget(janitorNpc.mesh.position, janitorNpc.waypoints[janitorNpc.wpIndex]);
           }
           if (janitorNpc.mesh.userData.rightArm) {
             janitorNpc.mesh.userData.rightArm.rotation.x = -0.45 + Math.sin(elapsed * 7) * 0.35;
