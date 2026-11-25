@@ -39,7 +39,7 @@
 
     #canvas-wrap.active { display: block; }
 
-    /* Modo Tienda Normal estilo Bodega Aurrera */
+    /* Modo Tienda Normal estilo Bodega / Autoservicio */
     .normal-store {
       position: fixed;
       inset: 0;
@@ -174,7 +174,7 @@
     .bm-layout {
       flex: 1;
       display: grid;
-      grid-template-columns: 235px 1fr 310px;
+      grid-template-columns: 220px 1fr 340px;
       gap: 16px;
       padding: 14px 18px;
       overflow: hidden;
@@ -291,7 +291,7 @@
 
     .bm-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
       gap: 16px;
     }
 
@@ -324,7 +324,7 @@
 
     .bm-thumb-wrap {
       width: 100%;
-      height: 128px;
+      height: 124px;
       background: #f8fafc;
       border-radius: 8px;
       display: flex;
@@ -401,6 +401,68 @@
       gap: 8px;
       overflow-y: auto;
     }
+
+    .bm-pay-box {
+      border-top: 1px solid #cbd5e1;
+      padding-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.78rem;
+    }
+
+    .bm-choice-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 5px;
+    }
+
+    .bm-method-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+    }
+
+    .bm-opt-btn {
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #1e293b;
+      border-radius: 7px;
+      padding: 5px 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .bm-opt-btn.active {
+      background: var(--bm-green);
+      color: #ffffff;
+      border-color: var(--bm-green-dark);
+    }
+
+    .bm-input {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 7px;
+      padding: 6px 8px;
+      font-size: 0.78rem;
+      color: #0f172a;
+      background: #ffffff;
+    }
+
+    .bm-ticket-card {
+      background: #ffffff;
+      border: 2px solid var(--bm-green);
+      border-radius: 10px;
+      padding: 10px;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.76rem;
+      color: #0f172a;
+    }
+
+    .bm-ticket-card.active { display: flex; }
 
     /* Auth y 3D HUD */
     .auth-screen {
@@ -679,8 +741,8 @@
     }
 
     .qr-img-box img {
-      width: 136px;
-      height: 136px;
+      width: 132px;
+      height: 132px;
       display: block;
     }
 
@@ -739,7 +801,7 @@
 <body>
   <div id="canvas-wrap"></div>
 
-  <!-- Modo Tienda Normal estilo Bodega / Autoservicio -->
+  <!-- Modo Tienda Normal estilo Bodega / Autoservicio (Pago y Ticket directo aquí mismo) -->
   <section class="normal-store" id="normal-store">
     <header class="bm-topbar">
       <div class="bm-logo">
@@ -749,8 +811,8 @@
       </div>
 
       <button type="button" class="bm-fulfillment" id="bm-fulfillment-btn">
-        <span>¿Cómo quieres tus artículos?</span>
-        <strong id="bm-fulfillment-badge">Tepic · Casa o Recoger</strong>
+        <span>Entrega:</span>
+        <strong id="bm-fulfillment-badge">Tepic · Llevar a casa</strong>
         <span>▾</span>
       </button>
 
@@ -761,19 +823,19 @@
 
       <div class="row" style="gap:8px;">
         <button type="button" class="btn yellow" id="enter-3d-btn">Ir a Tienda 3D</button>
-        <button type="button" class="btn primary" id="normal-go-cashier-btn">Caja (<span id="normal-header-cart">0</span>)</button>
+        <a href="#bm-pay-section" class="btn primary" style="text-decoration:none;">Pagar aquí (<span id="normal-header-cart">0</span>)</a>
         <button type="button" class="btn ghost" id="normal-logout-btn">Salir</button>
       </div>
     </header>
 
     <div class="bm-subbar">
       <div class="bm-sublinks" id="bm-top-sublinks"></div>
-      <div style="color:#475569; font-weight:600;">Envío a domicilio o Recolección en sucursal</div>
+      <div style="color:#475569; font-weight:600;">Compra separada · Guardado en tu cuenta</div>
     </div>
 
     <div class="bm-promo-strip">
       <span>Precios Bajos ZeroMart · Todos los departamentos disponibles</span>
-      <span>Paga con Efectivo, Tarjeta, PayPal o SPEI y recibe Ticket con QR</span>
+      <span>Paga directo en Modo Normal y toma captura de tu Ticket con Folio y QR</span>
     </div>
 
     <div class="bm-layout">
@@ -813,16 +875,63 @@
         <div class="bm-grid" id="normal-product-grid"></div>
       </main>
 
-      <aside class="bm-cart-pane">
+      <aside class="bm-cart-pane" id="bm-pay-section">
         <div class="row">
-          <strong style="font-size:0.95rem; color:#0f172a;">Carrito (<span id="normal-cart-count">0</span>)</strong>
+          <strong style="font-size:0.95rem; color:#0f172a;">Carrito Normal (<span id="normal-cart-count">0</span>)</strong>
           <span style="color:#15803d; font-weight:900; font-size:0.95rem;" id="normal-cart-total">$0 MXN</span>
         </div>
-        <div style="font-size:0.75rem; color:#475569;" id="bm-cart-delivery-note">Entrega: Llevar a mi casa</div>
-        <div id="normal-cart-items" style="display:flex; flex-direction:column; gap:7px; flex:1; overflow-y:auto; margin-top:4px;"></div>
-        <button type="button" class="bm-add-btn" id="normal-checkout-open-btn" style="width:100%; border-radius:10px; padding:9px; text-align:center;">
-          Continuar a Caja y QR
-        </button>
+        <div style="font-size:0.74rem; color:#475569;" id="bm-cart-delivery-note">Entrega: Llevar a mi casa</div>
+
+        <div id="normal-cart-items" style="display:flex; flex-direction:column; gap:6px; max-height:175px; overflow-y:auto;"></div>
+
+        <div class="bm-pay-box">
+          <div style="font-weight:700; color:#0f172a;">Tipo de entrega</div>
+          <div class="bm-choice-grid" id="bm-delivery-grid">
+            <button type="button" class="bm-opt-btn active" data-bm-deliv="casa">Llevar a casa</button>
+            <button type="button" class="bm-opt-btn" data-bm-deliv="recoger">Recoger tienda</button>
+          </div>
+
+          <div id="bm-address-row" style="display:flex; flex-direction:column; gap:4px;">
+            <label for="bm-address-input" style="font-size:0.72rem; color:#475569; font-weight:600;">Dirección de entrega</label>
+            <input id="bm-address-input" type="text" class="bm-input" placeholder="Ej. Av. Insurgentes #120, Tepic" />
+          </div>
+
+          <div style="font-weight:700; color:#0f172a;">Método de pago</div>
+          <div class="bm-method-grid" id="bm-method-grid">
+            <button type="button" class="bm-opt-btn active" data-bm-pay="efectivo">Efectivo</button>
+            <button type="button" class="bm-opt-btn" data-bm-pay="tarjeta">Tarjeta</button>
+            <button type="button" class="bm-opt-btn" data-bm-pay="paypal">PayPal</button>
+            <button type="button" class="bm-opt-btn" data-bm-pay="transferencia">SPEI</button>
+          </div>
+
+          <div id="bm-cash-row" style="display:flex; flex-direction:column; gap:3px;">
+            <label for="bm-cash-input" style="font-size:0.72rem; color:#475569; font-weight:600;">Monto en efectivo (MXN)</label>
+            <input id="bm-cash-input" type="number" min="0" step="1" class="bm-input" placeholder="Ej. 500" />
+            <span id="bm-change-label" style="font-size:0.72rem; color:#15803d; font-weight:700;">Cambio: $0.00 MXN</span>
+          </div>
+
+          <div id="bm-card-row" style="display:none; flex-direction:column; gap:4px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:7px;">
+            <button type="button" class="bm-opt-btn" id="bm-insert-card-btn" style="background:#0284c7; color:#fff; border-color:#0369a1;">Insertar tarjeta</button>
+            <input id="bm-card-nip" type="password" maxlength="4" inputmode="numeric" class="bm-input" placeholder="NIP (4 dígitos)" />
+            <span id="bm-card-status" style="font-size:0.7rem; color:#1e3a8a; font-weight:600;">Inserta la tarjeta y escribe tu NIP</span>
+          </div>
+
+          <div id="bm-pay-error" style="font-size:0.73rem; color:#dc2626; font-weight:700; min-height:16px;"></div>
+
+          <button type="button" class="bm-add-btn" id="bm-pay-submit-btn" style="width:100%; border-radius:9px; padding:8px; text-align:center;">
+            Pagar y generar Ticket con Folio
+          </button>
+        </div>
+
+        <div class="bm-ticket-card" id="bm-ticket-card">
+          <div style="font-weight:900; color:#15803d; font-size:0.84rem;">TICKET DE COMPRA · MODO NORMAL</div>
+          <div id="bm-ticket-details"></div>
+          <div class="qr-img-box">
+            <img id="bm-ticket-qr-img" alt="QR del ticket" />
+            <span id="bm-ticket-folio-txt"></span>
+          </div>
+          <button type="button" class="bm-opt-btn" id="bm-new-purchase-btn" style="background:#f1f5f9;">Nueva compra en Modo Normal</button>
+        </div>
       </aside>
     </div>
   </section>
@@ -1018,9 +1127,26 @@
     const normalCartTotalEl = document.getElementById("normal-cart-total");
     const enter3dBtn = document.getElementById("enter-3d-btn");
     const backNormalBtn = document.getElementById("back-normal-btn");
-    const normalGoCashierBtn = document.getElementById("normal-go-cashier-btn");
-    const normalCheckoutOpenBtn = document.getElementById("normal-checkout-open-btn");
     const normalLogoutBtn = document.getElementById("normal-logout-btn");
+
+    const bmDeliveryGridEl = document.getElementById("bm-delivery-grid");
+    const bmAddressRowEl = document.getElementById("bm-address-row");
+    const bmAddressInput = document.getElementById("bm-address-input");
+    const bmMethodGridEl = document.getElementById("bm-method-grid");
+    const bmCashRowEl = document.getElementById("bm-cash-row");
+    const bmCashInput = document.getElementById("bm-cash-input");
+    const bmChangeLabel = document.getElementById("bm-change-label");
+    const bmCardRowEl = document.getElementById("bm-card-row");
+    const bmInsertCardBtn = document.getElementById("bm-insert-card-btn");
+    const bmCardNipInput = document.getElementById("bm-card-nip");
+    const bmCardStatus = document.getElementById("bm-card-status");
+    const bmPayError = document.getElementById("bm-pay-error");
+    const bmPaySubmitBtn = document.getElementById("bm-pay-submit-btn");
+    const bmTicketCard = document.getElementById("bm-ticket-card");
+    const bmTicketDetails = document.getElementById("bm-ticket-details");
+    const bmTicketQrImg = document.getElementById("bm-ticket-qr-img");
+    const bmTicketFolioTxt = document.getElementById("bm-ticket-folio-txt");
+    const bmNewPurchaseBtn = document.getElementById("bm-new-purchase-btn");
 
     const canvasWrapEl = document.getElementById("canvas-wrap");
     const hudTopEl = document.getElementById("hud-top");
@@ -1186,7 +1312,6 @@
 
     const cardImageCache = new Map();
 
-    // Genera ilustración limpia de tarjeta estilo catálogo de bodega sin depender de imágenes externas rotas
     function buildProductCardImage(prod) {
       const key = `${prod.id}|${prod.name}|${prod.shape}|${prod.color}|${prod.price}`;
       if (cardImageCache.has(key)) return cardImageCache.get(key);
@@ -1402,6 +1527,12 @@
     let normalSortMode = "featured";
     let normalSearchTerm = "";
 
+    // Carrito y estado de compra separado para Modo Normal, ligado a la cuenta
+    let normalCart = new Map();
+    let normalDeliveryChoice = "casa";
+    let normalPaymentMethod = "efectivo";
+    let isNormalCardInserted = false;
+
     let activeAisle = "Panadería";
     let currentUser = null;
     let products = [];
@@ -1468,6 +1599,195 @@
       ArrowUp: false, ArrowLeft: false, ArrowDown: false, ArrowRight: false
     };
 
+    function getNormalCartTotal() {
+      let total = 0;
+      normalCart.forEach((qty, prodId) => {
+        const prod = products.find((p) => Number(p.id) === Number(prodId));
+        if (prod) total += Number(prod.price || 0) * qty;
+      });
+      return total;
+    }
+
+    function updateNormalPayControls() {
+      const isHome = normalDeliveryChoice === "casa";
+      bmFulfillmentBadge.textContent = isHome ? "Tepic · Llevar a casa" : "Tepic · Recoger tienda";
+      bmCartDeliveryNote.textContent = isHome ? "Entrega: Llevar a tu casa" : "Entrega: Recoger en tienda";
+      bmAddressRowEl.style.display = isHome ? "flex" : "none";
+
+      bmDeliveryGridEl.querySelectorAll("button").forEach((b) => {
+        b.classList.toggle("active", b.dataset.bmDeliv === normalDeliveryChoice);
+      });
+      document.querySelectorAll("[data-deliv-filter]").forEach((b) => {
+        b.classList.toggle("active", b.dataset.delivFilter === normalDeliveryChoice);
+      });
+
+      bmMethodGridEl.querySelectorAll("button").forEach((b) => {
+        b.classList.toggle("active", b.dataset.bmPay === normalPaymentMethod);
+      });
+
+      const total = getNormalCartTotal();
+      if (normalPaymentMethod === "efectivo") {
+        bmCashRowEl.style.display = "flex";
+        bmCardRowEl.style.display = "none";
+        const tendered = Number(bmCashInput.value || 0);
+        if (tendered >= total && total > 0) {
+          bmChangeLabel.textContent = `Cambio: $${(tendered - total).toFixed(2)} MXN`;
+        } else {
+          bmChangeLabel.textContent = total > 0
+            ? `Faltan $${Math.max(0, total - tendered).toFixed(2)} MXN`
+            : "Cambio: $0.00 MXN";
+        }
+      } else if (normalPaymentMethod === "tarjeta") {
+        bmCashRowEl.style.display = "none";
+        bmCardRowEl.style.display = "flex";
+      } else {
+        bmCashRowEl.style.display = "none";
+        bmCardRowEl.style.display = "none";
+      }
+    }
+
+    bmFulfillmentBtn.addEventListener("click", () => {
+      normalDeliveryChoice = normalDeliveryChoice === "casa" ? "recoger" : "casa";
+      updateNormalPayControls();
+    });
+
+    bmDeliveryGridEl.querySelectorAll("button").forEach((b) => {
+      b.addEventListener("click", () => {
+        normalDeliveryChoice = b.dataset.bmDeliv;
+        updateNormalPayControls();
+      });
+    });
+
+    document.querySelectorAll("[data-deliv-filter]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        normalDeliveryChoice = btn.dataset.delivFilter;
+        updateNormalPayControls();
+      });
+    });
+
+    bmMethodGridEl.querySelectorAll("button").forEach((b) => {
+      b.addEventListener("click", () => {
+        normalPaymentMethod = b.dataset.bmPay;
+        if (normalPaymentMethod !== "tarjeta") {
+          isNormalCardInserted = false;
+          bmCardNipInput.value = "";
+          bmCardStatus.textContent = "Inserta la tarjeta y escribe tu NIP";
+        }
+        updateNormalPayControls();
+      });
+    });
+
+    bmInsertCardBtn.addEventListener("click", () => {
+      isNormalCardInserted = true;
+      bmCardStatus.textContent = "Tarjeta insertada · Escribe tu NIP de 4 dígitos";
+    });
+
+    bmCardNipInput.addEventListener("input", () => {
+      bmCardNipInput.value = bmCardNipInput.value.replace(/\D/g, "").slice(0, 4);
+    });
+
+    bmCashInput.addEventListener("input", updateNormalPayControls);
+
+    bmPaySubmitBtn.addEventListener("click", async () => {
+      bmPayError.textContent = "";
+      const total = getNormalCartTotal();
+      if (normalCart.size === 0 || total <= 0) {
+        bmPayError.textContent = "Agrega al menos un producto en Modo Normal antes de pagar.";
+        return;
+      }
+
+      if (normalDeliveryChoice === "casa" && !bmAddressInput.value.trim()) {
+        bmPayError.textContent = "Escribe tu dirección de entrega a domicilio.";
+        return;
+      }
+
+      if (normalPaymentMethod === "tarjeta") {
+        if (!isNormalCardInserted) {
+          bmPayError.textContent = "Inserta primero tu tarjeta.";
+          return;
+        }
+        if (bmCardNipInput.value.length !== 4) {
+          bmPayError.textContent = "Escribe tu NIP de 4 dígitos.";
+          return;
+        }
+      }
+
+      const tendered = normalPaymentMethod === "efectivo" ? Number(bmCashInput.value || total) : total;
+      if (normalPaymentMethod === "efectivo" && tendered < total) {
+        bmPayError.textContent = `El efectivo debe ser de al menos $${total} MXN.`;
+        return;
+      }
+
+      const items = [];
+      const lineSummary = [];
+      normalCart.forEach((qty, prodId) => {
+        const prod = products.find((p) => Number(p.id) === Number(prodId));
+        if (prod) {
+          items.push({ productId: prod.id, qty });
+          lineSummary.push(`${qty}x ${prod.name} ($${prod.price * qty})`);
+        }
+      });
+
+      const folio = `ZM-NORM-${Date.now().toString().slice(-6)}`;
+      const changeAmt = normalPaymentMethod === "efectivo" ? Math.max(0, tendered - total) : 0;
+      const delivText = normalDeliveryChoice === "casa"
+        ? `A domicilio (${bmAddressInput.value.trim()})`
+        : "Recoger en tienda";
+
+      const qrPayload = JSON.stringify({
+        folio,
+        mode: "normal",
+        user: currentUser?.username || "cliente",
+        total,
+        method: normalPaymentMethod,
+        delivery: normalDeliveryChoice
+      });
+      const qrFallback = buildLocalQrDataUrl(qrPayload);
+      bmTicketQrImg.onerror = () => { bmTicketQrImg.src = qrFallback; };
+      bmTicketQrImg.src = `/api/qr?ticket=${encodeURIComponent(folio)}&total=${encodeURIComponent(total)}&method=${encodeURIComponent(normalPaymentMethod)}`;
+      bmTicketFolioTxt.textContent = `Folio: ${folio}`;
+
+      bmTicketDetails.innerHTML = `
+        <div><strong>Folio:</strong> ${folio}</div>
+        <div><strong>Cuenta:</strong> ${currentUser?.username || "invitado"}</div>
+        <div><strong>Entrega:</strong> ${delivText}</div>
+        <div><strong>Pago:</strong> ${normalPaymentMethod.toUpperCase()} · <strong>Total:</strong> $${total.toLocaleString("es-MX")} MXN</div>
+        ${normalPaymentMethod === "efectivo" ? `<div><strong>Recibido:</strong> $${tendered} · <strong>Cambio:</strong> $${changeAmt} MXN</div>` : ""}
+        <div style="margin-top:4px; color:#334155;"><strong>Artículos:</strong> ${lineSummary.join(", ")}</div>
+      `;
+
+      bmTicketCard.classList.add("active");
+      normalCart.clear();
+      bmCashInput.value = "";
+      isNormalCardInserted = false;
+      bmCardNipInput.value = "";
+      renderNormalStore();
+
+      try {
+        const res = await fetch("/api/cart/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items,
+            paymentMethod: normalPaymentMethod,
+            deliveryType: normalDeliveryChoice,
+            address: bmAddressInput.value.trim(),
+            amountPaid: tendered,
+            channel: "normal"
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.products) setProducts(data.products);
+        }
+      } catch {}
+    });
+
+    bmNewPurchaseBtn.addEventListener("click", () => {
+      bmTicketCard.classList.remove("active");
+      bmPayError.textContent = "";
+    });
+
     function applyViewMode() {
       if (!currentUser) {
         normalStoreEl.classList.remove("active");
@@ -1520,34 +1840,6 @@
       applyViewMode();
     });
 
-    normalGoCashierBtn.addEventListener("click", () => {
-      currentMode = "3d";
-      applyViewMode();
-      goToCashier();
-    });
-
-    normalCheckoutOpenBtn.addEventListener("click", () => {
-      currentMode = "3d";
-      applyViewMode();
-      goToCashier();
-    });
-
-    bmFulfillmentBtn.addEventListener("click", () => {
-      deliveryChoice = deliveryChoice === "casa" ? "recoger" : "casa";
-      syncDeliveryButtons();
-      renderNormalStore();
-      updateCashierUI();
-    });
-
-    document.querySelectorAll("[data-deliv-filter]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        deliveryChoice = btn.dataset.delivFilter;
-        syncDeliveryButtons();
-        renderNormalStore();
-        updateCashierUI();
-      });
-    });
-
     document.querySelectorAll("[data-price-filter]").forEach((btn) => {
       btn.addEventListener("click", () => {
         normalPriceFilter = btn.dataset.priceFilter;
@@ -1563,21 +1855,8 @@
       renderNormalStore();
     });
 
-    function syncDeliveryButtons() {
-      const isHome = deliveryChoice === "casa";
-      bmFulfillmentBadge.textContent = isHome ? "Tepic · Llevar a casa" : "Tepic · Recoger en tienda";
-      bmCartDeliveryNote.textContent = isHome ? "Entrega: Llevar a tu casa" : "Entrega: Recoger en sucursal";
-      document.querySelectorAll("[data-deliv-filter]").forEach((b) => {
-        b.classList.toggle("active", b.dataset.delivFilter === deliveryChoice);
-      });
-      deliveryChoicesEl.querySelectorAll("button").forEach((b) => {
-        b.classList.toggle("active", b.dataset.delivery === deliveryChoice);
-      });
-      addressWrap.style.display = isHome ? "flex" : "none";
-    }
-
     function renderNormalStore() {
-      syncDeliveryButtons();
+      updateNormalPayControls();
       const departments = ["Todos", ...AISLE_LAYOUT.map((a) => a.name)];
 
       normalCatListEl.innerHTML = "";
@@ -1670,70 +1949,47 @@
           </div>
         `;
         card.querySelector(".bm-add-btn").addEventListener("click", () => {
-          const slots = getSlotsForProduct(prod.id);
-          const freeSlot = slots.find((s) => !s.taken);
-          if (freeSlot) {
-            freeSlot.taken = true;
-            freeSlot.mesh.visible = false;
-            pendingRestockQueue.push({ prod, slot: freeSlot });
-          }
-          cart.set(prod.id, (cart.get(prod.id) || 0) + 1);
-          syncCartCargo3D();
-          updateCartBadge();
-          renderList();
-          renderCart();
-          updateCashierUI();
+          normalCart.set(prod.id, (normalCart.get(prod.id) || 0) + 1);
           renderNormalStore();
         });
         normalProductGridEl.appendChild(card);
       });
 
       normalCartItemsEl.innerHTML = "";
-      if (cart.size === 0) {
-        normalCartItemsEl.innerHTML = `<p style="font-size:0.8rem; color:#64748b;">Tu carrito está vacío. Pulsa <strong>+ Agregar</strong> en cualquier producto.</p>`;
+      if (normalCart.size === 0) {
+        normalCartItemsEl.innerHTML = `<p style="font-size:0.78rem; color:#64748b;">Carrito normal vacío. Pulsa <strong>+ Agregar</strong>.</p>`;
       } else {
-        cart.forEach((qty, prodId) => {
+        normalCart.forEach((qty, prodId) => {
           const prod = products.find((p) => Number(p.id) === Number(prodId));
           if (!prod) return;
           const itemRow = document.createElement("div");
-          itemRow.style.cssText = "border:1px solid #e2e8f0; border-radius:8px; padding:7px 9px; background:#ffffff; font-size:0.8rem;";
+          itemRow.style.cssText = "border:1px solid #e2e8f0; border-radius:8px; padding:6px 8px; background:#ffffff; font-size:0.78rem;";
           itemRow.innerHTML = `
             <div class="row">
               <strong>${prod.name}</strong>
               <span style="font-weight:800; color:#15803d;">$${(prod.price * qty).toLocaleString("es-MX")}</span>
             </div>
-            <div class="row" style="margin-top:4px; color:#475569; font-size:0.74rem;">
+            <div class="row" style="margin-top:3px; color:#475569; font-size:0.72rem;">
               <span>Cant: ${qty} · $${prod.price} c/u</span>
-              <button type="button" class="btn" style="color:#0f172a; border-color:#cbd5e1; padding:3px 7px;">Quitar</button>
+              <button type="button" class="btn" style="color:#0f172a; border-color:#cbd5e1; padding:2px 6px;">Quitar</button>
             </div>
           `;
           itemRow.querySelector("button").addEventListener("click", () => {
-            const slots = getSlotsForProduct(prod.id);
-            const takenSlot = slots.find((s) => s.taken);
-            if (takenSlot) {
-              takenSlot.taken = false;
-              takenSlot.mesh.visible = true;
-              takenSlot.mesh.position.copy(takenSlot.homePos);
-            }
-            if (qty > 1) cart.set(prod.id, qty - 1);
-            else cart.delete(prod.id);
-            syncCartCargo3D();
-            updateCartBadge();
-            renderList();
-            renderCart();
-            updateCashierUI();
+            if (qty > 1) normalCart.set(prod.id, qty - 1);
+            else normalCart.delete(prod.id);
             renderNormalStore();
           });
           normalCartItemsEl.appendChild(itemRow);
         });
       }
 
-      const total = getCartTotal();
+      const total = getNormalCartTotal();
       normalCartTotalEl.textContent = `$${total.toLocaleString("es-MX")} MXN`;
       let count = 0;
-      cart.forEach((q) => { count += q; });
+      normalCart.forEach((q) => { count += q; });
       normalCartCountEl.textContent = String(count);
       normalHeaderCartEl.textContent = String(count);
+      updateNormalPayControls();
     }
 
     normalSearchInput.addEventListener("input", (e) => {
@@ -1865,7 +2121,6 @@
       syncCartCargo3D();
       renderCart();
       updateCashierUI();
-      renderNormalStore();
 
       if (regState && regState.beltGroup && THREE) {
         while (regState.beltGroup.children.length > 0) {
@@ -2881,7 +3136,7 @@
       renderList();
       updateCashierUI();
       renderNormalStore();
-      liveNoteEl.textContent = `Agregado al carrito: ${prod.name}.`;
+      liveNoteEl.textContent = `Agregado al carrito 3D: ${prod.name}.`;
     }
 
     function openUnlockedProduct(prod, slotObj) {
@@ -3079,14 +3334,12 @@
       let totalItems = 0;
       cart.forEach((qty) => { totalItems += qty; });
       cartCountEl.textContent = String(totalItems);
-      normalCartCountEl.textContent = String(totalItems);
-      normalHeaderCartEl.textContent = String(totalItems);
     }
 
     function renderCart() {
       cartListEl.innerHTML = "";
       if (cart.size === 0) {
-        cartListEl.innerHTML = `<p class="muted">Tu carrito está vacío. Toma productos en las secciones.</p>`;
+        cartListEl.innerHTML = `<p class="muted">Tu carrito 3D está vacío. Toma productos en las secciones.</p>`;
         cartTotalEl.textContent = "$0 MXN";
         return;
       }
@@ -3127,7 +3380,6 @@
           renderList();
           renderCart();
           updateCashierUI();
-          renderNormalStore();
           liveNoteEl.textContent = `Devolviste 1 ${prod.name}.`;
         });
         cartListEl.appendChild(row);
@@ -3141,8 +3393,10 @@
     deliveryChoicesEl.querySelectorAll("button").forEach((btn) => {
       btn.addEventListener("click", () => {
         deliveryChoice = btn.dataset.delivery;
-        syncDeliveryButtons();
-        renderNormalStore();
+        deliveryChoicesEl.querySelectorAll("button").forEach((b) => {
+          b.classList.toggle("active", b.dataset.delivery === deliveryChoice);
+        });
+        updateCashierUI();
       });
     });
 
@@ -3277,13 +3531,14 @@
       cardStatusEl.textContent = "Inserta la tarjeta y escribe tu NIP";
 
       const changeAmount = selectedPaymentMethod === "efectivo" ? Math.max(0, tendered - total) : 0;
-      const ticketCode = `ZM-${Date.now().toString().slice(-6)}`;
+      const ticketCode = `ZM-3D-${Date.now().toString().slice(-6)}`;
       const deliveryLabel = deliveryChoice === "casa"
         ? `Llevar a casa (${deliveryAddressInput.value.trim()})`
         : "Recoger en sucursal";
 
       const qrPayload = JSON.stringify({
         ticket: ticketCode,
+        mode: "3d",
         total,
         method: selectedPaymentMethod,
         delivery: deliveryChoice,
@@ -3308,7 +3563,6 @@
       `;
       liveNoteEl.textContent = "Ticket con QR listo. Puedes regresar al menú principal o salir de la tienda con tu bolsa.";
       updateCashierUI();
-      renderNormalStore();
 
       const itemsMap = new Map();
       purchasedSnapshot.forEach((it) => {
@@ -3326,7 +3580,8 @@
             paymentMethod: selectedPaymentMethod,
             deliveryType: deliveryChoice,
             address: deliveryAddressInput.value.trim(),
-            amountPaid: tendered
+            amountPaid: tendered,
+            channel: "3d"
           })
         });
       } catch {}
