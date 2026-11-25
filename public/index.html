@@ -109,7 +109,7 @@
       display: flex;
       gap: 5px;
       flex-wrap: wrap;
-      max-width: 66vw;
+      max-width: 68vw;
     }
 
     .dot {
@@ -122,10 +122,10 @@
 
     .guide-box {
       position: fixed;
-      top: 64px;
+      top: 68px;
       left: 12px;
       z-index: 26;
-      width: min(350px, calc(100vw - 24px));
+      width: min(360px, calc(100vw - 24px));
       background: var(--panel);
       backdrop-filter: blur(12px);
       border: 1px solid var(--accent);
@@ -143,7 +143,7 @@
       position: fixed;
       right: 12px;
       bottom: 12px;
-      width: min(390px, calc(100vw - 24px));
+      width: min(395px, calc(100vw - 24px));
       max-height: 78vh;
       overflow-y: auto;
       z-index: 20;
@@ -336,7 +336,7 @@
     <form class="auth-card" id="auth-form">
       <div>
         <h1>ZeroMart 3D</h1>
-        <p>Entra por las puertas automáticas, revisa lácteos, refrigeradores, vitrinas bajo llave, bodega y cajas.</p>
+        <p>Sucursal ampliada con más secciones, más productos, vitrinas bajo llave y empleados con IA.</p>
       </div>
       <div class="field">
         <label for="username">Usuario</label>
@@ -371,12 +371,12 @@
 
   <div class="guide-box" id="guide-box">
     <div class="row">
-      <strong id="guide-name">Empleado Guía</strong>
+      <strong id="guide-name">Empleado</strong>
       <button type="button" class="btn" id="guide-close-btn">✕</button>
     </div>
-    <p class="muted" id="guide-msg" style="margin:0; color:var(--text);">¡Hola! ¿Qué necesitas buscar hoy? Por ejemplo: estufa, lavadora, televisión, refrigerador, lácteos o celulares.</p>
+    <p class="muted" id="guide-msg" style="margin:0; color:var(--text);">¡Hola! ¿Buscas algún producto o quieres que te lleve a alguna sección?</p>
     <div class="row">
-      <input id="guide-query" type="text" placeholder="Ej. quiero una estufa o un celular..." style="flex:1; background:rgba(255,255,255,0.08); border:1px solid var(--border); border-radius:8px; padding:6px 8px; color:var(--text); font-size:0.8rem;" />
+      <input id="guide-query" type="text" placeholder="Ej. frutas, pollo, detergente, cel..." style="flex:1; background:rgba(255,255,255,0.08); border:1px solid var(--border); border-radius:8px; padding:6px 8px; color:var(--text); font-size:0.8rem;" />
       <button type="button" class="btn primary" id="guide-ask-btn">Preguntar</button>
     </div>
     <div class="row" id="guide-confirm-row" style="display:none;">
@@ -386,7 +386,7 @@
   </div>
 
   <div class="controls-hint" id="controls-hint">
-    Moverse: <strong>W A S D</strong> · Vista: <strong>Mantener clic + mover</strong> · Clic en NPC Guía o producto
+    Moverse: <strong>W A S D</strong> · Vista: <strong>Mantener clic + mover</strong> · Clic en NPC o producto
   </div>
 
   <div class="held-bar" id="held-bar">
@@ -414,7 +414,7 @@
     </div>
 
     <div id="view-catalog">
-      <p class="muted" id="selected-info">Entra por las puertas automáticas o haz clic en un NPC guía.</p>
+      <p class="muted" id="selected-info">Recorre la sucursal ampliada o habla con los empleados.</p>
       <div class="product-list" id="product-list"></div>
     </div>
 
@@ -428,7 +428,7 @@
     </div>
 
     <div id="view-cashier" style="display:none;">
-      <div class="npc-log" id="npc-log">Cajero: Al acercarte a la caja pongo tus productos en la banda y los voy escaneando uno por uno.</div>
+      <div class="npc-log" id="npc-log">Cajero: Al acercarte pongo tus productos en la banda y los voy escaneando uno por uno.</div>
       <div class="row" style="margin-top:8px;">
         <strong>Total escaneado:</strong>
         <span class="price" id="cashier-total">$0 MXN</span>
@@ -542,25 +542,34 @@
     const controlsHint = document.getElementById("controls-hint");
 
     const PLAYER_EYE_HEIGHT = 1.8;
-    const CEILING_HEIGHT = 7.2;
-    const AUTO_RETURN_DISTANCE = 6.0;
-    const MOVE_SPEED = 0.28;
+    const CEILING_HEIGHT = 7.8;
+    const AUTO_RETURN_DISTANCE = 6.5;
+    const MOVE_SPEED = 0.30;
     const PLAYER_RADIUS = 0.55;
 
-    // Lácteos y Fríos = estante de lácteos; Refrigeradores Grandes = refrigeradores; Vitrinas Celulares = bajo llave
+    const STORE_HALF_W = 38.0;
+    const STORE_BACK_Z = -35.0;
+    const ENTRANCE_Z = 28.0;
+    const WAREHOUSE_WALL_Z = -26.5;
+    const WAREHOUSE_Z = -30.5;
+    const CASHIER_POS = { x: 10.0, z: 18.0 };
+
     const AISLE_LAYOUT = [
-      { name: "Panadería", x: -18.0, z: 6.0, color: "#d97706", zoneType: "shelf" },
-      { name: "Botanas", x: -18.0, z: -2.0, color: "#15803d", zoneType: "shelf" },
-      { name: "Abarrotes", x: -18.0, z: -10.0, color: "#4338ca", zoneType: "shelf" },
-      { name: "Bebidas", x: -18.0, z: -18.0, color: "#0369a1", zoneType: "shelf" },
+      { name: "Panadería", x: -22.0, z: 10.0, color: "#d97706", zoneType: "shelf" },
+      { name: "Botanas", x: -22.0, z: 2.0, color: "#15803d", zoneType: "shelf" },
+      { name: "Frutas y Verduras", x: -22.0, z: -6.0, color: "#16a34a", zoneType: "shelf" },
+      { name: "Abarrotes", x: -22.0, z: -14.0, color: "#4338ca", zoneType: "shelf" },
+      { name: "Bebidas", x: -22.0, z: -22.0, color: "#0369a1", zoneType: "shelf" },
 
-      { name: "Lácteos y Fríos", x: -6.5, z: -16.5, color: "#1d4ed8", zoneType: "shelf" },
-      { name: "Refrigeradores Grandes", x: 5.5, z: -16.5, color: "#0284c7", zoneType: "fridge" },
+      { name: "Lácteos y Fríos", x: -9.0, z: -19.5, color: "#1d4ed8", zoneType: "shelf" },
+      { name: "Carnicería y Embutidos", x: 0.0, z: -19.5, color: "#be123c", zoneType: "shelf" },
+      { name: "Refrigeradores Grandes", x: 9.0, z: -19.5, color: "#0284c7", zoneType: "fridge" },
 
-      { name: "Estufas", x: 18.0, z: -14.0, color: "#dc2626", zoneType: "shelf" },
-      { name: "Lavadoras", x: 18.0, z: -6.0, color: "#b45309", zoneType: "shelf" },
-      { name: "Vitrinas Celulares", x: 18.0, z: 2.0, color: "#7e22ce", zoneType: "locked" },
-      { name: "Televisiones", x: 18.0, z: 10.0, color: "#0f766e", zoneType: "shelf" }
+      { name: "Estufas", x: 22.0, z: -18.0, color: "#dc2626", zoneType: "shelf" },
+      { name: "Lavadoras", x: 22.0, z: -10.0, color: "#b45309", zoneType: "shelf" },
+      { name: "Limpieza y Hogar", x: 22.0, z: -2.0, color: "#0d9488", zoneType: "shelf" },
+      { name: "Vitrinas Celulares", x: 22.0, z: 6.0, color: "#7e22ce", zoneType: "locked" },
+      { name: "Televisiones", x: 22.0, z: 14.0, color: "#0f766e", zoneType: "shelf" }
     ];
 
     const EXTRA_PRODUCTS = [
@@ -569,15 +578,22 @@
       { id: 103, name: "Jugo Naranja 500ml", price: 22, stock: 10, aisle: "Bebidas", shape: "carton", color: "#f97316" },
       { id: 104, name: "Arroz Blanco 1kg", price: 29, stock: 12, aisle: "Abarrotes", shape: "bag", color: "#64748b" },
       { id: 105, name: "Frijol Negro 1kg", price: 35, stock: 12, aisle: "Abarrotes", shape: "bag", color: "#4c1d95" },
+      { id: 801, name: "Manzana Roja 1kg", price: 42, stock: 10, aisle: "Frutas y Verduras", shape: "bottle", color: "#ef4444" },
+      { id: 802, name: "Aguacate Hass 1kg", price: 68, stock: 10, aisle: "Frutas y Verduras", shape: "bag", color: "#22c55e" },
+      { id: 803, name: "Jitomate Saladet 1kg", price: 32, stock: 10, aisle: "Frutas y Verduras", shape: "carton", color: "#dc2626" },
+      { id: 901, name: "Pechuga de Pollo 1kg", price: 98, stock: 8, aisle: "Carnicería y Embutidos", shape: "carton", color: "#f43f5e" },
+      { id: 902, name: "Jamón de Pavo 500g", price: 74, stock: 8, aisle: "Carnicería y Embutidos", shape: "bag", color: "#e11d48" },
       { id: 503, name: "Leche Entera 1L", price: 26, stock: 10, aisle: "Lácteos y Fríos", shape: "carton", color: "#2563eb" },
       { id: 504, name: "Yogur Natural 900g", price: 38, stock: 8, aisle: "Lácteos y Fríos", shape: "carton", color: "#0ea5e9" },
-      { id: 505, name: "Crema y Queso Fresco", price: 46, stock: 8, aisle: "Lácteos y Fríos", shape: "bag", color: "#f8fafc" },
+      { id: 505, name: "Crema y Queso Fresco", price: 46, stock: 8, aisle: "Lácteos y Fríos", shape: "bag", color: "#e2e8f0" },
       { id: 501, name: "Refrigerador Duplex 22p³", price: 14990, stock: 4, aisle: "Refrigeradores Grandes", shape: "fridgeUnit", color: "#f1f5f9" },
-      { id: 502, name: "Refrigerador Vertical 16p³", price: 10490, stock: 4, aisle: "Refrigeradores Grandes", shape: "fridgeUnit", color: "#e2e8f0" },
+      { id: 502, name: "Refrigerador Vertical 16p³", price: 10490, stock: 4, aisle: "Refrigeradores Grandes", shape: "fridgeUnit", color: "#cbd5e1" },
       { id: 601, name: "Estufa 6 Quemadores Acero", price: 8490, stock: 5, aisle: "Estufas", shape: "stove", color: "#334155" },
       { id: 602, name: "Estufa con Horno y Capelo", price: 9650, stock: 5, aisle: "Estufas", shape: "stove", color: "#475569" },
       { id: 301, name: "Lavadora 18kg Carga Sup.", price: 7890, stock: 6, aisle: "Lavadoras", shape: "washer", color: "#e2e8f0" },
-      { id: 302, name: "Lavadora 22kg Inverter", price: 10290, stock: 5, aisle: "Lavadoras", shape: "washer", color: "#cbd5e1" },
+      { id: 302, name: "Lavadora 22kg Inverter", price: 10290, stock: 5, aisle: "Lavadoras", shape: "washer", color: "#94a3b8" },
+      { id: 951, name: "Detergente Líquido 3L", price: 115, stock: 10, aisle: "Limpieza y Hogar", shape: "bottle", color: "#06b6d4" },
+      { id: 952, name: "Cloro Desinfectante 2L", price: 34, stock: 10, aisle: "Limpieza y Hogar", shape: "bottle", color: "#eab308" },
       { id: 701, name: "Smartphone Pro 256GB", price: 8990, stock: 5, aisle: "Vitrinas Celulares", shape: "phone", color: "#1e293b", locked: true },
       { id: 702, name: "Smartphone Ultra 512GB", price: 13490, stock: 4, aisle: "Vitrinas Celulares", shape: "phone", color: "#0284c7", locked: true },
       { id: 703, name: "Tablet + Audífonos Pro", price: 6200, stock: 5, aisle: "Vitrinas Celulares", shape: "phone", color: "#7e22ce", locked: true },
@@ -585,31 +601,28 @@
       { id: 202, name: "TV QLED 65\"", price: 12490, stock: 5, aisle: "Televisiones", shape: "tv", color: "#0284c7" }
     ];
 
-    const ENTRANCE_Z = 24.0;
-    const WAREHOUSE_Z = -26.5;
-    const CASHIER_POS = { x: 8.5, z: 15.5 };
     const REGISTER_OFFSETS = [
       { index: 0, offsetX: -2.2, label: "Caja 1" },
       { index: 1, offsetX: 2.2, label: "Caja 2" }
     ];
 
     const COLLIDER_BOXES = [
-      { minX: -31.5, maxX: 31.5, minZ: -31.5, maxZ: -30.5 },
-      { minX: -31.5, maxX: -30.5, minZ: -31.5, maxZ: 24.5 },
-      { minX: 30.5, maxX: 31.5, minZ: -31.5, maxZ: 24.5 },
-      { minX: -31.5, maxX: -2.2, minZ: -22.9, maxZ: -22.1 },
-      { minX: 2.2, maxX: 31.5, minZ: -22.9, maxZ: -22.1 },
-      { minX: -31.5, maxX: -2.5, minZ: ENTRANCE_Z - 0.3, maxZ: ENTRANCE_Z + 0.3 },
-      { minX: 2.5, maxX: 31.5, minZ: ENTRANCE_Z - 0.3, maxZ: ENTRANCE_Z + 0.3 },
-      { minX: CASHIER_POS.x - 4.2, maxX: CASHIER_POS.x + 4.2, minZ: CASHIER_POS.z - 1.4, maxZ: CASHIER_POS.z + 1.4 }
+      { minX: -STORE_HALF_W - 0.5, maxX: STORE_HALF_W + 0.5, minZ: STORE_BACK_Z - 0.5, maxZ: STORE_BACK_Z + 0.3 },
+      { minX: -STORE_HALF_W - 0.5, maxX: -STORE_HALF_W + 0.3, minZ: STORE_BACK_Z, maxZ: ENTRANCE_Z + 0.5 },
+      { minX: STORE_HALF_W - 0.3, maxX: STORE_HALF_W + 0.5, minZ: STORE_BACK_Z, maxZ: ENTRANCE_Z + 0.5 },
+      { minX: -STORE_HALF_W, maxX: -2.5, minZ: WAREHOUSE_WALL_Z - 0.4, maxZ: WAREHOUSE_WALL_Z + 0.4 },
+      { minX: 2.5, maxX: STORE_HALF_W, minZ: WAREHOUSE_WALL_Z - 0.4, maxZ: WAREHOUSE_WALL_Z + 0.4 },
+      { minX: -STORE_HALF_W, maxX: -2.6, minZ: ENTRANCE_Z - 0.3, maxZ: ENTRANCE_Z + 0.3 },
+      { minX: 2.6, maxX: STORE_HALF_W, minZ: ENTRANCE_Z - 0.3, maxZ: ENTRANCE_Z + 0.3 },
+      { minX: CASHIER_POS.x - 4.3, maxX: CASHIER_POS.x + 4.3, minZ: CASHIER_POS.z - 1.5, maxZ: CASHIER_POS.z + 1.5 }
     ];
 
     AISLE_LAYOUT.forEach((a) => {
       COLLIDER_BOXES.push({
-        minX: a.x - 3.6,
-        maxX: a.x + 3.6,
-        minZ: a.z - 0.72,
-        maxZ: a.z + 0.72
+        minX: a.x - 3.7,
+        maxX: a.x + 3.7,
+        minZ: a.z - 0.8,
+        maxZ: a.z + 0.8
       });
     });
 
@@ -674,6 +687,7 @@
     let suggestedAisleName = null;
     let guidingTargetPos = null;
     let guidingTargetAisle = null;
+    let lastGreetingTime = 0;
 
     let leftDoorMesh = null;
     let rightDoorMesh = null;
@@ -950,11 +964,11 @@
       setAuthenticatedUser(null);
     });
 
-    function openGuideDialog(npcObj) {
+    function openGuideDialog(npcObj, customGreeting = null) {
       activeGuideNpc = npcObj;
       suggestedAisleName = null;
-      guideNameEl.textContent = `${npcObj.label} (Guía de tienda)`;
-      guideMsgEl.textContent = "¡Hola! ¿Qué buscas? Estufa, lavadora, televisión, refrigerador, lácteos o celulares en vitrina.";
+      guideNameEl.textContent = `${npcObj.label} (Empleado ZeroMart)`;
+      guideMsgEl.textContent = customGreeting || "¡Hola! ¿Buscas algún producto o quieres que te lleve a una sección?";
       guideQueryInput.value = "";
       guideConfirmRow.style.display = "none";
       guideBox.classList.add("active");
@@ -965,7 +979,16 @@
       let targetAisle = "Vitrinas Celulares";
       let itemLabel = "ese producto";
 
-      if (q.includes("estufa") || q.includes("quemador")) {
+      if (q.includes("fruta") || q.includes("verdura") || q.includes("manzana") || q.includes("aguacate") || q.includes("jitomate")) {
+        targetAisle = "Frutas y Verduras";
+        itemLabel = "frutas y verduras";
+      } else if (q.includes("carne") || q.includes("pollo") || q.includes("jamon") || q.includes("jamón") || q.includes("embutido")) {
+        targetAisle = "Carnicería y Embutidos";
+        itemLabel = "carnicería y embutidos";
+      } else if (q.includes("limpieza") || q.includes("detergente") || q.includes("cloro") || q.includes("jabon") || q.includes("jabón")) {
+        targetAisle = "Limpieza y Hogar";
+        itemLabel = "limpieza y hogar";
+      } else if (q.includes("estufa") || q.includes("quemador")) {
         targetAisle = "Estufas";
         itemLabel = "una estufa";
       } else if (q.includes("lavadora")) {
@@ -1011,7 +1034,7 @@
     });
 
     guideNoBtn.addEventListener("click", () => {
-      guideMsgEl.textContent = "¡Listo! Si necesitas otra sección aquí ando.";
+      guideMsgEl.textContent = "¡Perfecto! Si necesitas algo más aquí andamos.";
       guideConfirmRow.style.display = "none";
     });
 
@@ -1023,13 +1046,14 @@
       const cfg = AISLE_LAYOUT.find((a) => a.name === suggestedAisleName);
       if (!cfg || !activeGuideNpc) return;
       guidingTargetAisle = cfg.name;
-      guidingTargetPos = new THREE.Vector3(cfg.x, 0, cfg.z + 2.8);
+      guidingTargetPos = new THREE.Vector3(cfg.x, 0, cfg.z + 2.6);
       activeGuideNpc.isEscorting = true;
+      activeGuideNpc.stuckTimer = 0;
       activeAisle = cfg.name;
       renderAisleNav();
       renderList();
       switchTab("catalog");
-      guideMsgEl.textContent = `¡Vamos! Te guío a ${cfg.name} sin atravesar paredes.`;
+      guideMsgEl.textContent = `¡Vamos! Te guío a ${cfg.name} rodeando los estantes.`;
       guideConfirmRow.style.display = "none";
       setTimeout(() => guideBox.classList.remove("active"), 1300);
     });
@@ -1073,7 +1097,8 @@
     }
 
     function getLabelTexture(prod) {
-      const key = `${prod.name}|${prod.price}|${prod.color || ""}|${prod.aisle || ""}`;
+      const safeColor = typeof prod.color === "string" && prod.color.trim() ? prod.color.trim() : "#0284c7";
+      const key = `${prod.name}|${prod.price}|${safeColor}|${prod.aisle || ""}`;
       if (labelTextureCache.has(key)) return labelTextureCache.get(key);
 
       const canvas = document.createElement("canvas");
@@ -1081,59 +1106,61 @@
       canvas.height = 256;
       const ctx = canvas.getContext("2d");
 
-      const brandColor = prod.color || "#1d4ed8";
-      ctx.fillStyle = brandColor;
+      ctx.fillStyle = safeColor;
       ctx.fillRect(0, 0, canvas.width, 52);
 
       ctx.fillStyle = "#f8fafc";
       ctx.fillRect(0, 52, canvas.width, 152);
 
-      ctx.fillStyle = brandColor;
+      ctx.fillStyle = safeColor;
       ctx.fillRect(0, 204, canvas.width, 52);
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 24px system-ui, sans-serif";
+      ctx.font = "bold 22px system-ui, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(`ZEROMART · ${(prod.aisle || "TIENDA").toUpperCase()}`, canvas.width / 2, 34);
+      ctx.fillText(`ZEROMART · ${(prod.aisle || "TIENDA").toUpperCase().slice(0, 22)}`, canvas.width / 2, 34);
 
       ctx.fillStyle = "#0f172a";
-      ctx.font = "bold 32px system-ui, sans-serif";
-      ctx.fillText(String(prod.name).slice(0, 24), canvas.width / 2, 118);
+      ctx.font = "bold 30px system-ui, sans-serif";
+      ctx.fillText(String(prod.name || "Producto").slice(0, 24), canvas.width / 2, 118);
 
       ctx.fillStyle = "#15803d";
-      ctx.font = "bold 42px system-ui, sans-serif";
-      ctx.fillText(`$${prod.price} MXN`, canvas.width / 2, 178);
+      ctx.font = "bold 40px system-ui, sans-serif";
+      ctx.fillText(`$${Number(prod.price || 0)} MXN`, canvas.width / 2, 178);
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 21px system-ui, sans-serif";
-      ctx.fillText(prod.locked ? "VITRINA BAJO LLAVE" : "GARANTÍA ZEROMART", canvas.width / 2, 238);
+      ctx.font = "bold 20px system-ui, sans-serif";
+      ctx.fillText(prod.locked ? "VITRINA BAJO LLAVE" : "CALIDAD ZEROMART", canvas.width / 2, 238);
 
       const tex = new THREE.CanvasTexture(canvas);
       tex.colorSpace = THREE.SRGBColorSpace;
+      tex.needsUpdate = true;
       labelTextureCache.set(key, tex);
       return tex;
     }
 
     function createSignTexture(text, bgColor) {
+      const safeBg = typeof bgColor === "string" && bgColor.trim() ? bgColor.trim() : "#0284c7";
       const canvas = document.createElement("canvas");
       canvas.width = 512;
       canvas.height = 128;
       const ctx = canvas.getContext("2d");
 
-      ctx.fillStyle = bgColor;
+      ctx.fillStyle = safeBg;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.strokeStyle = "rgba(255,255,255,0.55)";
+      ctx.strokeStyle = "rgba(255,255,255,0.65)";
       ctx.lineWidth = 6;
       ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 34px system-ui, sans-serif";
+      ctx.font = "bold 30px system-ui, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(text.toUpperCase(), canvas.width / 2, 78);
+      ctx.fillText(String(text || "").toUpperCase().slice(0, 24), canvas.width / 2, 76);
 
       const tex = new THREE.CanvasTexture(canvas);
       tex.colorSpace = THREE.SRGBColorSpace;
+      tex.needsUpdate = true;
       return tex;
     }
 
@@ -1142,10 +1169,11 @@
       const group = new THREE.Group();
       const shape = prod.shape || "box";
       const labelTex = getLabelTexture(prod);
-      const baseColor = new THREE.Color(prod.color || "#38bdf8");
+      const safeHex = typeof prod.color === "string" && prod.color.trim() ? prod.color.trim() : "#38bdf8";
+      const baseColor = new THREE.Color(safeHex);
 
       if (shape === "bottle") {
-        const bodyMat = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.22, metalness: 0.08 });
+        const bodyMat = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.25, metalness: 0.08 });
         const labelMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.35, side: THREE.DoubleSide });
         const capMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.35 });
         const body = new THREE.Mesh(sharedGeometries.bottleBody, bodyMat);
@@ -1155,7 +1183,7 @@
         cap.position.y = 0.74;
         group.add(body, label, cap);
       } else if (shape === "fridgeUnit") {
-        const bodyMat = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.3, metalness: 0.45 });
+        const bodyMat = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.3, metalness: 0.4 });
         const frontMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.25 });
         const handleMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.7, roughness: 0.25 });
         const body = new THREE.Mesh(sharedGeometries.fridgeUnitBody, [
@@ -1166,7 +1194,7 @@
         handle.position.set(0.28, 0.78, 0.33);
         group.add(body, handle);
       } else if (shape === "phone") {
-        const frameMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.25, metalness: 0.6 });
+        const frameMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.25, metalness: 0.6 });
         const screenMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.2 });
         const phone = new THREE.Mesh(sharedGeometries.phoneBody, [
           frameMat, frameMat, frameMat, frameMat, screenMat, frameMat
@@ -1191,7 +1219,7 @@
         });
         group.add(body);
       } else if (shape === "tv") {
-        const bezelMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3, metalness: 0.4 });
+        const bezelMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.3, metalness: 0.4 });
         const screenMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.25 });
         const panel = new THREE.Mesh(sharedGeometries.tvScreen, [
           bezelMat, bezelMat, bezelMat, bezelMat, screenMat, bezelMat
@@ -1282,18 +1310,18 @@
       const crateMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.65 });
       const crateAltMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.65 });
 
-      [-12, -5, 5, 12].forEach((wx, idx) => {
-        const pallet = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.16, 1.8), palletMat);
-        pallet.position.set(wx, 0.08, WAREHOUSE_Z + 1.5);
+      [-18, -9, 0, 9, 18].forEach((wx, idx) => {
+        const pallet = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.16, 1.8), palletMat);
+        pallet.position.set(wx, 0.08, WAREHOUSE_Z + 1.2);
         envGroup.add(pallet);
 
         for (let r = 0; r < 2; r++) {
           for (let c = 0; c < 2; c++) {
             const box = new THREE.Mesh(
-              new THREE.BoxGeometry(0.85, 0.75, 0.75),
+              new THREE.BoxGeometry(0.9, 0.78, 0.78),
               (r + c + idx) % 2 === 0 ? crateMat : crateAltMat
             );
-            box.position.set(wx - 0.45 + c * 0.9, 0.54 + r * 0.75, WAREHOUSE_Z + 1.1 + r * 0.8);
+            box.position.set(wx - 0.5 + c * 1.0, 0.55 + r * 0.78, WAREHOUSE_Z + 0.8 + r * 0.85);
             envGroup.add(box);
           }
         }
@@ -1302,18 +1330,20 @@
 
     function buildStoreEnvironmentAndLighting() {
       const envGroup = new THREE.Group();
+      const spanW = STORE_HALF_W * 2 + 4;
+      const spanD = ENTRANCE_Z - STORE_BACK_Z + 4;
 
-      scene.add(new THREE.AmbientLight(0xf8fafc, 1.75));
-      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x475569, 1.55);
+      scene.add(new THREE.AmbientLight(0xf8fafc, 1.8));
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x475569, 1.6);
       hemiLight.position.set(0, CEILING_HEIGHT, 0);
       scene.add(hemiLight);
 
-      const dirLight1 = new THREE.DirectionalLight(0xfffbeb, 1.65);
-      dirLight1.position.set(16, 24, 22);
+      const dirLight1 = new THREE.DirectionalLight(0xfffbeb, 1.7);
+      dirLight1.position.set(18, 26, 24);
       scene.add(dirLight1);
 
-      const dirLight2 = new THREE.DirectionalLight(0xe0f2fe, 1.15);
-      dirLight2.position.set(-18, 22, -16);
+      const dirLight2 = new THREE.DirectionalLight(0xe0f2fe, 1.2);
+      dirLight2.position.set(-20, 24, -18);
       scene.add(dirLight2);
 
       const ceilingMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.7 });
@@ -1325,18 +1355,18 @@
         roughness: 0.1
       });
 
-      const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(66, 62), ceilingMat);
+      const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(spanW, spanD), ceilingMat);
       ceiling.rotation.x = Math.PI / 2;
-      ceiling.position.set(0, CEILING_HEIGHT, -2);
+      ceiling.position.set(0, CEILING_HEIGHT, -3.5);
       envGroup.add(ceiling);
 
-      [-18, -8, 2, 12].forEach((zPos) => {
-        const beam = new THREE.Mesh(new THREE.BoxGeometry(66, 0.28, 0.36), beamMat);
+      [-22, -10, 2, 14].forEach((zPos) => {
+        const beam = new THREE.Mesh(new THREE.BoxGeometry(spanW, 0.28, 0.36), beamMat);
         beam.position.set(0, CEILING_HEIGHT - 0.14, zPos);
         envGroup.add(beam);
 
-        [-18, -6, 6, 18].forEach((xPos) => {
-          const lamp = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.12, 0.6), lampMat);
+        [-22, -8, 8, 22].forEach((xPos) => {
+          const lamp = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.12, 0.6), lampMat);
           lamp.position.set(xPos, CEILING_HEIGHT - 0.32, zPos);
           envGroup.add(lamp);
         });
@@ -1357,55 +1387,57 @@
         roughness: 0.15
       });
 
-      const backWall = new THREE.Mesh(new THREE.BoxGeometry(66, CEILING_HEIGHT, 0.4), wallMat);
-      backWall.position.set(0, CEILING_HEIGHT / 2, -31);
+      const backWall = new THREE.Mesh(new THREE.BoxGeometry(spanW, CEILING_HEIGHT, 0.4), wallMat);
+      backWall.position.set(0, CEILING_HEIGHT / 2, STORE_BACK_Z);
 
-      const warehousePartitionLeft = new THREE.Mesh(new THREE.BoxGeometry(27.5, CEILING_HEIGHT, 0.35), warehouseWallMat);
-      warehousePartitionLeft.position.set(-19.25, CEILING_HEIGHT / 2, -22.5);
+      const leftSideSpan = STORE_HALF_W - 2.5;
+      const warehousePartitionLeft = new THREE.Mesh(new THREE.BoxGeometry(leftSideSpan, CEILING_HEIGHT, 0.35), warehouseWallMat);
+      warehousePartitionLeft.position.set(-(2.5 + leftSideSpan / 2), CEILING_HEIGHT / 2, WAREHOUSE_WALL_Z);
 
-      const warehousePartitionRight = new THREE.Mesh(new THREE.BoxGeometry(27.5, CEILING_HEIGHT, 0.35), warehouseWallMat);
-      warehousePartitionRight.position.set(19.25, CEILING_HEIGHT / 2, -22.5);
+      const warehousePartitionRight = new THREE.Mesh(new THREE.BoxGeometry(leftSideSpan, CEILING_HEIGHT, 0.35), warehouseWallMat);
+      warehousePartitionRight.position.set(2.5 + leftSideSpan / 2, CEILING_HEIGHT / 2, WAREHOUSE_WALL_Z);
 
-      const warehouseHeader = new THREE.Mesh(new THREE.BoxGeometry(11.0, 3.2, 0.35), warehouseWallMat);
-      warehouseHeader.position.set(0, CEILING_HEIGHT - 1.6, -22.5);
+      const warehouseHeader = new THREE.Mesh(new THREE.BoxGeometry(5.0, 3.2, 0.35), warehouseWallMat);
+      warehouseHeader.position.set(0, CEILING_HEIGHT - 1.6, WAREHOUSE_WALL_Z);
 
       const warehouseSignTex = createSignTexture("BODEGA DE ALMACÉN", "#334155");
       const warehouseSign = new THREE.Mesh(
         new THREE.BoxGeometry(7.0, 0.75, 0.15),
         new THREE.MeshStandardMaterial({ map: warehouseSignTex, roughness: 0.4 })
       );
-      warehouseSign.position.set(0, 3.3, -22.25);
+      warehouseSign.position.set(0, 3.3, WAREHOUSE_WALL_Z + 0.25);
 
-      const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.4, CEILING_HEIGHT, 56), wallMat);
-      leftWall.position.set(-31, CEILING_HEIGHT / 2, -3.5);
+      const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.4, CEILING_HEIGHT, spanD), wallMat);
+      leftWall.position.set(-STORE_HALF_W, CEILING_HEIGHT / 2, -3.5);
 
-      const rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.4, CEILING_HEIGHT, 56), wallMat);
-      rightWall.position.set(31, CEILING_HEIGHT / 2, -3.5);
+      const rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.4, CEILING_HEIGHT, spanD), wallMat);
+      rightWall.position.set(STORE_HALF_W, CEILING_HEIGHT / 2, -3.5);
 
-      const leftFacade = new THREE.Mesh(new THREE.BoxGeometry(27.5, CEILING_HEIGHT, 0.4), wallMat);
-      leftFacade.position.set(-19.25, CEILING_HEIGHT / 2, ENTRANCE_Z);
+      const facadeSideW = STORE_HALF_W - 2.6;
+      const leftFacade = new THREE.Mesh(new THREE.BoxGeometry(facadeSideW, CEILING_HEIGHT, 0.4), wallMat);
+      leftFacade.position.set(-(2.6 + facadeSideW / 2), CEILING_HEIGHT / 2, ENTRANCE_Z);
 
-      const rightFacade = new THREE.Mesh(new THREE.BoxGeometry(27.5, CEILING_HEIGHT, 0.4), wallMat);
-      rightFacade.position.set(19.25, CEILING_HEIGHT / 2, ENTRANCE_Z);
+      const rightFacade = new THREE.Mesh(new THREE.BoxGeometry(facadeSideW, CEILING_HEIGHT, 0.4), wallMat);
+      rightFacade.position.set(2.6 + facadeSideW / 2, CEILING_HEIGHT / 2, ENTRANCE_Z);
 
-      const headerFacade = new THREE.Mesh(new THREE.BoxGeometry(11.0, 2.5, 0.45), wallMat);
+      const headerFacade = new THREE.Mesh(new THREE.BoxGeometry(5.2, 2.5, 0.45), wallMat);
       headerFacade.position.set(0, CEILING_HEIGHT - 1.25, ENTRANCE_Z);
 
-      const leftWindow = new THREE.Mesh(new THREE.PlaneGeometry(18, 3.4), glassFacadeMat);
-      leftWindow.position.set(-17, 2.2, ENTRANCE_Z + 0.22);
+      const leftWindow = new THREE.Mesh(new THREE.PlaneGeometry(22, 3.4), glassFacadeMat);
+      leftWindow.position.set(-20, 2.2, ENTRANCE_Z + 0.22);
 
-      const rightWindow = new THREE.Mesh(new THREE.PlaneGeometry(18, 3.4), glassFacadeMat);
-      rightWindow.position.set(17, 2.2, ENTRANCE_Z + 0.22);
+      const rightWindow = new THREE.Mesh(new THREE.PlaneGeometry(22, 3.4), glassFacadeMat);
+      rightWindow.position.set(20, 2.2, ENTRANCE_Z + 0.22);
 
-      leftDoorMesh = new THREE.Mesh(new THREE.BoxGeometry(2.7, 4.0, 0.12), doorMat);
-      leftDoorMesh.position.set(-1.35, 2.0, ENTRANCE_Z);
+      leftDoorMesh = new THREE.Mesh(new THREE.BoxGeometry(2.6, 4.0, 0.12), doorMat);
+      leftDoorMesh.position.set(-1.3, 2.0, ENTRANCE_Z);
 
-      rightDoorMesh = new THREE.Mesh(new THREE.BoxGeometry(2.7, 4.0, 0.12), doorMat);
-      rightDoorMesh.position.set(1.35, 2.0, ENTRANCE_Z);
+      rightDoorMesh = new THREE.Mesh(new THREE.BoxGeometry(2.6, 4.0, 0.12), doorMat);
+      rightDoorMesh.position.set(1.3, 2.0, ENTRANCE_Z);
 
       const mallSignTex = createSignTexture("CENTRO COMERCIAL ZEROMART", "#0284c7");
       const mallSign = new THREE.Mesh(
-        new THREE.BoxGeometry(13.0, 1.2, 0.2),
+        new THREE.BoxGeometry(14.0, 1.2, 0.2),
         new THREE.MeshStandardMaterial({ map: mallSignTex, roughness: 0.35 })
       );
       mallSign.position.set(0, CEILING_HEIGHT + 0.7, ENTRANCE_Z);
@@ -1588,9 +1620,12 @@
       guideNpcs.length = 0;
       restockerNpcs.length = 0;
 
+      // Más empleados guías en la tienda ampliada
       const guideSpots = [
-        { label: "Luis", x: -12.0, z: 2.0 },
-        { label: "Valeria", x: 12.0, z: 1.0 }
+        { label: "Lucía", x: -14.0, z: 4.0 },
+        { label: "Luis", x: -4.0, z: -6.0 },
+        { label: "Valeria", x: 14.0, z: 4.0 },
+        { label: "Mateo", x: 6.0, z: -12.0 }
       ];
 
       guideSpots.forEach((spot) => {
@@ -1605,13 +1640,18 @@
           homePos: new THREE.Vector3(spot.x, 0, spot.z),
           isEscorting: false,
           unlockTarget: null,
-          unlockCallback: null
+          unlockCallback: null,
+          greetingTarget: null,
+          stuckTimer: 0,
+          lastPos: new THREE.Vector3(spot.x, 0, spot.z)
         });
       });
 
+      // Más empleados reacomodadores en bodega
       const restockSpots = [
-        { label: "Reacomodador 1", x: -4.0, z: WAREHOUSE_Z + 2.0 },
-        { label: "Reacomodador 2", x: 4.0, z: WAREHOUSE_Z + 2.0 }
+        { label: "Reacomodador 1", x: -8.0, z: WAREHOUSE_Z + 2.0 },
+        { label: "Reacomodador 2", x: 0.0, z: WAREHOUSE_Z + 2.0 },
+        { label: "Reacomodador 3", x: 8.0, z: WAREHOUSE_Z + 2.0 }
       ];
 
       restockSpots.forEach((spot) => {
@@ -1624,11 +1664,12 @@
           homePos: new THREE.Vector3(spot.x, 0, spot.z),
           targetSlot: null,
           targetProd: null,
-          phase: "idle"
+          phase: "idle",
+          stuckTimer: 0,
+          lastPos: new THREE.Vector3(spot.x, 0, spot.z)
         });
       });
 
-      // NPC de limpieza barriendo / trapeando los pasillos
       const janitorMesh = createHumanoidNpc(0x06b6d4, 0x164e63);
       const mopStick = new THREE.Mesh(
         new THREE.CylinderGeometry(0.025, 0.025, 1.45, 10),
@@ -1642,19 +1683,19 @@
       );
       mopHead.position.set(0.35, 0.04, 0.55);
       janitorMesh.add(mopStick, mopHead);
-      janitorMesh.position.set(-11.0, 0, -6.0);
+      janitorMesh.position.set(-14.0, 0, -8.0);
       scene.add(janitorMesh);
 
       janitorNpc = {
         label: "Limpieza",
         mesh: janitorMesh,
         waypoints: [
-          new THREE.Vector3(-11.0, 0, -6.0),
-          new THREE.Vector3(-11.0, 0, 8.0),
-          new THREE.Vector3(0.0, 0, 8.0),
-          new THREE.Vector3(0.0, 0, -6.0),
-          new THREE.Vector3(11.0, 0, -6.0),
-          new THREE.Vector3(11.0, 0, 8.0)
+          new THREE.Vector3(-14.0, 0, -8.0),
+          new THREE.Vector3(-14.0, 0, 10.0),
+          new THREE.Vector3(0.0, 0, 10.0),
+          new THREE.Vector3(0.0, 0, -8.0),
+          new THREE.Vector3(14.0, 0, -8.0),
+          new THREE.Vector3(14.0, 0, 10.0)
         ],
         wpIndex: 1
       };
@@ -1671,6 +1712,7 @@
         worker.targetProd = entry.prod;
         worker.targetSlot = entry.slot;
         worker.phase = "toShelf";
+        worker.stuckTimer = 0;
       });
       liveNoteEl.textContent = "Reacomodadores salieron de bodega a rellenar los huecos de los estantes.";
     }
@@ -1781,7 +1823,6 @@
 
       if (heldProduct && heldSlot) cancelHeldToShelf();
 
-      // Si está en vitrina bajo llave, pedir llamar a un empleado para abrir
       if (prod.locked) {
         pendingUnlockProduct = prod;
         pendingUnlockSlot = slotObj;
@@ -1798,21 +1839,38 @@
       openUnlockedProduct(prod, slotObj);
     }
 
+    // Busca el empleado guía más cercano y libre para abrir la vitrina sin quedarse atorado
     callUnlockBtn.addEventListener("click", () => {
       if (!pendingUnlockProduct || !pendingUnlockSlot) return;
       const targetProd = pendingUnlockProduct;
       const targetSlot = pendingUnlockSlot;
-      const worker = guideNpcs[0];
-      if (!worker || !targetSlot.homeParent || !targetSlot.homePos) return;
 
-      const worldCasePos = targetSlot.homePos.clone().applyMatrix4(targetSlot.homeParent.matrixWorld);
-      worker.unlockTarget = new THREE.Vector3(worldCasePos.x, 0, worldCasePos.z + 1.4);
-      worker.unlockCallback = () => {
-        liveNoteEl.textContent = `${worker.label} abrió la vitrina con llave para ${targetProd.name}.`;
+      let bestWorker = guideNpcs[0];
+      let bestDist = Infinity;
+      guideNpcs.forEach((g) => {
+        const d = g.mesh.position.distanceTo(camera.position);
+        if (d < bestDist) {
+          bestDist = d;
+          bestWorker = g;
+        }
+      });
+
+      if (!bestWorker || !targetSlot.homeParent || !targetSlot.homePos) return;
+
+      const aisleCfg = AISLE_LAYOUT.find((a) => a.name === targetProd.aisle);
+      const frontX = aisleCfg ? aisleCfg.x : 22.0;
+      const frontZ = aisleCfg ? aisleCfg.z + 1.85 : 7.85;
+
+      bestWorker.isEscorting = false;
+      bestWorker.greetingTarget = null;
+      bestWorker.stuckTimer = 0;
+      bestWorker.unlockTarget = new THREE.Vector3(frontX, 0, frontZ);
+      bestWorker.unlockCallback = () => {
+        liveNoteEl.textContent = `${bestWorker.label} abrió la vitrina con llave para ${targetProd.name}.`;
         openUnlockedProduct(targetProd, targetSlot);
       };
       lockedCallRow.style.display = "none";
-      liveNoteEl.textContent = `${worker.label} va hacia la vitrina para abrirla con llave...`;
+      liveNoteEl.textContent = `${bestWorker.label} va por el pasillo hacia la vitrina para abrirla...`;
     });
 
     function takeFirstFreeSlot(prod) {
@@ -2137,7 +2195,6 @@
         aisleGroup.position.set(aisleCfg.x, 0, aisleCfg.z);
 
         if (aisleCfg.zoneType === "fridge") {
-          // Gabinete de refrigeradores grandes abiertos al frente para ver todo
           const backPanel = new THREE.Mesh(new THREE.BoxGeometry(shelfWidth + 0.3, 3.0, 0.25), bigFridgeMat);
           backPanel.position.set(0, 1.5, -0.55);
           aisleGroup.add(backPanel);
@@ -2179,7 +2236,7 @@
 
         const signTex = createSignTexture(aisleCfg.name, aisleCfg.color);
         const sign = new THREE.Mesh(
-          new THREE.BoxGeometry(3.6, 0.55, 0.12),
+          new THREE.BoxGeometry(3.8, 0.55, 0.12),
           new THREE.MeshStandardMaterial({ map: signTex, roughness: 0.4 })
         );
         sign.position.set(0, aisleCfg.zoneType === "fridge" ? 3.55 : shelfHeight + 0.42, 0);
@@ -2292,29 +2349,55 @@
       if (selectedId) selectProduct(selectedId, false);
     }
 
-    function moveNpcAvoidObstacles(npcPos, targetPos, speed, radius) {
+    // IA de navegación con rodeo lateral y desatasco anti-bug para que ningún NPC entre en estantes
+    function moveNpcSmart(npcObj, targetPos, speed, radius) {
+      const npcPos = npcObj.mesh.position;
       const toGoal = targetPos.clone().sub(npcPos);
       toGoal.y = 0;
       const dist = toGoal.length();
-      if (dist < 0.25) return { arrived: true, dir: toGoal };
-
-      toGoal.normalize();
-      const testX = npcPos.x + toGoal.x * speed;
-      const testZ = npcPos.z + toGoal.z * speed;
-
-      let moveDir = toGoal;
-      if (wouldCollideAt(testX, testZ, radius)) {
-        const leftDir = new THREE.Vector3(-toGoal.z, 0, toGoal.x);
-        const rightDir = new THREE.Vector3(toGoal.z, 0, -toGoal.x);
-        const leftClear = !wouldCollideAt(npcPos.x + leftDir.x * speed * 1.4, npcPos.z + leftDir.z * speed * 1.4, radius);
-        const rightClear = !wouldCollideAt(npcPos.x + rightDir.x * speed * 1.4, npcPos.z + rightDir.z * speed * 1.4, radius);
-        if (leftClear) moveDir = leftDir;
-        else if (rightClear) moveDir = rightDir;
+      if (dist < 0.35) {
+        npcObj.stuckTimer = 0;
+        return { arrived: true, dir: toGoal };
       }
 
+      toGoal.normalize();
+      let moveDir = toGoal;
+
+      if (wouldCollideAt(npcPos.x + toGoal.x * speed * 1.5, npcPos.z + toGoal.z * speed * 1.5, radius)) {
+        const leftDir = new THREE.Vector3(-toGoal.z, 0, toGoal.x);
+        const rightDir = new THREE.Vector3(toGoal.z, 0, -toGoal.x);
+        const leftClear = !wouldCollideAt(npcPos.x + leftDir.x * speed * 1.8, npcPos.z + leftDir.z * speed * 1.8, radius);
+        const rightClear = !wouldCollideAt(npcPos.x + rightDir.x * speed * 1.8, npcPos.z + rightDir.z * speed * 1.8, radius);
+
+        if (leftClear && rightClear) {
+          moveDir = npcPos.x < targetPos.x ? rightDir : leftDir;
+        } else if (leftClear) {
+          moveDir = leftDir;
+        } else if (rightClear) {
+          moveDir = rightDir;
+        } else {
+          // Deslizarse hacia el pasillo central si está bloqueado
+          moveDir = new THREE.Vector3(-npcPos.x * 0.15, 0, 0.85).normalize();
+        }
+      }
+
+      const prevX = npcPos.x;
+      const prevZ = npcPos.z;
       npcPos.x += moveDir.x * speed;
       npcPos.z += moveDir.z * speed;
       resolveCircleCollision(npcPos, radius);
+
+      if (Math.hypot(npcPos.x - prevX, npcPos.z - prevZ) < speed * 0.25) {
+        npcObj.stuckTimer = (npcObj.stuckTimer || 0) + 1;
+        if (npcObj.stuckTimer > 35) {
+          npcPos.z += (npcPos.z < 0 ? 1.2 : -1.2);
+          resolveCircleCollision(npcPos, radius);
+          npcObj.stuckTimer = 0;
+        }
+      } else {
+        npcObj.stuckTimer = 0;
+      }
+
       return { arrived: false, dir: moveDir };
     }
 
@@ -2324,9 +2407,9 @@
       const wrap = document.getElementById("canvas-wrap");
       scene = new THREE.Scene();
       scene.background = new THREE.Color(0x273549);
-      scene.fog = new THREE.Fog(0x273549, 32, 75);
+      scene.fog = new THREE.Fog(0x273549, 38, 88);
 
-      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 150);
+      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 160);
       camera.position.set(0, PLAYER_EYE_HEIGHT, ENTRANCE_Z + 4.5);
       camera.rotation.order = "YXZ";
 
@@ -2334,21 +2417,21 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.22;
+      renderer.toneMappingExposure = 1.25;
       wrap.appendChild(renderer.domElement);
 
       buildStoreEnvironmentAndLighting();
 
       const floor = new THREE.Mesh(
-        new THREE.PlaneGeometry(72, 72),
+        new THREE.PlaneGeometry(92, 92),
         new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5, metalness: 0.12 })
       );
       floor.rotation.x = -Math.PI / 2;
-      floor.position.set(0, 0, -2);
+      floor.position.set(0, 0, -3.5);
       scene.add(floor);
 
-      const grid = new THREE.GridHelper(72, 72, 0x64748b, 0x475569);
-      grid.position.set(0, 0.01, -2);
+      const grid = new THREE.GridHelper(92, 92, 0x64748b, 0x475569);
+      grid.position.set(0, 0.01, -3.5);
       scene.add(grid);
 
       buildCashierZone3D();
@@ -2485,23 +2568,39 @@
           moveDelta.addScaledVector(moveRight, rightInput);
           moveDelta.normalize().multiplyScalar(MOVE_SPEED);
 
-          camera.position.x = Math.max(-30.0, Math.min(30.0, camera.position.x + moveDelta.x));
-          camera.position.z = Math.max(-30.0, Math.min(29.5, camera.position.z + moveDelta.z));
+          camera.position.x = Math.max(-STORE_HALF_W + 0.8, Math.min(STORE_HALF_W - 0.8, camera.position.x + moveDelta.x));
+          camera.position.z = Math.max(STORE_BACK_Z + 0.8, Math.min(ENTRANCE_Z + 5.5, camera.position.z + moveDelta.z));
           resolveCircleCollision(camera.position, PLAYER_RADIUS);
           camera.position.y = PLAYER_EYE_HEIGHT;
         }
 
-        // Puertas automáticas de entrada abren y cierran al acercarte o alejarte
         const distToDoor = Math.hypot(camera.position.x, camera.position.z - ENTRANCE_Z);
         const targetDoor = distToDoor < 5.5 ? 1 : 0;
         doorOpenFactor += (targetDoor - doorOpenFactor) * 0.14;
-        if (leftDoorMesh) leftDoorMesh.position.x = -1.35 - doorOpenFactor * 2.2;
-        if (rightDoorMesh) rightDoorMesh.position.x = 1.35 + doorOpenFactor * 2.2;
+        if (leftDoorMesh) leftDoorMesh.position.x = -1.3 - doorOpenFactor * 2.2;
+        if (rightDoorMesh) rightDoorMesh.position.x = 1.3 + doorOpenFactor * 2.2;
 
-        // NPC Guía: escoltar al jugador o abrir vitrina con llave
+        // Iniciativa de empleados: si pasas cerca y no hay diálogo abierto, un empleado se acerca a saludar
+        if (
+          currentUser &&
+          !guideBox.classList.contains("active") &&
+          !heldProduct &&
+          nowMs - lastGreetingTime > 14000 &&
+          camera.position.z < ENTRANCE_Z - 1.5
+        ) {
+          const candidate = guideNpcs.find(
+            (g) => !g.isEscorting && !g.unlockTarget && !g.greetingTarget && g.mesh.position.distanceTo(camera.position) < 6.5
+          );
+          if (candidate) {
+            candidate.greetingTarget = new THREE.Vector3(camera.position.x, 0, camera.position.z);
+            lastGreetingTime = nowMs;
+          }
+        }
+
+        // IA de empleados guías: abrir vitrina, escoltar o acercarse a preguntar si buscas algo
         guideNpcs.forEach((gNpc) => {
           if (gNpc.unlockTarget) {
-            const res = moveNpcAvoidObstacles(gNpc.mesh.position, gNpc.unlockTarget, 0.13, 0.5);
+            const res = moveNpcSmart(gNpc, gNpc.unlockTarget, 0.14, 0.5);
             if (!res.arrived) {
               gNpc.mesh.rotation.y = Math.atan2(res.dir.x, res.dir.z);
             } else {
@@ -2511,10 +2610,10 @@
               if (typeof cb === "function") cb();
             }
           } else if (gNpc.isEscorting && guidingTargetPos) {
-            const res = moveNpcAvoidObstacles(gNpc.mesh.position, guidingTargetPos, 0.11, 0.5);
+            const res = moveNpcSmart(gNpc, guidingTargetPos, 0.12, 0.5);
             if (!res.arrived) {
               gNpc.mesh.rotation.y = Math.atan2(res.dir.x, res.dir.z);
-              const followGoal = gNpc.mesh.position.clone().addScaledVector(res.dir, -2.4);
+              const followGoal = gNpc.mesh.position.clone().addScaledVector(res.dir, -2.5);
               followGoal.y = PLAYER_EYE_HEIGHT;
               resolveCircleCollision(followGoal, PLAYER_RADIUS);
               camera.position.lerp(followGoal, 0.055);
@@ -2523,15 +2622,30 @@
               liveNoteEl.textContent = `${gNpc.label} te guió hasta ${guidingTargetAisle || "la sección"}.`;
               guidingTargetPos = null;
             }
+          } else if (gNpc.greetingTarget) {
+            const stopGoal = gNpc.greetingTarget.clone();
+            const toPlayer = stopGoal.clone().sub(gNpc.mesh.position);
+            toPlayer.y = 0;
+            const d = toPlayer.length();
+            if (d > 1.8) {
+              toPlayer.normalize();
+              stopGoal.sub(toPlayer.clone().multiplyScalar(1.7));
+              const res = moveNpcSmart(gNpc, stopGoal, 0.10, 0.5);
+              if (!res.arrived) gNpc.mesh.rotation.y = Math.atan2(res.dir.x, res.dir.z);
+            } else {
+              gNpc.mesh.rotation.y = Math.atan2(camera.position.x - gNpc.mesh.position.x, camera.position.z - gNpc.mesh.position.z);
+              gNpc.greetingTarget = null;
+              openGuideDialog(gNpc, `¡Hola! Soy ${gNpc.label}. ¿Buscas algún producto en especial o te ayudo con alguna sección?`);
+            }
           }
         });
 
-        // NPCs reacomodadores rellenando huecos de estantes desde bodega
+        // Reacomodadores con evasión y regreso a bodega
         restockerNpcs.forEach((rNpc) => {
           if (rNpc.phase === "toShelf" && rNpc.targetSlot && rNpc.targetSlot.homeParent && rNpc.targetSlot.homePos) {
             const worldTarget = rNpc.targetSlot.homePos.clone().applyMatrix4(rNpc.targetSlot.homeParent.matrixWorld);
-            const goal = new THREE.Vector3(worldTarget.x, 0, worldTarget.z + 1.35);
-            const res = moveNpcAvoidObstacles(rNpc.mesh.position, goal, 0.13, 0.5);
+            const goal = new THREE.Vector3(worldTarget.x, 0, worldTarget.z + 1.5);
+            const res = moveNpcSmart(rNpc, goal, 0.13, 0.5);
             if (!res.arrived) {
               rNpc.mesh.rotation.y = Math.atan2(res.dir.x, res.dir.z);
             } else {
@@ -2544,7 +2658,7 @@
               rNpc.phase = "returning";
             }
           } else if (rNpc.phase === "returning") {
-            const res = moveNpcAvoidObstacles(rNpc.mesh.position, rNpc.homePos, 0.13, 0.5);
+            const res = moveNpcSmart(rNpc, rNpc.homePos, 0.13, 0.5);
             if (!res.arrived) {
               rNpc.mesh.rotation.y = Math.atan2(res.dir.x, res.dir.z);
             } else {
@@ -2555,10 +2669,10 @@
           }
         });
 
-        // NPC de limpieza barriendo y trapeando pasillos
+        // Limpieza recorriendo pasillos sin atravesar obstáculos
         if (janitorNpc) {
           const wp = janitorNpc.waypoints[janitorNpc.wpIndex];
-          const res = moveNpcAvoidObstacles(janitorNpc.mesh.position, wp, 0.06, 0.5);
+          const res = moveNpcSmart(janitorNpc, wp, 0.07, 0.5);
           if (!res.arrived) {
             janitorNpc.mesh.rotation.y = Math.atan2(res.dir.x, res.dir.z);
           } else {
@@ -2576,6 +2690,8 @@
 
         camera.rotation.y = yaw;
         camera.rotation.x = pitch;
+
+        const nearestRegIdx = getNearestRegisterIndex();
 
         registerStates.forEach((st) => {
           const arm = st.npc?.userData?.rightArm;
@@ -2643,7 +2759,7 @@
 
         aisleGroups.forEach((grp) => {
           const dist = camera.position.distanceTo(grp.position);
-          grp.visible = dist < 42;
+          grp.visible = dist < 48;
         });
 
         renderer.render(scene, camera);
