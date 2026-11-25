@@ -7,7 +7,7 @@
   <style>
     :root {
       --bg: #0f172a;
-      --panel: rgba(15, 23, 42, 0.95);
+      --panel: rgba(15, 23, 42, 0.96);
       --border: rgba(255, 255, 255, 0.16);
       --text: #f3f4f6;
       --muted: #9ca3af;
@@ -36,21 +36,19 @@
       z-index: 1;
       display: none;
     }
-
     #canvas-wrap.active { display: block; }
 
-    /* Modo Tienda Normal estilo Bodega / Autoservicio */
+    /* Modo Tienda Normal limpia */
     .normal-store {
       position: fixed;
       inset: 0;
       z-index: 15;
-      background: #ffffff;
+      background: #f8fafc;
       color: #1e293b;
       display: none;
       flex-direction: column;
       overflow: hidden;
     }
-
     .normal-store.active { display: flex; }
 
     .bm-topbar {
@@ -79,23 +77,10 @@
       line-height: 1;
     }
 
-    .bm-fulfillment {
-      background: var(--bm-green-dark);
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      border-radius: 999px;
-      padding: 6px 12px;
-      font-size: 0.78rem;
-      color: #ffffff;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
     .bm-search-box {
       flex: 1;
-      min-width: 240px;
-      max-width: 560px;
+      min-width: 220px;
+      max-width: 540px;
       background: #ffffff;
       border-radius: 999px;
       padding: 4px 6px 4px 16px;
@@ -124,8 +109,32 @@
       cursor: pointer;
     }
 
+    .cart-icon-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #ffffff;
+      color: #0f172a;
+      border: 2px solid var(--bm-yellow);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 0.84rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .cart-badge-num {
+      background: var(--bm-green);
+      color: #ffffff;
+      border-radius: 999px;
+      padding: 1px 7px;
+      font-size: 0.76rem;
+      font-weight: 900;
+    }
+
     .bm-subbar {
-      background: #f8fafc;
+      background: #ffffff;
       border-bottom: 1px solid #e2e8f0;
       padding: 7px 18px;
       display: flex;
@@ -152,35 +161,21 @@
       cursor: pointer;
       padding: 3px 4px;
     }
-
     .bm-sublink:hover, .bm-sublink.active {
       color: var(--bm-green);
       text-decoration: underline;
     }
 
-    .bm-promo-strip {
-      background: #dcfce7;
-      color: #14532d;
-      font-size: 0.78rem;
-      font-weight: 700;
-      padding: 5px 18px;
-      border-bottom: 1px solid #bbf7d0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
-
     .bm-layout {
       flex: 1;
       display: grid;
-      grid-template-columns: 220px 1fr 340px;
+      grid-template-columns: 220px 1fr;
       gap: 16px;
       padding: 14px 18px;
       overflow: hidden;
     }
 
-    @media (max-width: 1020px) {
+    @media (max-width: 900px) {
       .bm-layout {
         grid-template-columns: 1fr;
         overflow-y: auto;
@@ -188,26 +183,27 @@
     }
 
     .bm-filters {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px;
       overflow-y: auto;
-      padding-right: 4px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
 
     .filter-group {
-      border-bottom: 1px solid #e2e8f0;
-      padding-bottom: 8px;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 10px;
     }
+    .filter-group:last-child { border-bottom: none; padding-bottom: 0; }
 
     .filter-title {
       font-size: 0.84rem;
-      font-weight: 700;
+      font-weight: 800;
       color: #0f172a;
       margin-bottom: 6px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
     }
 
     .filter-chip {
@@ -216,13 +212,12 @@
       text-align: left;
       background: transparent;
       border: none;
-      padding: 4px 6px;
-      border-radius: 6px;
+      padding: 5px 8px;
+      border-radius: 7px;
       font-size: 0.8rem;
       color: #334155;
       cursor: pointer;
     }
-
     .filter-chip:hover { background: #f1f5f9; }
     .filter-chip.active {
       background: #dcfce7;
@@ -241,27 +236,22 @@
       overflow-x: auto;
       padding-bottom: 10px;
       margin-bottom: 10px;
-      border-bottom: 1px solid #e2e8f0;
     }
 
     .quick-pill-btn {
       flex: 0 0 auto;
-      background: #f8fafc;
+      background: #ffffff;
       border: 1px solid #cbd5e1;
-      border-radius: 10px;
-      padding: 6px 10px;
-      font-size: 0.76rem;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 0.78rem;
       font-weight: 700;
       color: #1e293b;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
     }
-
     .quick-pill-btn.active {
       border-color: var(--bm-green);
-      background: #ecfdf5;
+      background: #dcfce7;
       color: var(--bm-green-dark);
     }
 
@@ -273,9 +263,8 @@
       margin-bottom: 12px;
       flex-wrap: wrap;
     }
-
     .bm-section-head h2 {
-      font-size: 1.05rem;
+      font-size: 1.08rem;
       font-weight: 800;
       color: #0f172a;
     }
@@ -283,7 +272,7 @@
     .bm-sort-select {
       border: 1px solid #cbd5e1;
       border-radius: 8px;
-      padding: 5px 10px;
+      padding: 6px 10px;
       font-size: 0.8rem;
       color: #0f172a;
       background: #ffffff;
@@ -291,25 +280,26 @@
 
     .bm-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
     }
 
     .bm-card {
       background: #ffffff;
       border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 10px;
+      border-radius: 12px;
+      padding: 11px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       gap: 8px;
-      transition: box-shadow 0.15s, border-color 0.15s;
+      cursor: pointer;
+      transition: transform 0.14s, box-shadow 0.14s, border-color 0.14s;
     }
-
     .bm-card:hover {
-      border-color: #94a3b8;
-      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+      transform: translateY(-2px);
+      border-color: var(--bm-green);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
     }
 
     .bm-rebaja-tag {
@@ -324,16 +314,15 @@
 
     .bm-thumb-wrap {
       width: 100%;
-      height: 124px;
+      height: 128px;
       background: #f8fafc;
-      border-radius: 8px;
+      border-radius: 9px;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
       border: 1px solid #f1f5f9;
     }
-
     .bm-thumb-wrap img {
       max-width: 100%;
       max-height: 100%;
@@ -342,33 +331,41 @@
     }
 
     .bm-add-btn {
-      align-self: flex-start;
       background: var(--bm-green);
       color: #ffffff;
       border: none;
       border-radius: 999px;
-      padding: 6px 14px;
+      padding: 6px 12px;
       font-size: 0.78rem;
       font-weight: 700;
       cursor: pointer;
     }
-
     .bm-add-btn:hover { background: var(--bm-green-dark); }
     .bm-add-btn:disabled { background: #94a3b8; cursor: not-allowed; }
 
+    .bm-detail-btn {
+      background: #f1f5f9;
+      color: #0f172a;
+      border: 1px solid #cbd5e1;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .bm-detail-btn:hover { background: #e2e8f0; }
+
     .bm-price-main {
       color: #15803d;
-      font-size: 1.05rem;
+      font-size: 1.06rem;
       font-weight: 900;
     }
-
     .bm-price-old {
       color: #64748b;
       font-size: 0.75rem;
       text-decoration: line-through;
       margin-left: 4px;
     }
-
     .bm-save-pill {
       background: #dcfce7;
       color: #166534;
@@ -378,118 +375,86 @@
       border-radius: 4px;
       margin-left: 4px;
     }
-
     .bm-prod-title {
-      font-size: 0.82rem;
-      color: #1e293b;
-      font-weight: 600;
+      font-size: 0.84rem;
+      color: #0f172a;
+      font-weight: 700;
       line-height: 1.3;
     }
-
     .bm-prod-sub {
       font-size: 0.72rem;
       color: #64748b;
     }
 
-    .bm-cart-pane {
-      background: #f8fafc;
-      border: 1px solid #cbd5e1;
-      border-radius: 12px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      overflow-y: auto;
-    }
-
-    .bm-pay-box {
-      border-top: 1px solid #cbd5e1;
-      padding-top: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      font-size: 0.78rem;
-    }
-
-    .bm-choice-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 5px;
-    }
-
-    .bm-method-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 5px;
-    }
-
-    .bm-opt-btn {
-      border: 1px solid #cbd5e1;
-      background: #ffffff;
-      color: #1e293b;
-      border-radius: 7px;
-      padding: 6px 4px;
-      font-size: 0.74rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .bm-opt-btn.active {
-      background: var(--bm-green);
-      color: #ffffff;
-      border-color: var(--bm-green-dark);
-    }
-
-    .bm-input {
-      width: 100%;
-      border: 1px solid #cbd5e1;
-      border-radius: 7px;
-      padding: 6px 8px;
-      font-size: 0.78rem;
-      color: #0f172a;
-      background: #ffffff;
-    }
-
-    .bm-ticket-card {
-      background: #ffffff;
-      border: 2px solid var(--bm-green);
-      border-radius: 10px;
-      padding: 10px;
-      display: none;
-      flex-direction: column;
-      gap: 6px;
-      font-size: 0.76rem;
-      color: #0f172a;
-    }
-
-    .bm-ticket-card.active { display: flex; }
-
-    /* Subventana modal para cada método de pago */
-    .pay-modal-backdrop {
+    /* Modales (Detalle/Interior de producto, Pantalla Carrito y Subventana de Pago) */
+    .modal-backdrop {
       position: fixed;
       inset: 0;
-      z-index: 80;
-      background: rgba(9, 13, 22, 0.76);
+      z-index: 75;
+      background: rgba(9, 13, 22, 0.78);
       backdrop-filter: blur(4px);
       display: none;
       align-items: center;
       justify-content: center;
       padding: 16px;
     }
+    .modal-backdrop.active { display: flex; }
 
-    .pay-modal-backdrop.active { display: flex; }
-
-    .pay-modal-card {
-      width: min(420px, 100%);
+    .modal-card {
+      width: min(680px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
       background: #0f172a;
       color: #f8fafc;
-      border: 1px solid rgba(56, 189, 248, 0.45);
-      border-radius: 14px;
-      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 16px;
+      padding: 18px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+      gap: 12px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+    }
+
+    .modal-card.narrow {
+      width: min(440px, 100%);
+    }
+
+    .spec-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 8px;
+    }
+
+    .spec-box {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+    }
+    .spec-box span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.7rem;
+      margin-bottom: 2px;
+    }
+
+    .interior-showcase {
+      background: #f8fafc;
+      color: #0f172a;
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
+    .interior-showcase img {
+      max-width: 100%;
+      width: 340px;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
     }
 
     .saved-badge {
@@ -497,26 +462,78 @@
       border: 1px solid rgba(34, 197, 94, 0.45);
       color: #86efac;
       border-radius: 8px;
-      padding: 6px 8px;
-      font-size: 0.75rem;
+      padding: 7px 10px;
+      font-size: 0.76rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 8px;
     }
 
+    .bm-choice-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+
+    .bm-method-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .bm-opt-btn {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.07);
+      color: #f8fafc;
+      border-radius: 8px;
+      padding: 8px 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .bm-opt-btn.active {
+      background: var(--bm-green);
+      color: #ffffff;
+      border-color: #22c55e;
+    }
+
+    .bm-input {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.84rem;
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.06);
+      outline: none;
+    }
+    .bm-input:focus { border-color: var(--accent); }
+
+    .bm-ticket-card {
+      background: #ecfdf5;
+      border: 2px solid var(--bm-green);
+      border-radius: 12px;
+      padding: 12px;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: #0f172a;
+    }
+    .bm-ticket-card.active { display: flex; }
+
     /* Auth y 3D HUD */
     .auth-screen {
       position: fixed;
       inset: 0;
-      z-index: 50;
+      z-index: 60;
       background: radial-gradient(circle at 50% 25%, #1e293b, #090d16 75%);
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 16px;
     }
-
     .auth-screen.hidden { display: none; }
 
     .auth-card {
@@ -530,7 +547,6 @@
       gap: 12px;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
     }
-
     .auth-card h1 { font-size: 1.25rem; }
     .auth-card p { color: var(--muted); font-size: 0.85rem; }
 
@@ -546,7 +562,6 @@
       font-size: 0.9rem;
       outline: none;
     }
-
     .field input:focus, .field select:focus { border-color: var(--accent); }
     .auth-error { color: var(--danger); font-size: 0.82rem; min-height: 18px; }
 
@@ -563,7 +578,6 @@
       pointer-events: none;
       flex-wrap: wrap;
     }
-
     .hud-top.active { display: flex; }
 
     .badge {
@@ -611,7 +625,6 @@
       gap: 8px;
       box-shadow: 0 14px 32px rgba(0, 0, 0, 0.5);
     }
-
     .guide-box.active { display: flex; }
 
     .panel {
@@ -629,7 +642,6 @@
       padding: 13px;
       display: none;
     }
-
     .panel.active { display: block; }
 
     .tabs {
@@ -648,7 +660,6 @@
       font-size: 0.8rem;
       cursor: pointer;
     }
-
     .tab-btn.active {
       color: var(--text);
       border-color: var(--accent);
@@ -666,7 +677,6 @@
       padding: 9px 10px;
       transition: border-color 0.15s, background 0.15s;
     }
-
     .product-card { cursor: pointer; }
     .product-card:hover { border-color: var(--accent); }
     .product-card.active { border-color: var(--accent); background: rgba(56, 189, 248, 0.14); }
@@ -679,12 +689,11 @@
       border: 1px solid var(--border);
       background: rgba(56, 189, 248, 0.14);
       color: var(--text);
-      padding: 6px 9px;
+      padding: 6px 10px;
       border-radius: 8px;
       font-size: 0.78rem;
       cursor: pointer;
     }
-
     .btn:hover { border-color: var(--accent); }
     .btn.active { background: #0284c7; border-color: #38bdf8; font-weight: 600; }
     .btn.primary { background: #0284c7; border-color: #38bdf8; font-weight: 600; }
@@ -699,10 +708,7 @@
       gap: 6px;
       margin: 6px 0;
     }
-
-    .pay-methods {
-      grid-template-columns: repeat(3, 1fr);
-    }
+    .pay-methods { grid-template-columns: repeat(3, 1fr); }
 
     .pay-box {
       margin-top: 10px;
@@ -734,27 +740,27 @@
       flex-direction: column;
       gap: 8px;
     }
-
     .ticket.active { display: flex; }
 
     .qr-img-box {
       background: #ffffff;
-      padding: 8px;
-      border-radius: 8px;
+      padding: 10px;
+      border-radius: 10px;
       align-self: center;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
       color: #0f172a;
-      font-size: 0.72rem;
-      font-weight: 700;
+      font-size: 0.76rem;
+      font-weight: 800;
+      border: 1px solid #cbd5e1;
     }
-
     .qr-img-box img {
-      width: 144px;
-      height: 144px;
+      width: 168px;
+      height: 168px;
       display: block;
+      image-rendering: pixelated;
     }
 
     .live-note {
@@ -781,7 +787,6 @@
       flex-direction: column;
       gap: 8px;
     }
-
     .held-bar.active { display: flex; }
 
     .controls-hint {
@@ -797,7 +802,6 @@
       color: var(--muted);
       display: none;
     }
-
     .controls-hint.active { display: block; }
   </style>
   <script type="importmap">
@@ -812,20 +816,121 @@
 <body>
   <div id="canvas-wrap"></div>
 
-  <!-- Subventana modal para cada método de pago -->
-  <div class="pay-modal-backdrop" id="pay-modal-backdrop">
-    <div class="pay-modal-card" id="pay-modal-card">
+  <!-- Modal 1: Ficha completa del producto + Vista "Por adentro" para TODOS los productos -->
+  <div class="modal-backdrop" id="product-detail-backdrop">
+    <div class="modal-card" id="product-detail-card">
       <div class="row">
-        <strong id="pay-modal-title" style="font-size:0.98rem;">Método de pago</strong>
+        <div>
+          <span class="bm-rebaja-tag" id="pd-dept-badge">Departamento</span>
+          <h3 id="pd-title" style="font-size:1.15rem; margin-top:4px;">Producto</h3>
+        </div>
+        <button type="button" class="btn" id="pd-close-btn">✕</button>
+      </div>
+
+      <div class="tabs" style="margin:0;">
+        <button type="button" class="tab-btn active" id="pd-tab-specs">Especificaciones y Ficha</button>
+        <button type="button" class="tab-btn" id="pd-tab-inside">Ver por adentro (Interior)</button>
+      </div>
+
+      <div id="pd-view-specs" style="display:flex; flex-direction:column; gap:10px;">
+        <div class="row" style="background:rgba(255,255,255,0.04); padding:10px; border-radius:10px;">
+          <img id="pd-thumb-img" alt="Vista del producto" style="width:128px; height:84px; object-fit:contain; background:#f8fafc; border-radius:8px; padding:4px;" />
+          <div style="flex:1;">
+            <div class="price" style="font-size:1.25rem;" id="pd-price-main">$0 MXN</div>
+            <div class="meta" id="pd-price-save"></div>
+            <div class="meta" id="pd-stock-info"></div>
+          </div>
+        </div>
+
+        <p id="pd-description" style="font-size:0.84rem; color:#e2e8f0; line-height:1.45;"></p>
+
+        <div class="spec-grid" id="pd-specs-grid"></div>
+      </div>
+
+      <div id="pd-view-inside" style="display:none;">
+        <div class="interior-showcase">
+          <img id="pd-inside-img" alt="Vista interior del producto" />
+          <p id="pd-inside-caption" style="font-size:0.8rem; color:#334155; text-align:center; line-height:1.35;"></p>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:4px;">
+        <button type="button" class="btn" id="pd-toggle-inside-btn">Ver por adentro</button>
+        <button type="button" class="btn success" id="pd-add-cart-btn" style="flex:1;">Agregar al carrito</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Apartado / Pantalla dedicada del Carrito y Dirección -->
+  <div class="modal-backdrop" id="cart-screen-backdrop">
+    <div class="modal-card" id="cart-screen-card">
+      <div class="row">
+        <h3 style="font-size:1.12rem;">Mi Carrito ZeroMart (<span id="screen-cart-count">0</span>)</h3>
+        <button type="button" class="btn" id="cart-screen-close-btn">Seguir comprando</button>
+      </div>
+
+      <div id="screen-cart-items" style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto;"></div>
+
+      <div class="row" style="background:rgba(255,255,255,0.05); padding:10px 12px; border-radius:10px;">
+        <strong>Subtotal del carrito:</strong>
+        <span class="price" style="font-size:1.12rem;" id="screen-cart-total">$0 MXN</span>
+      </div>
+
+      <div class="field">
+        <label>Entrega del pedido</label>
+        <div class="bm-choice-grid" id="screen-delivery-grid">
+          <button type="button" class="bm-opt-btn active" data-sdeliv="recoger">Recoger en tienda</button>
+          <button type="button" class="bm-opt-btn" data-sdeliv="casa">Llevar a mi casa</button>
+        </div>
+      </div>
+
+      <div class="field" id="screen-address-wrap" style="display:none;">
+        <label for="screen-address-input">Dirección completa de entrega</label>
+        <input id="screen-address-input" type="text" class="bm-input" placeholder="Calle, número, colonia y referencia en Tepic" />
+      </div>
+
+      <div class="field">
+        <label>Selecciona cómo deseas pagar (abre subventana)</label>
+        <div class="bm-method-grid" id="screen-method-grid">
+          <button type="button" class="bm-opt-btn active" data-spay="efectivo">Efectivo</button>
+          <button type="button" class="bm-opt-btn" data-spay="tarjeta">Tarjeta</button>
+          <button type="button" class="bm-opt-btn" data-spay="paypal">PayPal</button>
+        </div>
+        <span class="meta" id="screen-method-summary">Método seleccionado: Efectivo</span>
+      </div>
+
+      <div id="screen-cart-error" style="color:#f87171; font-size:0.8rem; font-weight:700; min-height:18px;"></div>
+
+      <button type="button" class="btn success" id="screen-open-pay-btn" style="width:100%; padding:10px;">
+        Continuar al pago y generar QR
+      </button>
+
+      <div class="bm-ticket-card" id="screen-ticket-card">
+        <div style="font-weight:900; color:#15803d; font-size:0.88rem;">TICKET DE COMPRA CONFIRMADO</div>
+        <div id="screen-ticket-details"></div>
+        <div class="qr-img-box">
+          <img id="screen-ticket-qr-img" alt="Código QR del ticket" />
+          <span id="screen-ticket-folio-txt"></span>
+        </div>
+        <button type="button" class="btn primary" id="screen-new-order-btn">Hacer otro pedido</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Subventana específica por método de pago (Efectivo / Tarjeta / PayPal) -->
+  <div class="modal-backdrop" id="pay-modal-backdrop" style="z-index:85;">
+    <div class="modal-card narrow" id="pay-modal-card">
+      <div class="row">
+        <strong id="pay-modal-title" style="font-size:1rem;">Subventana de pago</strong>
         <button type="button" class="btn" id="pay-modal-close">✕</button>
       </div>
       <div id="pay-modal-summary" class="muted" style="margin:0;"></div>
 
-      <!-- Subventana: Tarjeta (registrar y guardar en cuenta) -->
+      <!-- Subventana Tarjeta -->
       <div id="modal-panel-tarjeta" style="display:none; flex-direction:column; gap:8px;">
         <div id="saved-card-box" class="saved-badge" style="display:none;">
           <span id="saved-card-text"></span>
-          <button type="button" class="btn success" id="use-saved-card-btn" style="padding:3px 8px;">Usar guardada</button>
+          <button type="button" class="btn success" id="use-saved-card-btn" style="padding:4px 8px;">Usar guardada</button>
         </div>
         <div class="field">
           <label for="card-holder-input">Nombre del titular</label>
@@ -841,60 +946,51 @@
             <input id="card-exp-input" type="text" inputmode="numeric" maxlength="5" placeholder="08/29" />
           </div>
           <div class="field" style="flex:1;">
-            <label for="card-nip-input">CVV / NIP (3-4 dígitos)</label>
+            <label for="card-nip-input">CVV / NIP</label>
             <input id="card-nip-input" type="password" inputmode="numeric" maxlength="4" placeholder="1234" />
           </div>
         </div>
         <div class="row" style="margin-top:4px;">
-          <button type="button" class="btn primary" id="save-card-btn" style="flex:1;">Guardar tarjeta en cuenta</button>
-          <button type="button" class="btn success" id="confirm-card-pay-btn" style="flex:1;">Pagar con tarjeta</button>
+          <button type="button" class="btn primary" id="save-card-btn" style="flex:1;">Guardar tarjeta</button>
+          <button type="button" class="btn success" id="confirm-card-pay-btn" style="flex:1;">Pagar y generar QR</button>
         </div>
       </div>
 
-      <!-- Subventana: PayPal (registrar y guardar correo) -->
+      <!-- Subventana PayPal -->
       <div id="modal-panel-paypal" style="display:none; flex-direction:column; gap:8px;">
         <div id="saved-paypal-box" class="saved-badge" style="display:none;">
           <span id="saved-paypal-text"></span>
-          <button type="button" class="btn success" id="use-saved-paypal-btn" style="padding:3px 8px;">Usar correo</button>
+          <button type="button" class="btn success" id="use-saved-paypal-btn" style="padding:4px 8px;">Usar correo</button>
         </div>
         <div class="field">
           <label for="paypal-email-input">Correo de PayPal</label>
-          <input id="paypal-email-input" type="email" placeholder="ejemplo@correo.com" />
+          <input id="paypal-email-input" type="email" placeholder="cliente@correo.com" />
         </div>
         <div class="field">
-          <label for="paypal-alias-input">Alias o referencia (opcional)</label>
+          <label for="paypal-alias-input">Alias (opcional)</label>
           <input id="paypal-alias-input" type="text" placeholder="Cuenta principal" />
         </div>
         <div class="row" style="margin-top:4px;">
-          <button type="button" class="btn primary" id="save-paypal-btn" style="flex:1;">Guardar PayPal</button>
-          <button type="button" class="btn success" id="confirm-paypal-pay-btn" style="flex:1;">Pagar con PayPal</button>
+          <button type="button" class="btn primary" id="save-paypal-btn" style="flex:1;">Guardar correo</button>
+          <button type="button" class="btn success" id="confirm-paypal-pay-btn" style="flex:1;">Pagar y generar QR</button>
         </div>
       </div>
 
-      <!-- Subventana: Efectivo (recoger en tienda o domicilio + cambio) -->
+      <!-- Subventana Efectivo -->
       <div id="modal-panel-efectivo" style="display:none; flex-direction:column; gap:8px;">
-        <span style="font-size:0.8rem; color:var(--muted);">Entrega del pedido:</span>
-        <div class="delivery-choices" id="modal-delivery-choices" style="margin:0;">
-          <button type="button" class="btn active" data-modal-deliv="recoger">Recoger en tienda</button>
-          <button type="button" class="btn" data-modal-deliv="casa">Llevar a mi casa</button>
-        </div>
-        <div class="field" id="modal-address-field" style="display:none;">
-          <label for="modal-address-input">Dirección de entrega</label>
-          <input id="modal-address-input" type="text" placeholder="Ej. Av. Insurgentes #120, Tepic" />
-        </div>
         <div class="field">
-          <label for="modal-cash-input">Monto en efectivo (MXN)</label>
+          <label for="modal-cash-input">¿Con cuánto pagas en efectivo? (MXN)</label>
           <input id="modal-cash-input" type="number" min="0" step="1" placeholder="Ej. 500" />
           <span class="meta" id="modal-change-label">Cambio: $0 MXN</span>
         </div>
-        <button type="button" class="btn success" id="confirm-cash-pay-btn" style="width:100%;">Confirmar pago en efectivo y generar QR</button>
+        <button type="button" class="btn success" id="confirm-cash-pay-btn" style="width:100%;">Confirmar efectivo y generar QR</button>
       </div>
 
       <div id="pay-modal-error" style="color:#f87171; font-size:0.78rem; font-weight:700; min-height:18px;"></div>
     </div>
   </div>
 
-  <!-- Modo Tienda Normal estilo Bodega / Autoservicio -->
+  <!-- Modo Tienda Normal principal (enfocada en catálogo, categorías, buscador y carrito) -->
   <section class="normal-store" id="normal-store">
     <header class="bm-topbar">
       <div class="bm-logo">
@@ -903,49 +999,35 @@
         <span id="normal-user-label" style="font-size:0.78rem; font-weight:600; opacity:0.9;"></span>
       </div>
 
-      <button type="button" class="bm-fulfillment" id="bm-fulfillment-btn">
-        <span>Entrega:</span>
-        <strong id="bm-fulfillment-badge">Tepic · Recoger tienda</strong>
-        <span>▾</span>
-      </button>
-
       <div class="bm-search-box">
-        <input type="text" id="normal-search" placeholder="Buscar en ZeroMart en línea o en tienda..." />
+        <input type="text" id="normal-search" placeholder="Buscar en ZeroMart..." />
         <button type="button" class="bm-search-btn" id="normal-search-btn">⌕</button>
       </div>
 
       <div class="row" style="gap:8px;">
-        <button type="button" class="btn yellow" id="enter-3d-btn">Ir a Tienda 3D</button>
-        <a href="#bm-pay-section" class="btn primary" style="text-decoration:none;">Pagar aquí (<span id="normal-header-cart">0</span>)</a>
+        <button type="button" class="cart-icon-btn" id="open-cart-screen-btn">
+          <span>🛒 Carrito</span>
+          <span class="cart-badge-num" id="normal-header-cart">0</span>
+        </button>
+        <button type="button" class="btn yellow" id="enter-3d-btn">Tienda 3D</button>
         <button type="button" class="btn ghost" id="normal-logout-btn">Salir</button>
       </div>
     </header>
 
     <div class="bm-subbar">
       <div class="bm-sublinks" id="bm-top-sublinks"></div>
-      <div style="color:#475569; font-weight:600;">Compra separada · Guardado en tu cuenta</div>
-    </div>
-
-    <div class="bm-promo-strip">
-      <span>Precios Bajos ZeroMart · Todos los departamentos disponibles</span>
-      <span>Paga directo en Modo Normal y toma captura de tu Ticket con Folio y QR</span>
+      <div style="color:#475569; font-size:0.76rem; font-weight:600;">Toca un producto para ver ficha e interior</div>
     </div>
 
     <div class="bm-layout">
       <aside class="bm-filters">
         <div class="filter-group">
-          <div class="filter-title"><span>Departamento</span><span>▾</span></div>
+          <div class="filter-title">Departamentos</div>
           <div id="normal-cat-list"></div>
         </div>
 
         <div class="filter-group">
-          <div class="filter-title"><span>Entrega</span><span>▾</span></div>
-          <button type="button" class="filter-chip active" data-deliv-filter="recoger">Recoger en tienda</button>
-          <button type="button" class="filter-chip" data-deliv-filter="casa">Llevar a mi casa</button>
-        </div>
-
-        <div class="filter-group">
-          <div class="filter-title"><span>Rango de precio</span><span>▾</span></div>
+          <div class="filter-title">Rango de precio</div>
           <button type="button" class="filter-chip active" data-price-filter="all">Todos los precios</button>
           <button type="button" class="filter-chip" data-price-filter="under100">Hasta $100 MXN</button>
           <button type="button" class="filter-chip" data-price-filter="100to1000">$100 a $1,000 MXN</button>
@@ -959,7 +1041,7 @@
         <div class="bm-section-head">
           <h2 id="normal-dept-title">Todos los productos</h2>
           <select id="bm-sort-select" class="bm-sort-select">
-            <option value="featured">Ordenar por: Más relevantes</option>
+            <option value="featured">Ordenar: Destacados</option>
             <option value="price-asc">Precio: menor a mayor</option>
             <option value="price-desc">Precio: mayor a menor</option>
           </select>
@@ -967,59 +1049,10 @@
 
         <div class="bm-grid" id="normal-product-grid"></div>
       </main>
-
-      <aside class="bm-cart-pane" id="bm-pay-section">
-        <div class="row">
-          <strong style="font-size:0.95rem; color:#0f172a;">Carrito Normal (<span id="normal-cart-count">0</span>)</strong>
-          <span style="color:#15803d; font-weight:900; font-size:0.95rem;" id="normal-cart-total">$0 MXN</span>
-        </div>
-        <div style="font-size:0.74rem; color:#475569;" id="bm-cart-delivery-note">Entrega: Recoger en tienda</div>
-
-        <div id="normal-cart-items" style="display:flex; flex-direction:column; gap:6px; max-height:165px; overflow-y:auto;"></div>
-
-        <div class="bm-pay-box">
-          <div style="font-weight:700; color:#0f172a;">Tipo de entrega</div>
-          <div class="bm-choice-grid" id="bm-delivery-grid">
-            <button type="button" class="bm-opt-btn active" data-bm-deliv="recoger">Recoger tienda</button>
-            <button type="button" class="bm-opt-btn" data-bm-deliv="casa">Llevar a casa</button>
-          </div>
-
-          <div id="bm-address-row" style="display:none; flex-direction:column; gap:4px;">
-            <label for="bm-address-input" style="font-size:0.72rem; color:#475569; font-weight:600;">Dirección de entrega</label>
-            <input id="bm-address-input" type="text" class="bm-input" placeholder="Ej. Av. Insurgentes #120, Tepic" />
-          </div>
-
-          <div style="font-weight:700; color:#0f172a;">Método de pago (abre subventana)</div>
-          <div class="bm-method-grid" id="bm-method-grid">
-            <button type="button" class="bm-opt-btn active" data-bm-pay="efectivo">Efectivo</button>
-            <button type="button" class="bm-opt-btn" data-bm-pay="tarjeta">Tarjeta</button>
-            <button type="button" class="bm-opt-btn" data-bm-pay="paypal">PayPal</button>
-          </div>
-
-          <div id="bm-payment-profile-note" style="font-size:0.72rem; color:#1e293b; background:#e2e8f0; border-radius:7px; padding:6px 8px;">
-            Método activo: <strong>Efectivo</strong>
-          </div>
-
-          <div id="bm-pay-error" style="font-size:0.73rem; color:#dc2626; font-weight:700; min-height:16px;"></div>
-
-          <button type="button" class="bm-add-btn" id="bm-pay-submit-btn" style="width:100%; border-radius:9px; padding:8px; text-align:center;">
-            Pagar y generar Ticket con Folio y QR
-          </button>
-        </div>
-
-        <div class="bm-ticket-card" id="bm-ticket-card">
-          <div style="font-weight:900; color:#15803d; font-size:0.84rem;">TICKET DE COMPRA · MODO NORMAL</div>
-          <div id="bm-ticket-details"></div>
-          <div class="qr-img-box">
-            <img id="bm-ticket-qr-img" alt="QR del ticket" />
-            <span id="bm-ticket-folio-txt"></span>
-          </div>
-          <button type="button" class="bm-opt-btn" id="bm-new-purchase-btn" style="background:#f1f5f9;">Nueva compra en Modo Normal</button>
-        </div>
-      </aside>
     </div>
   </section>
 
+  <!-- Pantalla de inicio de sesión -->
   <section class="auth-screen" id="auth-screen">
     <form class="auth-card" id="auth-form">
       <div>
@@ -1042,6 +1075,7 @@
     </form>
   </section>
 
+  <!-- HUD y Panel Modo 3D -->
   <div class="hud-top" id="hud-top">
     <div class="badge">
       <span class="dot"></span>
@@ -1135,7 +1169,7 @@
           <input id="delivery-address" type="text" placeholder="Ej. Av. Insurgentes #120, Tepic" />
         </div>
 
-        <span style="font-size:0.8rem; color:var(--muted);">Selecciona método de pago (abre subventana):</span>
+        <span style="font-size:0.8rem; color:var(--muted);">Método de pago (abre subventana):</span>
         <div class="pay-methods" id="pay-methods">
           <button type="button" class="btn active" data-method="efectivo">Efectivo</button>
           <button type="button" class="btn" data-method="tarjeta">Tarjeta</button>
@@ -1181,33 +1215,54 @@
     const bmTopSublinksEl = document.getElementById("bm-top-sublinks");
     const bmQuickPillsEl = document.getElementById("bm-quick-pills");
     const bmSortSelect = document.getElementById("bm-sort-select");
-    const bmFulfillmentBtn = document.getElementById("bm-fulfillment-btn");
-    const bmFulfillmentBadge = document.getElementById("bm-fulfillment-badge");
-    const bmCartDeliveryNote = document.getElementById("bm-cart-delivery-note");
     const normalDeptTitleEl = document.getElementById("normal-dept-title");
     const normalProductGridEl = document.getElementById("normal-product-grid");
-    const normalCartItemsEl = document.getElementById("normal-cart-items");
-    const normalCartCountEl = document.getElementById("normal-cart-count");
     const normalHeaderCartEl = document.getElementById("normal-header-cart");
-    const normalCartTotalEl = document.getElementById("normal-cart-total");
+    const openCartScreenBtn = document.getElementById("open-cart-screen-btn");
     const enter3dBtn = document.getElementById("enter-3d-btn");
     const backNormalBtn = document.getElementById("back-normal-btn");
     const normalLogoutBtn = document.getElementById("normal-logout-btn");
 
-    const bmDeliveryGridEl = document.getElementById("bm-delivery-grid");
-    const bmAddressRowEl = document.getElementById("bm-address-row");
-    const bmAddressInput = document.getElementById("bm-address-input");
-    const bmMethodGridEl = document.getElementById("bm-method-grid");
-    const bmPaymentProfileNote = document.getElementById("bm-payment-profile-note");
-    const bmPayError = document.getElementById("bm-pay-error");
-    const bmPaySubmitBtn = document.getElementById("bm-pay-submit-btn");
-    const bmTicketCard = document.getElementById("bm-ticket-card");
-    const bmTicketDetails = document.getElementById("bm-ticket-details");
-    const bmTicketQrImg = document.getElementById("bm-ticket-qr-img");
-    const bmTicketFolioTxt = document.getElementById("bm-ticket-folio-txt");
-    const bmNewPurchaseBtn = document.getElementById("bm-new-purchase-btn");
+    // Modal detalle / interior de producto
+    const productDetailBackdrop = document.getElementById("product-detail-backdrop");
+    const pdDeptBadge = document.getElementById("pd-dept-badge");
+    const pdTitle = document.getElementById("pd-title");
+    const pdCloseBtn = document.getElementById("pd-close-btn");
+    const pdTabSpecs = document.getElementById("pd-tab-specs");
+    const pdTabInside = document.getElementById("pd-tab-inside");
+    const pdViewSpecs = document.getElementById("pd-view-specs");
+    const pdViewInside = document.getElementById("pd-view-inside");
+    const pdThumbImg = document.getElementById("pd-thumb-img");
+    const pdPriceMain = document.getElementById("pd-price-main");
+    const pdPriceSave = document.getElementById("pd-price-save");
+    const pdStockInfo = document.getElementById("pd-stock-info");
+    const pdDescription = document.getElementById("pd-description");
+    const pdSpecsGrid = document.getElementById("pd-specs-grid");
+    const pdInsideImg = document.getElementById("pd-inside-img");
+    const pdInsideCaption = document.getElementById("pd-inside-caption");
+    const pdToggleInsideBtn = document.getElementById("pd-toggle-inside-btn");
+    const pdAddCartBtn = document.getElementById("pd-add-cart-btn");
 
-    // Modal de pago y métodos guardados
+    // Pantalla dedicada de carrito y proceso de pago
+    const cartScreenBackdrop = document.getElementById("cart-screen-backdrop");
+    const cartScreenCloseBtn = document.getElementById("cart-screen-close-btn");
+    const screenCartCount = document.getElementById("screen-cart-count");
+    const screenCartItems = document.getElementById("screen-cart-items");
+    const screenCartTotal = document.getElementById("screen-cart-total");
+    const screenDeliveryGrid = document.getElementById("screen-delivery-grid");
+    const screenAddressWrap = document.getElementById("screen-address-wrap");
+    const screenAddressInput = document.getElementById("screen-address-input");
+    const screenMethodGrid = document.getElementById("screen-method-grid");
+    const screenMethodSummary = document.getElementById("screen-method-summary");
+    const screenCartError = document.getElementById("screen-cart-error");
+    const screenOpenPayBtn = document.getElementById("screen-open-pay-btn");
+    const screenTicketCard = document.getElementById("screen-ticket-card");
+    const screenTicketDetails = document.getElementById("screen-ticket-details");
+    const screenTicketQrImg = document.getElementById("screen-ticket-qr-img");
+    const screenTicketFolioTxt = document.getElementById("screen-ticket-folio-txt");
+    const screenNewOrderBtn = document.getElementById("screen-new-order-btn");
+
+    // Subventana específica por método de pago
     const payModalBackdrop = document.getElementById("pay-modal-backdrop");
     const payModalTitle = document.getElementById("pay-modal-title");
     const payModalSummary = document.getElementById("pay-modal-summary");
@@ -1235,9 +1290,6 @@
     const confirmPaypalPayBtn = document.getElementById("confirm-paypal-pay-btn");
 
     const modalPanelEfectivo = document.getElementById("modal-panel-efectivo");
-    const modalDeliveryChoices = document.getElementById("modal-delivery-choices");
-    const modalAddressField = document.getElementById("modal-address-field");
-    const modalAddressInput = document.getElementById("modal-address-input");
     const modalCashInput = document.getElementById("modal-cash-input");
     const modalChangeLabel = document.getElementById("modal-change-label");
     const confirmCashPayBtn = document.getElementById("confirm-cash-pay-btn");
@@ -1321,11 +1373,9 @@
       { name: "Frutas y Verduras", x: -22.0, z: -6.0, color: "#16a34a", zoneType: "shelf" },
       { name: "Abarrotes", x: -22.0, z: -14.0, color: "#4338ca", zoneType: "shelf" },
       { name: "Bebidas", x: -22.0, z: -22.0, color: "#0369a1", zoneType: "shelf" },
-
       { name: "Lácteos y Fríos", x: -9.0, z: -19.5, color: "#1d4ed8", zoneType: "shelf" },
       { name: "Carnicería y Embutidos", x: 0.0, z: -19.5, color: "#be123c", zoneType: "shelf" },
       { name: "Refrigeradores Grandes", x: 9.0, z: -19.5, color: "#0284c7", zoneType: "fridge" },
-
       { name: "Estufas", x: 22.0, z: -18.0, color: "#dc2626", zoneType: "shelf" },
       { name: "Lavadoras", x: 22.0, z: -10.0, color: "#b45309", zoneType: "shelf" },
       { name: "Limpieza y Hogar", x: 22.0, z: -2.0, color: "#0d9488", zoneType: "shelf" },
@@ -1343,32 +1393,32 @@
     ];
 
     const EXTRA_PRODUCTS = [
-      { id: 101, name: "Refresco 600ml", price: 20, stock: 12, aisle: "Bebidas", shape: "bottle", color: "#0ea5e9" },
-      { id: 102, name: "Agua Purificada 1L", price: 16, stock: 12, aisle: "Bebidas", shape: "bottle", color: "#0284c7" },
-      { id: 103, name: "Jugo Naranja 500ml", price: 22, stock: 10, aisle: "Bebidas", shape: "carton", color: "#f97316" },
-      { id: 104, name: "Arroz Blanco 1kg", price: 29, stock: 12, aisle: "Abarrotes", shape: "bag", color: "#64748b" },
-      { id: 105, name: "Frijol Negro 1kg", price: 35, stock: 12, aisle: "Abarrotes", shape: "bag", color: "#4c1d95" },
-      { id: 801, name: "Manzana Roja 1kg", price: 42, stock: 10, aisle: "Frutas y Verduras", shape: "bottle", color: "#ef4444" },
-      { id: 802, name: "Aguacate Hass 1kg", price: 68, stock: 10, aisle: "Frutas y Verduras", shape: "bag", color: "#22c55e" },
-      { id: 803, name: "Jitomate Saladet 1kg", price: 32, stock: 10, aisle: "Frutas y Verduras", shape: "carton", color: "#dc2626" },
-      { id: 901, name: "Pechuga de Pollo 1kg", price: 98, stock: 8, aisle: "Carnicería y Embutidos", shape: "carton", color: "#f43f5e" },
-      { id: 902, name: "Jamón de Pavo 500g", price: 74, stock: 8, aisle: "Carnicería y Embutidos", shape: "bag", color: "#e11d48" },
-      { id: 503, name: "Leche Entera 1L", price: 26, stock: 10, aisle: "Lácteos y Fríos", shape: "carton", color: "#2563eb" },
-      { id: 504, name: "Yogur Natural 900g", price: 38, stock: 8, aisle: "Lácteos y Fríos", shape: "carton", color: "#0ea5e9" },
-      { id: 505, name: "Crema y Queso Fresco", price: 46, stock: 8, aisle: "Lácteos y Fríos", shape: "bag", color: "#e2e8f0" },
-      { id: 501, name: "Refrigerador Duplex 22p³", price: 14990, stock: 4, aisle: "Refrigeradores Grandes", shape: "fridgeUnit", color: "#f1f5f9" },
-      { id: 502, name: "Refrigerador Vertical 16p³", price: 10490, stock: 4, aisle: "Refrigeradores Grandes", shape: "fridgeUnit", color: "#cbd5e1" },
-      { id: 601, name: "Estufa 6 Quemadores Acero", price: 8490, stock: 5, aisle: "Estufas", shape: "stove", color: "#334155" },
-      { id: 602, name: "Estufa con Horno y Capelo", price: 9650, stock: 5, aisle: "Estufas", shape: "stove", color: "#475569" },
-      { id: 301, name: "Lavadora 18kg Carga Sup.", price: 7890, stock: 6, aisle: "Lavadoras", shape: "washer", color: "#e2e8f0" },
-      { id: 302, name: "Lavadora 22kg Inverter", price: 10290, stock: 5, aisle: "Lavadoras", shape: "washer", color: "#94a3b8" },
-      { id: 951, name: "Detergente Líquido 3L", price: 115, stock: 10, aisle: "Limpieza y Hogar", shape: "bottle", color: "#06b6d4" },
-      { id: 952, name: "Cloro Desinfectante 2L", price: 34, stock: 10, aisle: "Limpieza y Hogar", shape: "bottle", color: "#eab308" },
-      { id: 701, name: "Smartphone Pro 256GB", price: 8990, stock: 5, aisle: "Vitrinas Celulares", shape: "phone", color: "#1e293b", locked: true },
-      { id: 702, name: "Smartphone Ultra 512GB", price: 13490, stock: 4, aisle: "Vitrinas Celulares", shape: "phone", color: "#0284c7", locked: true },
-      { id: 703, name: "Tablet + Audífonos Pro", price: 6200, stock: 5, aisle: "Vitrinas Celulares", shape: "phone", color: "#7e22ce", locked: true },
-      { id: 201, name: "Smart TV 55\" 4K", price: 8990, stock: 6, aisle: "Televisiones", shape: "tv", color: "#0f172a" },
-      { id: 202, name: "TV QLED 65\"", price: 12490, stock: 5, aisle: "Televisiones", shape: "tv", color: "#0284c7" }
+      { id: 101, name: "Refresco 600ml", price: 20, stock: 12, aisle: "Bebidas", shape: "bottle", color: "#0ea5e9", brand: "ZeroCola", specDetail: "Botella PET retornable 600 ml · Gasificación media · Sabor cola original" },
+      { id: 102, name: "Agua Purificada 1L", price: 16, stock: 12, aisle: "Bebidas", shape: "bottle", color: "#0284c7", brand: "Manantial ZM", specDetail: "1,000 ml · Filtración ósmosis inversa · Sin sodio ni azúcar" },
+      { id: 103, name: "Jugo Naranja 500ml", price: 22, stock: 10, aisle: "Bebidas", shape: "carton", color: "#f97316", brand: "Cítrico Real", specDetail: "Envase tetrapack 500 ml con rosca · 100% fruta · Fuente de Vitamina C" },
+      { id: 104, name: "Arroz Blanco 1kg", price: 29, stock: 12, aisle: "Abarrotes", shape: "bag", color: "#64748b", brand: "Grano Dorado", specDetail: "Bolsa 1 kg grano largo · Rendimiento 3x · Cocción uniforme en 18 min" },
+      { id: 105, name: "Frijol Negro 1kg", price: 35, stock: 12, aisle: "Abarrotes", shape: "bag", color: "#4c1d95", brand: "Sierra Verde", specDetail: "Bolsa 1 kg selección especial · Alto contenido de fibra y hierro" },
+      { id: 801, name: "Manzana Roja 1kg", price: 42, stock: 10, aisle: "Frutas y Verduras", shape: "bottle", color: "#ef4444", brand: "Huerta Fresca", specDetail: "1 kg selección fresca · Pulpa crujiente y dulce · Ideal colación o ensalada" },
+      { id: 802, name: "Aguacate Hass 1kg", price: 68, stock: 10, aisle: "Frutas y Verduras", shape: "bag", color: "#22c55e", brand: "Nayarit Hass", specDetail: "1 kg maduración controlada · Rico en grasas saludables · Cascara rugosa" },
+      { id: 803, name: "Jitomate Saladet 1kg", price: 32, stock: 10, aisle: "Frutas y Verduras", shape: "carton", color: "#dc2626", brand: "Campo Rojo", specDetail: "1 kg firmeza ideal para salsas y guisos · Cosecha semanal" },
+      { id: 901, name: "Pechuga de Pollo 1kg", price: 98, stock: 8, aisle: "Carnicería y Embutidos", shape: "carton", color: "#f43f5e", brand: "Granaderos ZM", specDetail: "1 kg corte sin hueso · Cadena de frío 0°C a 4°C · Empaque higiénico" },
+      { id: 902, name: "Jamón de Pavo 500g", price: 74, stock: 8, aisle: "Carnicería y Embutidos", shape: "bag", color: "#e11d48", brand: "DeliFino", specDetail: "Charola 500 g · Reducido en grasa · Rebanado uniforme" },
+      { id: 503, name: "Leche Entera 1L", price: 26, stock: 10, aisle: "Lácteos y Fríos", shape: "carton", color: "#2563eb", brand: "Pradera Blanca", specDetail: "1 litro ultrapasteurizada · Adicionada con Vitaminas A y D · 3.3% grasa" },
+      { id: 504, name: "Yogur Natural 900g", price: 38, stock: 8, aisle: "Lácteos y Fríos", shape: "carton", color: "#0ea5e9", brand: "BioLácteo", specDetail: "Bote 900 g · Cultivos lácteos vivos · Sin endulzantes artificiales" },
+      { id: 505, name: "Crema y Queso Fresco", price: 46, stock: 8, aisle: "Lácteos y Fríos", shape: "bag", color: "#e2e8f0", brand: "Rancho Azul", specDetail: "Combo refrigerado · Sabor tradicional · Conservación en frío continuo" },
+      { id: 501, name: "Refrigerador Duplex 22p³", price: 14990, stock: 4, aisle: "Refrigeradores Grandes", shape: "fridgeUnit", color: "#f1f5f9", brand: "FrigidaireZM", specDetail: "22 pies³ · Dispensador frontal de agua · Compresor Inverter bajo ruido" },
+      { id: 502, name: "Refrigerador Vertical 16p³", price: 10490, stock: 4, aisle: "Refrigeradores Grandes", shape: "fridgeUnit", color: "#cbd5e1", brand: "PolarMax", specDetail: "16 pies³ · Parrillas de cristal templado · Cajón de frutas con control de humedad" },
+      { id: 601, name: "Estufa 6 Quemadores Acero", price: 8490, stock: 5, aisle: "Estufas", shape: "stove", color: "#334155", brand: "HogarFuego", specDetail: "30 pulgadas · 6 quemadores (2 súper) · Cubierta acero inoxidable · Horno con luz" },
+      { id: 602, name: "Estufa con Horno y Capelo", price: 9650, stock: 5, aisle: "Estufas", shape: "stove", color: "#475569", brand: "ChefMaster", specDetail: "30 pulgadas · Tapa de cristal templado · Parrillas hierro fundido · Encendido electrónico" },
+      { id: 301, name: "Lavadora 18kg Carga Sup.", price: 7890, stock: 6, aisle: "Lavadoras", shape: "washer", color: "#e2e8f0", brand: "AquaCiclo", specDetail: "Capacidad 18 kg · 10 ciclos automáticos · Tina acero inoxidable · Tapa amortiguada" },
+      { id: 302, name: "Lavadora 22kg Inverter", price: 10290, stock: 5, aisle: "Lavadoras", shape: "washer", color: "#94a3b8", brand: "TurboClean", specDetail: "Capacidad 22 kg · Motor Inverter · Filtro atrapapelusas · Ahorro de agua" },
+      { id: 951, name: "Detergente Líquido 3L", price: 115, stock: 10, aisle: "Limpieza y Hogar", shape: "bottle", color: "#06b6d4", brand: "LimpiaPlus", specDetail: "Bidón 3 litros (hasta 60 lavadas) · Removedor de manchas · Aroma fresco" },
+      { id: 952, name: "Cloro Desinfectante 2L", price: 34, stock: 10, aisle: "Limpieza y Hogar", shape: "bottle", color: "#eab308", brand: "BrilloSan", specDetail: "Botella 2 litros · Desinfección de superficies y pisos · Tapa de seguridad" },
+      { id: 701, name: "Smartphone Pro 256GB", price: 8990, stock: 5, aisle: "Vitrinas Celulares", shape: "phone", color: "#1e293b", locked: true, brand: "NovaTech", specDetail: "256 GB almacenamiento · Pantalla AMOLED 120 Hz · Cámara principal 108 MP · Carga rápida" },
+      { id: 702, name: "Smartphone Ultra 512GB", price: 13490, stock: 4, aisle: "Vitrinas Celulares", shape: "phone", color: "#0284c7", locked: true, brand: "NovaTech", specDetail: "512 GB almacenamiento · Procesador Octa-Core · Batería 5,000 mAh · Dual SIM" },
+      { id: 703, name: "Tablet + Audífonos Pro", price: 6200, stock: 5, aisle: "Vitrinas Celulares", shape: "phone", color: "#7e22ce", locked: true, brand: "PadSound", specDetail: "Tablet 11 pulgadas FHD + Audífonos inalámbricos con estuche de carga" },
+      { id: 201, name: "Smart TV 55\" 4K", price: 8990, stock: 6, aisle: "Televisiones", shape: "tv", color: "#0f172a", brand: "Vision4K", specDetail: "55 pulgadas UHD 4K HDR10 · 3x HDMI · 2x USB · Wi-Fi y apps de streaming" },
+      { id: 202, name: "TV QLED 65\"", price: 12490, stock: 5, aisle: "Televisiones", shape: "tv", color: "#0284c7", brand: "Vision4K", specDetail: "65 pulgadas QLED 4K · Alto brillo y contraste · Sonido envolvente Dolby" }
     ];
 
     const REGISTER_OFFSETS = [
@@ -1397,9 +1447,10 @@
     });
 
     const cardImageCache = new Map();
+    const interiorImageCache = new Map();
 
     function buildProductCardImage(prod) {
-      const key = `${prod.id}|${prod.name}|${prod.shape}|${prod.color}|${prod.price}`;
+      const key = `card|${prod.id}|${prod.name}|${prod.shape}|${prod.color}|${prod.price}`;
       if (cardImageCache.has(key)) return cardImageCache.get(key);
 
       const canvas = document.createElement("canvas");
@@ -1419,7 +1470,7 @@
         ctx.fillStyle = accent;
         ctx.fillRect(43, 28, 154, 78);
         ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 16px system-ui, sans-serif";
+        ctx.font = "bold 15px system-ui, sans-serif";
         ctx.textAlign = "center";
         ctx.fillText("ZEROMART TV", 120, 62);
         ctx.font = "bold 13px system-ui, sans-serif";
@@ -1513,6 +1564,165 @@
       return dataUrl;
     }
 
+    /**
+     * Genera una vista "por adentro" (compartimentos, estructura interna o detalle)
+     * personalizada para CADA producto según su forma y departamento.
+     */
+    function buildProductInteriorImage(prod) {
+      const key = `inside|${prod.id}|${prod.shape}|${prod.aisle}`;
+      if (interiorImageCache.has(key)) return interiorImageCache.get(key);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = 420;
+      canvas.height = 230;
+      const ctx = canvas.getContext("2d");
+
+      ctx.fillStyle = "#f1f5f9";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const shape = prod.shape || "box";
+      ctx.font = "bold 13px system-ui, sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.textAlign = "left";
+      ctx.fillText(`VISTA INTERIOR · ${String(prod.name).slice(0, 32)}`, 16, 24);
+
+      if (shape === "fridgeUnit") {
+        // Interior de refrigerador con anaqueles, cajones de verduras y luz LED
+        ctx.fillStyle = "#e0f2fe";
+        ctx.fillRect(120, 36, 180, 176);
+        ctx.strokeStyle = "#0284c7";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(120, 36, 180, 176);
+        [74, 112, 150].forEach((y) => {
+          ctx.strokeStyle = "#38bdf8";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(124, y);
+          ctx.lineTo(296, y);
+          ctx.stroke();
+        });
+        ctx.fillStyle = "#bbf7d0";
+        ctx.fillRect(128, 156, 76, 48);
+        ctx.fillRect(216, 156, 76, 48);
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "11px system-ui, sans-serif";
+        ctx.fillText("Luz LED", 190, 52);
+        ctx.fillText("Anaqueles cristal", 168, 96);
+        ctx.fillText("Cajón frescura", 134, 184);
+        ctx.fillText("Zona fría", 232, 184);
+      } else if (shape === "washer") {
+        // Interior de tina y tambor de lavadora
+        ctx.fillStyle = "#cbd5e1";
+        ctx.beginPath();
+        ctx.arc(210, 128, 76, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#0284c7";
+        ctx.beginPath();
+        ctx.arc(210, 128, 56, 0, Math.PI * 2);
+        ctx.fill();
+        for (let a = 0; a < Math.PI * 2; a += Math.PI / 6) {
+          const hx = 210 + Math.cos(a) * 34;
+          const hy = 128 + Math.sin(a) * 34;
+          ctx.fillStyle = "#e0f2fe";
+          ctx.beginPath();
+          ctx.arc(hx, hy, 5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "11px system-ui, sans-serif";
+        ctx.fillText("Tambor acero inoxidable + aspas de lavado", 96, 46);
+      } else if (shape === "stove") {
+        // Interior de horno con charola y parrillas
+        ctx.fillStyle = "#1e293b";
+        ctx.fillRect(95, 42, 230, 162);
+        ctx.fillStyle = "#fb923c";
+        ctx.fillRect(112, 58, 196, 12);
+        ctx.strokeStyle = "#94a3b8";
+        ctx.lineWidth = 2;
+        [95, 135, 175].forEach((y) => {
+          ctx.beginPath();
+          ctx.moveTo(110, y);
+          ctx.lineTo(310, y);
+          ctx.stroke();
+        });
+        ctx.fillStyle = "#f8fafc";
+        ctx.font = "11px system-ui, sans-serif";
+        ctx.fillText("Horno esmaltado + 3 parrillas + luz interior", 104, 192);
+      } else if (shape === "tv") {
+        // Diagrama interior de panel, retroiluminación y puertos
+        ctx.fillStyle = "#0f172a";
+        ctx.fillRect(60, 40, 300, 160);
+        ctx.fillStyle = "#1e293b";
+        ctx.fillRect(76, 54, 175, 132);
+        ctx.fillStyle = "#38bdf8";
+        ctx.font = "bold 12px system-ui, sans-serif";
+        ctx.fillText("Panel 4K + Retroiluminación", 88, 92);
+        ctx.fillStyle = "#e2e8f0";
+        ctx.font = "11px system-ui, sans-serif";
+        ctx.fillText("• Procesador de imagen", 88, 118);
+        ctx.fillText("• Bocinas estéreo integradas", 88, 138);
+        ctx.fillStyle = "#334155";
+        ctx.fillRect(262, 54, 84, 132);
+        ctx.fillStyle = "#facc15";
+        ctx.fillText("Puertos:", 272, 76);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText("HDMI 1 / 2 / 3", 272, 102);
+        ctx.fillText("USB · Óptico", 272, 124);
+      } else if (shape === "phone") {
+        // Vista interna de hardware: batería, placa y cámaras
+        ctx.fillStyle = "#1e293b";
+        ctx.fillRect(105, 38, 210, 168);
+        ctx.fillStyle = "#334155";
+        ctx.fillRect(118, 52, 86, 62);
+        ctx.fillStyle = "#38bdf8";
+        ctx.font = "bold 11px system-ui, sans-serif";
+        ctx.fillText("Placa Base", 126, 76);
+        ctx.fillText("Cámara Pro", 126, 96);
+
+        ctx.fillStyle = "#15803d";
+        ctx.fillRect(118, 124, 184, 68);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 12px system-ui, sans-serif";
+        ctx.fillText("Batería Alta Capacidad (5,000 mAh)", 128, 162);
+
+        ctx.fillStyle = "#475569";
+        ctx.fillRect(214, 52, 88, 62);
+        ctx.fillStyle = "#facc15";
+        ctx.font = "11px system-ui, sans-serif";
+        ctx.fillText("Almacenamiento", 220, 76);
+        ctx.fillText("y Bobina Carga", 220, 96);
+      } else {
+        // Vista interior para alimentos, bebidas, limpieza y abarrotes
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(65, 42, 290, 158);
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.strokeRect(65, 42, 290, 158);
+        ctx.fillStyle = "#15803d";
+        ctx.font = "bold 12px system-ui, sans-serif";
+        ctx.fillText("Detalle de contenido y calidad:", 82, 68);
+        ctx.fillStyle = "#1e293b";
+        ctx.font = "12px system-ui, sans-serif";
+        ctx.fillText(`• Departamento: ${prod.aisle}`, 82, 96);
+        ctx.fillText(`• Marca: ${prod.brand || "ZeroMart"}`, 82, 120);
+        ctx.fillText(`• ${String(prod.specDetail || "").slice(0, 44)}`, 82, 144);
+        ctx.fillText(`• Unidades disponibles hoy: ${getAvailableCount(prod)}`, 82, 168);
+      }
+
+      const dataUrl = canvas.toDataURL("image/png");
+      interiorImageCache.set(key, dataUrl);
+      return dataUrl;
+    }
+
+    function getInteriorCaption(prod) {
+      const shape = prod.shape || "box";
+      if (shape === "fridgeUnit") return "Interior con anaqueles ajustables, iluminación LED y cajones de conservación.";
+      if (shape === "washer") return "Tambor interno de lavado con perforaciones de flujo y sistema de centrifugado.";
+      if (shape === "stove") return "Cámara interna del horno con niveles de parrilla para horneado uniforme.";
+      if (shape === "tv") return "Esquema interno del panel de imagen, sistema de audio y panel trasero de conexiones.";
+      if (shape === "phone") return "Distribución interna de placa lógica, módulo de cámara, carga y celda de batería.";
+      return `Detalle interno de ${prod.name}: ${prod.specDetail || "Producto revisado para venta en ZeroMart."}`;
+    }
+
     function playScannerBeep() {
       try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -1534,72 +1744,53 @@
     }
 
     /**
-     * Generador de matriz QR (versión 2 = 25x25 módulos) con patrones de búsqueda (finder),
-     * separadores, patrones de sincronización (timing), módulo oscuro fijo,
-     * áreas reservadas de formato y datos codificados en flujo de bits + enmascarado.
+     * Generador de código QR estándar ISO/IEC 18004 (Versión 2, 25x25 módulos, ECC nivel M)
+     * con aritmética en GF(256), polinomio generador Reed-Solomon de 10 bytes ECC
+     * (34 data codewords + 10 ecc codewords = 44 total codewords), formato real y
+     * selección automática de la máscara con menor penalización.
      */
     function buildLocalQrDataUrl(payloadText) {
       const size = 25;
-      const grid = Array.from({ length: size }, () => Array(size).fill(null));
-      const isFunctionModule = Array.from({ length: size }, () => Array(size).fill(false));
 
-      const setFunc = (r, c, dark) => {
-        if (r < 0 || c < 0 || r >= size || c >= size) return;
-        grid[r][c] = Boolean(dark);
-        isFunctionModule[r][c] = true;
-      };
+      // Tablas GF(256) con polinomio primitivo 0x11d (285)
+      const gfExp = new Array(512);
+      const gfLog = new Array(256);
+      let x = 1;
+      for (let i = 0; i < 255; i++) {
+        gfExp[i] = x;
+        gfLog[x] = i;
+        x <<= 1;
+        if (x & 0x100) x ^= 0x11d;
+      }
+      for (let i = 255; i < 512; i++) {
+        gfExp[i] = gfExp[i - 255];
+      }
 
-      const drawFinder = (r0, c0) => {
-        for (let r = -1; r <= 7; r++) {
-          for (let c = -1; c <= 7; c++) {
-            const rr = r0 + r;
-            const cc = c0 + c;
-            if (rr < 0 || cc < 0 || rr >= size || cc >= size) continue;
-            const onOuter = r === 0 || r === 6 || c === 0 || c === 6;
-            const onInner = r >= 2 && r <= 4 && c >= 2 && c <= 4;
-            setFunc(rr, cc, onOuter || onInner);
+      const gfMul = (a, b) => (a === 0 || b === 0) ? 0 : gfExp[gfLog[a] + gfLog[b]];
+
+      const polyMul = (p, q) => {
+        const res = new Array(p.length + q.length - 1).fill(0);
+        for (let i = 0; i < p.length; i++) {
+          for (let j = 0; j < q.length; j++) {
+            res[i + j] ^= gfMul(p[i], q[j]);
           }
         }
+        return res;
       };
 
-      drawFinder(0, 0);
-      drawFinder(0, size - 7);
-      drawFinder(size - 7, 0);
+      const eccLen = 10; // Versión 2-M: 34 datos + 10 ECC = 44 codewords
+      const dataCapacity = 34;
 
-      // Alignment pattern en (18, 18) para QR v2 (25x25)
-      const alignCenter = 18;
-      for (let r = -2; r <= 2; r++) {
-        for (let c = -2; c <= 2; c++) {
-          const dark = Math.abs(r) === 2 || Math.abs(c) === 2 || (r === 0 && c === 0);
-          setFunc(alignCenter + r, alignCenter + c, dark);
-        }
+      // Polinomio generador para 10 bytes ECC
+      let genPoly = [1];
+      for (let i = 0; i < eccLen; i++) {
+        genPoly = polyMul(genPoly, [1, gfExp[i]]);
       }
 
-      // Timing patterns
-      for (let i = 8; i < size - 8; i++) {
-        const dark = i % 2 === 0;
-        if (!isFunctionModule[6][i]) setFunc(6, i, dark);
-        if (!isFunctionModule[i][6]) setFunc(i, 6, dark);
-      }
-
-      // Dark module fijo
-      setFunc(size - 8, 8, true);
-
-      // Reservar celdas de información de formato (sin pisar timing ni finder)
-      for (let i = 0; i < 9; i++) {
-        if (!isFunctionModule[8][i]) isFunctionModule[8][i] = true;
-        if (!isFunctionModule[i][8]) isFunctionModule[i][8] = true;
-      }
-      for (let i = 0; i < 8; i++) {
-        isFunctionModule[8][size - 1 - i] = true;
-        isFunctionModule[size - 1 - i][8] = true;
-      }
-
-      // Construir flujo de bits (modo byte = 0100 + longitud 8 bits + bytes + relleno)
       const encoder = new TextEncoder();
       const rawBytes = encoder.encode(String(payloadText || "ZEROMART"));
-      const maxDataBytes = 44;
-      const bytesToUse = rawBytes.slice(0, maxDataBytes);
+      // Modo byte (4 bits = 0100) + contador de longitud (8 bits) -> cabe hasta 32 bytes
+      const bytes = rawBytes.slice(0, dataCapacity - 2);
 
       const bits = [];
       const pushBits = (val, count) => {
@@ -1609,49 +1800,216 @@
       };
 
       pushBits(0b0100, 4);
-      pushBits(bytesToUse.length, 8);
-      for (const byteVal of bytesToUse) {
+      pushBits(bytes.length, 8);
+      for (const byteVal of bytes) {
         pushBits(byteVal, 8);
       }
-      const capacityBits = maxDataBytes * 8;
-      while (bits.length < capacityBits) {
-        pushBits(0b11101100, 8);
-        if (bits.length < capacityBits) pushBits(0b00010001, 8);
+
+      const totalDataBits = dataCapacity * 8;
+      const terminatorLen = Math.min(4, totalDataBits - bits.length);
+      for (let i = 0; i < terminatorLen; i++) bits.push(0);
+      while (bits.length % 8 !== 0) bits.push(0);
+
+      const codewords = [];
+      for (let i = 0; i < bits.length; i += 8) {
+        let cw = 0;
+        for (let b = 0; b < 8; b++) cw = (cw << 1) | bits[i + b];
+        codewords.push(cw);
       }
 
-      // Zig-zag de colocación de bits
-      let bitIdx = 0;
-      let upward = true;
-      for (let col = size - 1; col >= 1; col -= 2) {
-        if (col === 6) col = 5;
-        for (let step = 0; step < size; step++) {
-          const r = upward ? (size - 1 - step) : step;
-          for (const cOffset of [0, -1]) {
-            const c = col + cOffset;
-            if (c < 0 || isFunctionModule[r][c]) continue;
-            const rawBit = bitIdx < bits.length ? bits[bitIdx++] : 0;
-            // Máscara 0: (r + c) % 2 === 0
-            const masked = ((r + c) % 2 === 0) ? (rawBit ^ 1) : rawBit;
-            grid[r][c] = masked === 1;
+      const padBytes = [0xec, 0x11];
+      let padIdx = 0;
+      while (codewords.length < dataCapacity) {
+        codewords.push(padBytes[padIdx % 2]);
+        padIdx++;
+      }
+
+      // División polinómica Reed-Solomon
+      const msgPoly = [...codewords, ...new Array(eccLen).fill(0)];
+      for (let i = 0; i < dataCapacity; i++) {
+        const factor = msgPoly[i];
+        if (factor !== 0) {
+          for (let j = 1; j < genPoly.length; j++) {
+            msgPoly[i + j] ^= gfMul(genPoly[j], factor);
           }
         }
-        upward = !upward;
+      }
+      const eccCodewords = msgPoly.slice(dataCapacity);
+      const allCodewords = [...codewords, ...eccCodewords];
+
+      const finalBits = [];
+      for (const cw of allCodewords) {
+        for (let b = 7; b >= 0; b--) finalBits.push((cw >>> b) & 1);
       }
 
-      // Patrón de formato visual (nivel M, máscara 0) en esquinas reservadas
-      const formatBits = [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0];
-      const topLeftCoords = [
-        [0, 8], [1, 8], [2, 8], [3, 8], [4, 8], [5, 8], [7, 8], [8, 8],
-        [8, 7], [8, 5], [8, 4], [8, 3], [8, 2], [8, 1], [8, 0]
+      // Patrones de formato QR (ECC nivel M = 00, máscara 0..7)
+      // Bits de formato de 15 bits (BCH(15,5) XOR 101010000010010)
+      const formatInfoTable = [
+        0b101010000010010, // mask 0
+        0b101000100100101, // mask 1
+        0b101111001111100, // mask 2
+        0b101101101001011, // mask 3
+        0b100010111111001, // mask 4
+        0b100000011001110, // mask 5
+        0b100111110010111, // mask 6
+        0b100101010100000  // mask 7
       ];
-      topLeftCoords.forEach(([r, c], idx) => {
-        grid[r][c] = formatBits[idx] === 1;
-      });
-      for (let i = 0; i < 8; i++) {
-        grid[8][size - 1 - i] = formatBits[i] === 1;
-      }
-      for (let i = 0; i < 7; i++) {
-        grid[size - 1 - i][8] = formatBits[7 + i] === 1;
+
+      const maskFn = (maskId, r, c) => {
+        switch (maskId) {
+          case 0: return (r + c) % 2 === 0;
+          case 1: return r % 2 === 0;
+          case 2: return c % 3 === 0;
+          case 3: return (r + c) % 3 === 0;
+          case 4: return (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0;
+          case 5: return ((r * c) % 2) + ((r * c) % 3) === 0;
+          case 6: return ((((r * c) % 2) + ((r * c) % 3)) % 2) === 0;
+          case 7: return ((((r + c) % 2) + ((r * c) % 3)) % 2) === 0;
+          default: return (r + c) % 2 === 0;
+        }
+      };
+
+      const createBaseGrid = () => {
+        const g = Array.from({ length: size }, () => Array(size).fill(null));
+        const isFunc = Array.from({ length: size }, () => Array(size).fill(false));
+
+        const setF = (r, c, dark) => {
+          if (r < 0 || c < 0 || r >= size || c >= size) return;
+          g[r][c] = Boolean(dark);
+          isFunc[r][c] = true;
+        };
+
+        const drawFinder = (r0, c0) => {
+          for (let r = -1; r <= 7; r++) {
+            for (let c = -1; c <= 7; c++) {
+              const rr = r0 + r;
+              const cc = c0 + c;
+              if (rr < 0 || cc < 0 || rr >= size || cc >= size) continue;
+              const onOuter = r === 0 || r === 6 || c === 0 || c === 6;
+              const onInner = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+              setF(rr, cc, onOuter || onInner);
+            }
+          }
+        };
+
+        drawFinder(0, 0);
+        drawFinder(0, size - 7);
+        drawFinder(size - 7, 0);
+
+        // Alignment en (18, 18) para v2
+        for (let r = -2; r <= 2; r++) {
+          for (let c = -2; c <= 2; c++) {
+            const dark = Math.abs(r) === 2 || Math.abs(c) === 2 || (r === 0 && c === 0);
+            setF(18 + r, 18 + c, dark);
+          }
+        }
+
+        // Timing
+        for (let i = 8; i < size - 8; i++) {
+          const dark = i % 2 === 0;
+          if (!isFunc[6][i]) setF(6, i, dark);
+          if (!isFunc[i][6]) setF(i, 6, dark);
+        }
+
+        // Dark module
+        setF(size - 8, 8, true);
+
+        // Reservar celdas de formato
+        for (let i = 0; i < 9; i++) {
+          if (!isFunc[8][i]) isFunc[8][i] = true;
+          if (!isFunc[i][8]) isFunc[i][8] = true;
+        }
+        for (let i = 0; i < 8; i++) {
+          isFunc[8][size - 1 - i] = true;
+          isFunc[size - 1 - i][8] = true;
+        }
+
+        return { g, isFunc };
+      };
+
+      const applyFormatBits = (g, maskId) => {
+        const info = formatInfoTable[maskId] || formatInfoTable[0];
+        const fmt = [];
+        for (let i = 14; i >= 0; i--) {
+          fmt.push(((info >>> i) & 1) === 1);
+        }
+        const topLeft = [
+          [0, 8], [1, 8], [2, 8], [3, 8], [4, 8], [5, 8], [7, 8], [8, 8],
+          [8, 7], [8, 5], [8, 4], [8, 3], [8, 2], [8, 1], [8, 0]
+        ];
+        topLeft.forEach(([r, c], idx) => { g[r][c] = fmt[idx]; });
+        for (let i = 0; i < 8; i++) g[8][size - 1 - i] = fmt[i];
+        for (let i = 0; i < 7; i++) g[size - 1 - i][8] = fmt[7 + i];
+      };
+
+      const scoreMask = (g) => {
+        let penalty = 0;
+        // Regla 1: módulos consecutivos iguales en filas y columnas
+        for (let r = 0; r < size; r++) {
+          let run = 1;
+          for (let c = 1; c < size; c++) {
+            if (g[r][c] === g[r][c - 1]) {
+              run++;
+              if (run === 5) penalty += 3;
+              else if (run > 5) penalty += 1;
+            } else {
+              run = 1;
+            }
+          }
+        }
+        for (let c = 0; c < size; c++) {
+          let run = 1;
+          for (let r = 1; r < size; r++) {
+            if (g[r][c] === g[r - 1][c]) {
+              run++;
+              if (run === 5) penalty += 3;
+              else if (run > 5) penalty += 1;
+            } else {
+              run = 1;
+            }
+          }
+        }
+        // Regla 2: bloques 2x2 iguales
+        for (let r = 0; r < size - 1; r++) {
+          for (let c = 0; c < size - 1; c++) {
+            const v = g[r][c];
+            if (v === g[r][c + 1] && v === g[r + 1][c] && v === g[r + 1][c + 1]) {
+              penalty += 3;
+            }
+          }
+        }
+        return penalty;
+      };
+
+      let bestGrid = null;
+      let bestScore = Infinity;
+
+      for (let m = 0; m < 8; m++) {
+        const { g, isFunc } = createBaseGrid();
+        let bitPtr = 0;
+        let upward = true;
+
+        for (let col = size - 1; col >= 1; col -= 2) {
+          if (col === 6) col = 5;
+          for (let step = 0; step < size; step++) {
+            const r = upward ? (size - 1 - step) : step;
+            for (const cOff of [0, -1]) {
+              const c = col + cOff;
+              if (c < 0 || isFunc[r][c]) continue;
+              const rawBit = bitPtr < finalBits.length ? finalBits[bitPtr++] : 0;
+              const dark = maskFn(m, r, c) ? (rawBit ^ 1) : rawBit;
+              g[r][c] = dark === 1;
+            }
+          }
+          upward = !upward;
+        }
+
+        applyFormatBits(g, m);
+        const sc = scoreMask(g);
+        if (sc < bestScore) {
+          bestScore = sc;
+          bestGrid = g;
+        }
       }
 
       const canvas = document.createElement("canvas");
@@ -1667,7 +2025,7 @@
 
       for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
-          if (grid[r][c]) {
+          if (bestGrid[r][c]) {
             ctx.fillRect(quietZone + c * scale, quietZone + r * scale, scale, scale);
           }
         }
@@ -1696,8 +2054,8 @@
     let normalPriceFilter = "all";
     let normalSortMode = "featured";
     let normalSearchTerm = "";
+    let activeDetailProduct = null;
 
-    // Métodos de pago guardados por cuenta en localStorage
     let savedCardData = null;
     let savedPaypalData = null;
 
@@ -1750,11 +2108,10 @@
       }
     }
 
-    // Carrito y estado de compra separado para Modo Normal
     let normalCart = new Map();
     let normalDeliveryChoice = "recoger";
     let normalPaymentMethod = "efectivo";
-    let pendingModalContext = null; // { source: "normal" | "3d", method, total, items, lineSummary }
+    let pendingModalContext = null;
 
     let activeAisle = "Panadería";
     let currentUser = null;
@@ -1840,25 +2197,175 @@
       return total;
     }
 
-    function updateNormalPayControls() {
-      const isHome = normalDeliveryChoice === "casa";
-      bmFulfillmentBadge.textContent = isHome ? "Tepic · Llevar a casa" : "Tepic · Recoger tienda";
-      bmCartDeliveryNote.textContent = isHome ? "Entrega: Llevar a tu casa" : "Entrega: Recoger en tienda";
-      bmAddressRowEl.style.display = isHome ? "flex" : "none";
-
-      bmDeliveryGridEl.querySelectorAll("button").forEach((b) => {
-        b.classList.toggle("active", b.dataset.bmDeliv === normalDeliveryChoice);
-      });
-      document.querySelectorAll("[data-deliv-filter]").forEach((b) => {
-        b.classList.toggle("active", b.dataset.delivFilter === normalDeliveryChoice);
-      });
-
-      bmMethodGridEl.querySelectorAll("button").forEach((b) => {
-        b.classList.toggle("active", b.dataset.bmPay === normalPaymentMethod);
-      });
-
-      bmPaymentProfileNote.innerHTML = `Método activo: <strong>${formatMethodLabel(normalPaymentMethod)}</strong>`;
+    function setProductDetailTab(tabName) {
+      const isInside = tabName === "inside";
+      pdTabSpecs.classList.toggle("active", !isInside);
+      pdTabInside.classList.toggle("active", isInside);
+      pdViewSpecs.style.display = isInside ? "none" : "flex";
+      pdViewInside.style.display = isInside ? "block" : "none";
+      pdToggleInsideBtn.textContent = isInside ? "Ver ficha técnica" : "Ver por adentro";
     }
+
+    function openProductDetailModal(prod, startInside = false) {
+      if (!prod) return;
+      activeDetailProduct = prod;
+      const avail = getAvailableCount(prod);
+      const priceNum = Number(prod.price || 0);
+      const oldPriceNum = Math.round(priceNum * 1.18);
+      const saveNum = Math.max(5, oldPriceNum - priceNum);
+
+      pdDeptBadge.textContent = prod.aisle;
+      pdTitle.textContent = prod.name;
+      pdThumbImg.src = buildProductCardImage(prod);
+      pdPriceMain.textContent = `$${priceNum.toLocaleString("es-MX")}.00 MXN`;
+      pdPriceSave.textContent = `Precio anterior $${oldPriceNum.toLocaleString("es-MX")} · Ahorras $${saveNum.toLocaleString("es-MX")}`;
+      pdStockInfo.textContent = `Disponibilidad en tienda: ${avail} unidades · ${prod.locked ? "Vitrina bajo llave" : "Disponible en pasillo"}`;
+      pdDescription.textContent = prod.specDetail || "Producto de catálogo ZeroMart con garantía de calidad y disponibilidad en tienda.";
+
+      pdSpecsGrid.innerHTML = `
+        <div class="spec-box"><span>Marca</span><strong>${prod.brand || "ZeroMart"}</strong></div>
+        <div class="spec-box"><span>Departamento</span><strong>${prod.aisle}</strong></div>
+        <div class="spec-box"><span>Código SKU</span><strong>ZM-${String(prod.id).padStart(4, "0")}</strong></div>
+        <div class="spec-box"><span>Entrega</span><strong>Tienda o Domicilio</strong></div>
+      `;
+
+      pdInsideImg.src = buildProductInteriorImage(prod);
+      pdInsideCaption.textContent = getInteriorCaption(prod);
+      pdAddCartBtn.disabled = avail <= 0;
+
+      setProductDetailTab(startInside ? "inside" : "specs");
+      productDetailBackdrop.classList.add("active");
+    }
+
+    pdCloseBtn.addEventListener("click", () => {
+      productDetailBackdrop.classList.remove("active");
+      activeDetailProduct = null;
+    });
+
+    pdTabSpecs.addEventListener("click", () => setProductDetailTab("specs"));
+    pdTabInside.addEventListener("click", () => setProductDetailTab("inside"));
+    pdToggleInsideBtn.addEventListener("click", () => {
+      const currentlyInside = pdViewInside.style.display === "block";
+      setProductDetailTab(currentlyInside ? "specs" : "inside");
+    });
+
+    pdAddCartBtn.addEventListener("click", () => {
+      if (!activeDetailProduct) return;
+      normalCart.set(activeDetailProduct.id, (normalCart.get(activeDetailProduct.id) || 0) + 1);
+      productDetailBackdrop.classList.remove("active");
+      renderNormalStore();
+      openCartScreenModal();
+    });
+
+    function openCartScreenModal() {
+      screenCartError.textContent = "";
+      renderCartScreenModal();
+      cartScreenBackdrop.classList.add("active");
+    }
+
+    cartScreenCloseBtn.addEventListener("click", () => {
+      cartScreenBackdrop.classList.remove("active");
+    });
+
+    openCartScreenBtn.addEventListener("click", openCartScreenModal);
+
+    function renderCartScreenModal() {
+      let count = 0;
+      normalCart.forEach((q) => { count += q; });
+      screenCartCount.textContent = String(count);
+
+      screenCartItems.innerHTML = "";
+      if (normalCart.size === 0) {
+        screenCartItems.innerHTML = `<p class="muted">Tu carrito está vacío. Agrega productos desde la tienda.</p>`;
+      } else {
+        normalCart.forEach((qty, prodId) => {
+          const prod = products.find((p) => Number(p.id) === Number(prodId));
+          if (!prod) return;
+          const row = document.createElement("div");
+          row.className = "cart-item";
+          row.innerHTML = `
+            <div class="row">
+              <strong>${prod.name}</strong>
+              <span class="price">$${(prod.price * qty).toLocaleString("es-MX")} MXN</span>
+            </div>
+            <div class="row meta">
+              <span>$${prod.price} c/u · Cantidad: ${qty}</span>
+              <div class="row" style="gap:4px;">
+                <button type="button" class="btn" data-act="minus">-</button>
+                <button type="button" class="btn" data-act="plus">+</button>
+              </div>
+            </div>
+          `;
+          row.querySelector('[data-act="minus"]').addEventListener("click", () => {
+            if (qty > 1) normalCart.set(prod.id, qty - 1);
+            else normalCart.delete(prod.id);
+            renderNormalStore();
+            renderCartScreenModal();
+          });
+          row.querySelector('[data-act="plus"]').addEventListener("click", () => {
+            normalCart.set(prod.id, qty + 1);
+            renderNormalStore();
+            renderCartScreenModal();
+          });
+          screenCartItems.appendChild(row);
+        });
+      }
+
+      screenCartTotal.textContent = `$${getNormalCartTotal().toLocaleString("es-MX")} MXN`;
+      screenDeliveryGrid.querySelectorAll("button").forEach((b) => {
+        b.classList.toggle("active", b.dataset.sdeliv === normalDeliveryChoice);
+      });
+      screenAddressWrap.style.display = normalDeliveryChoice === "casa" ? "flex" : "none";
+
+      screenMethodGrid.querySelectorAll("button").forEach((b) => {
+        b.classList.toggle("active", b.dataset.spay === normalPaymentMethod);
+      });
+      screenMethodSummary.textContent = `Método seleccionado: ${formatMethodLabel(normalPaymentMethod)}`;
+    }
+
+    screenDeliveryGrid.querySelectorAll("button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        normalDeliveryChoice = btn.dataset.sdeliv;
+        renderCartScreenModal();
+      });
+    });
+
+    screenMethodGrid.querySelectorAll("button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        normalPaymentMethod = btn.dataset.spay;
+        renderCartScreenModal();
+      });
+    });
+
+    screenOpenPayBtn.addEventListener("click", () => {
+      screenCartError.textContent = "";
+      const total = getNormalCartTotal();
+      if (normalCart.size === 0 || total <= 0) {
+        screenCartError.textContent = "Agrega al menos un producto al carrito antes de pagar.";
+        return;
+      }
+      if (normalDeliveryChoice === "casa" && !screenAddressInput.value.trim()) {
+        screenCartError.textContent = "Escribe la dirección de entrega a domicilio.";
+        return;
+      }
+
+      const items = [];
+      const lineSummary = [];
+      normalCart.forEach((qty, prodId) => {
+        const prod = products.find((p) => Number(p.id) === Number(prodId));
+        if (prod) {
+          items.push({ productId: prod.id, qty });
+          lineSummary.push(`${qty}x ${prod.name} ($${prod.price * qty})`);
+        }
+      });
+
+      openPaymentSubwindow({ source: "normal", method: normalPaymentMethod, total, items, lineSummary });
+    });
+
+    screenNewOrderBtn.addEventListener("click", () => {
+      screenTicketCard.classList.remove("active");
+      cartScreenBackdrop.classList.remove("active");
+    });
 
     function openPaymentSubwindow(ctx) {
       pendingModalContext = ctx;
@@ -1873,7 +2380,7 @@
       modalPanelEfectivo.style.display = "none";
 
       if (ctx.method === "tarjeta") {
-        payModalTitle.textContent = "Pago con Tarjeta · Registrar y Guardar";
+        payModalTitle.textContent = "Subventana · Tarjeta";
         modalPanelTarjeta.style.display = "flex";
         if (savedCardData) {
           cardHolderInput.value = savedCardData.holder || "";
@@ -1882,22 +2389,15 @@
           cardNipInput.value = "";
         }
       } else if (ctx.method === "paypal") {
-        payModalTitle.textContent = "Pago con PayPal · Registrar Correo";
+        payModalTitle.textContent = "Subventana · PayPal";
         modalPanelPaypal.style.display = "flex";
         if (savedPaypalData) {
           paypalEmailInput.value = savedPaypalData.email || "";
           paypalAliasInput.value = savedPaypalData.alias || "";
         }
       } else {
-        payModalTitle.textContent = "Pago en Efectivo · Entrega y Cambio";
+        payModalTitle.textContent = "Subventana · Efectivo";
         modalPanelEfectivo.style.display = "flex";
-        const currentDeliv = ctx.source === "normal" ? normalDeliveryChoice : deliveryChoice;
-        const currentAddr = ctx.source === "normal" ? bmAddressInput.value : deliveryAddressInput.value;
-        modalDeliveryChoices.querySelectorAll("button").forEach((b) => {
-          b.classList.toggle("active", b.dataset.modalDeliv === currentDeliv);
-        });
-        modalAddressField.style.display = currentDeliv === "casa" ? "flex" : "none";
-        modalAddressInput.value = currentAddr || "";
         modalCashInput.value = String(total);
         updateModalCashChange(total);
       }
@@ -1943,19 +2443,19 @@
       const nip = cardNipInput.value.trim();
 
       if (!holder) {
-        payModalError.textContent = "Escribe el nombre del titular de la tarjeta.";
+        payModalError.textContent = "Escribe el nombre del titular.";
         return null;
       }
       if (digits.length < 12) {
-        payModalError.textContent = "Escribe un número de tarjeta válido (mínimo 12 dígitos).";
+        payModalError.textContent = "Escribe un número de tarjeta válido.";
         return null;
       }
       if (!/^\d{2}\/\d{2}$/.test(exp)) {
-        payModalError.textContent = "Escribe el vencimiento en formato MM/AA.";
+        payModalError.textContent = "Escribe vencimiento MM/AA.";
         return null;
       }
       if (nip.length < 3) {
-        payModalError.textContent = "Escribe el CVV / NIP de 3 o 4 dígitos.";
+        payModalError.textContent = "Escribe CVV / NIP de 3 o 4 dígitos.";
         return null;
       }
 
@@ -1963,7 +2463,7 @@
       const masked = `•••• •••• •••• ${last4}`;
       savedCardData = { holder, last4, masked, exp };
       persistPaymentMethods();
-      updateNormalPayControls();
+      renderCartScreenModal();
       updateCashierUI();
       payModalError.textContent = "";
       return savedCardData;
@@ -1973,7 +2473,7 @@
       const saved = validateAndSaveCard();
       if (saved) {
         payModalError.style.color = "#4ade80";
-        payModalError.textContent = `Tarjeta •••• ${saved.last4} guardada en tu cuenta.`;
+        payModalError.textContent = `Tarjeta •••• ${saved.last4} guardada.`;
         setTimeout(() => { payModalError.style.color = "#f87171"; }, 1800);
       }
     });
@@ -2005,7 +2505,7 @@
       }
       savedPaypalData = { email, alias };
       persistPaymentMethods();
-      updateNormalPayControls();
+      renderCartScreenModal();
       updateCashierUI();
       payModalError.textContent = "";
       return savedPaypalData;
@@ -2015,7 +2515,7 @@
       const saved = validateAndSavePaypal();
       if (saved) {
         payModalError.style.color = "#4ade80";
-        payModalError.textContent = `Correo ${saved.email} guardado en tu cuenta.`;
+        payModalError.textContent = `Correo ${saved.email} guardado.`;
         setTimeout(() => { payModalError.style.color = "#f87171"; }, 1800);
       }
     });
@@ -2031,30 +2531,10 @@
       });
     });
 
-    modalDeliveryChoices.querySelectorAll("button").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const chosen = btn.dataset.modalDeliv;
-        modalDeliveryChoices.querySelectorAll("button").forEach((b) => {
-          b.classList.toggle("active", b.dataset.modalDeliv === chosen);
-        });
-        modalAddressField.style.display = chosen === "casa" ? "flex" : "none";
-        if (pendingModalContext?.source === "normal") {
-          normalDeliveryChoice = chosen;
-          updateNormalPayControls();
-        } else {
-          deliveryChoice = chosen;
-          deliveryChoicesEl.querySelectorAll("button").forEach((b) => {
-            b.classList.toggle("active", b.dataset.delivery === chosen);
-          });
-          updateCashierUI();
-        }
-      });
-    });
-
     function updateModalCashChange(total) {
       const tendered = Number(modalCashInput.value || 0);
       if (tendered >= total && total > 0) {
-        modalChangeLabel.textContent = `Cambio a devolver: $${(tendered - total).toFixed(2)} MXN`;
+        modalChangeLabel.textContent = `Cambio: $${(tendered - total).toFixed(2)} MXN`;
       } else {
         modalChangeLabel.textContent = `Faltan $${Math.max(0, total - tendered).toFixed(2)} MXN`;
       }
@@ -2067,66 +2547,37 @@
     confirmCashPayBtn.addEventListener("click", async () => {
       if (!pendingModalContext) return;
       const total = pendingModalContext.total;
-      const activeDelivBtn = modalDeliveryChoices.querySelector("button.active");
-      const chosenDeliv = activeDelivBtn ? activeDelivBtn.dataset.modalDeliv : "recoger";
-      const addr = modalAddressInput.value.trim();
-
-      if (chosenDeliv === "casa" && !addr) {
-        payModalError.textContent = "Escribe la dirección de entrega a domicilio.";
-        return;
-      }
-
       const tendered = Number(modalCashInput.value || 0);
       if (tendered < total) {
-        payModalError.textContent = `El efectivo debe ser de al menos $${total} MXN.`;
+        payModalError.textContent = `El monto debe ser al menos $${total} MXN.`;
         return;
       }
-
-      if (pendingModalContext.source === "normal") {
-        normalDeliveryChoice = chosenDeliv;
-        if (addr) bmAddressInput.value = addr;
-      } else {
-        deliveryChoice = chosenDeliv;
-        if (addr) deliveryAddressInput.value = addr;
-      }
-
       await finalizePurchaseFromModal({
         paymentMethod: "efectivo",
         paymentInfo: "Efectivo",
         tendered,
-        changeAmt: Math.max(0, tendered - total),
-        deliveryOverride: chosenDeliv,
-        addressOverride: addr
+        changeAmt: Math.max(0, tendered - total)
       });
     });
 
-    async function finalizePurchaseFromModal({ paymentMethod, paymentInfo, tendered, changeAmt, deliveryOverride, addressOverride }) {
+    async function finalizePurchaseFromModal({ paymentMethod, paymentInfo, tendered, changeAmt }) {
       const ctx = pendingModalContext;
       if (!ctx) return;
 
       const total = ctx.total;
-      const chosenDeliv = deliveryOverride || (ctx.source === "normal" ? normalDeliveryChoice : deliveryChoice);
-      const chosenAddr = addressOverride !== undefined
-        ? addressOverride
-        : (ctx.source === "normal" ? bmAddressInput.value.trim() : deliveryAddressInput.value.trim());
+      const chosenDeliv = ctx.source === "normal" ? normalDeliveryChoice : deliveryChoice;
+      const chosenAddr = ctx.source === "normal" ? screenAddressInput.value.trim() : deliveryAddressInput.value.trim();
       const delivText = chosenDeliv === "casa"
         ? `A domicilio (${chosenAddr || "Tepic"})`
         : "Recoger en tienda";
 
       if (ctx.source === "normal") {
         const folio = `ZM-NORM-${Date.now().toString().slice(-6)}`;
-        const qrPayload = JSON.stringify({
-          folio,
-          mode: "normal",
-          user: currentUser?.username || "cliente",
-          total,
-          method: paymentMethod,
-          delivery: chosenDeliv
-        });
-        bmTicketQrImg.src = buildLocalQrDataUrl(qrPayload);
-        bmTicketFolioTxt.textContent = `Folio: ${folio}`;
+        const qrPayload = `ZM|${folio}|$${total}|${paymentMethod}|${chosenDeliv}`;
+        screenTicketQrImg.src = buildLocalQrDataUrl(qrPayload);
+        screenTicketFolioTxt.textContent = folio;
 
-        bmTicketDetails.innerHTML = `
+        screenTicketDetails.innerHTML = `
           <div><strong>Folio:</strong> ${folio}</div>
           <div><strong>Cuenta:</strong> ${currentUser?.username || "invitado"}</div>
           <div><strong>Entrega:</strong> ${delivText}</div>
@@ -2135,9 +2586,10 @@
           <div style="margin-top:4px; color:#334155;"><strong>Artículos:</strong> ${ctx.lineSummary.join(", ")}</div>
         `;
 
-        bmTicketCard.classList.add("active");
+        screenTicketCard.classList.add("active");
         normalCart.clear();
         renderNormalStore();
+        renderCartScreenModal();
         closePaymentSubwindow();
 
         try {
@@ -2182,14 +2634,7 @@
         dispatchRestockersAfterPayment();
 
         const ticketCode = `ZM-3D-${Date.now().toString().slice(-6)}`;
-        const qrPayload = JSON.stringify({
-          ticket: ticketCode,
-          mode: "3d",
-          total,
-          method: paymentMethod,
-          delivery: chosenDeliv,
-          user: currentUser?.username || "cliente"
-        });
+        const qrPayload = `ZM|${ticketCode}|$${total}|${paymentMethod}|${chosenDeliv}`;
 
         receiptQrImg.src = buildLocalQrDataUrl(qrPayload);
         receiptQrCodeEl.textContent = `Folio QR: ${ticketCode}`;
@@ -2222,75 +2667,6 @@
         } catch {}
       }
     }
-
-    bmFulfillmentBtn.addEventListener("click", () => {
-      normalDeliveryChoice = normalDeliveryChoice === "casa" ? "recoger" : "casa";
-      updateNormalPayControls();
-    });
-
-    bmDeliveryGridEl.querySelectorAll("button").forEach((b) => {
-      b.addEventListener("click", () => {
-        normalDeliveryChoice = b.dataset.bmDeliv;
-        updateNormalPayControls();
-      });
-    });
-
-    document.querySelectorAll("[data-deliv-filter]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        normalDeliveryChoice = btn.dataset.delivFilter;
-        updateNormalPayControls();
-      });
-    });
-
-    bmMethodGridEl.querySelectorAll("button").forEach((b) => {
-      b.addEventListener("click", () => {
-        normalPaymentMethod = b.dataset.bmPay;
-        updateNormalPayControls();
-        const total = getNormalCartTotal();
-        if (normalCart.size > 0 && total > 0) {
-          const items = [];
-          const lineSummary = [];
-          normalCart.forEach((qty, prodId) => {
-            const prod = products.find((p) => Number(p.id) === Number(prodId));
-            if (prod) {
-              items.push({ productId: prod.id, qty });
-              lineSummary.push(`${qty}x ${prod.name} ($${prod.price * qty})`);
-            }
-          });
-          openPaymentSubwindow({ source: "normal", method: normalPaymentMethod, total, items, lineSummary });
-        }
-      });
-    });
-
-    bmPaySubmitBtn.addEventListener("click", () => {
-      bmPayError.textContent = "";
-      const total = getNormalCartTotal();
-      if (normalCart.size === 0 || total <= 0) {
-        bmPayError.textContent = "Agrega al menos un producto en Modo Normal antes de pagar.";
-        return;
-      }
-      if (normalDeliveryChoice === "casa" && !bmAddressInput.value.trim()) {
-        bmPayError.textContent = "Escribe tu dirección de entrega a domicilio.";
-        return;
-      }
-
-      const items = [];
-      const lineSummary = [];
-      normalCart.forEach((qty, prodId) => {
-        const prod = products.find((p) => Number(p.id) === Number(prodId));
-        if (prod) {
-          items.push({ productId: prod.id, qty });
-          lineSummary.push(`${qty}x ${prod.name} ($${prod.price * qty})`);
-        }
-      });
-
-      openPaymentSubwindow({ source: "normal", method: normalPaymentMethod, total, items, lineSummary });
-    });
-
-    bmNewPurchaseBtn.addEventListener("click", () => {
-      bmTicketCard.classList.remove("active");
-      bmPayError.textContent = "";
-    });
 
     function applyViewMode() {
       if (!currentUser) {
@@ -2360,7 +2736,6 @@
     });
 
     function renderNormalStore() {
-      updateNormalPayControls();
       const departments = ["Todos", ...AISLE_LAYOUT.map((a) => a.name)];
 
       normalCatListEl.innerHTML = "";
@@ -2390,11 +2765,11 @@
       });
 
       bmQuickPillsEl.innerHTML = "";
-      departments.slice(0, 9).forEach((dept) => {
+      departments.slice(0, 8).forEach((dept) => {
         const pill = document.createElement("button");
         pill.type = "button";
         pill.className = "quick-pill-btn" + (dept === normalSelectedDept ? " active" : "");
-        pill.innerHTML = `<span style="width:8px; height:8px; border-radius:50%; background:#167c2e;"></span><span>${dept}</span>`;
+        pill.textContent = dept;
         pill.addEventListener("click", () => {
           normalSelectedDept = dept;
           renderNormalStore();
@@ -2403,13 +2778,16 @@
       });
 
       normalDeptTitleEl.textContent = normalSelectedDept === "Todos"
-        ? "Todos los productos destacados"
+        ? "Todos los productos"
         : `${normalSelectedDept}`;
 
       let filtered = products.filter((p) => {
         const matchesDept = normalSelectedDept === "Todos" || p.aisle === normalSelectedDept;
         const q = normalSearchTerm.trim().toLowerCase();
-        const matchesSearch = !q || String(p.name).toLowerCase().includes(q) || String(p.aisle).toLowerCase().includes(q);
+        const matchesSearch = !q
+          || String(p.name).toLowerCase().includes(q)
+          || String(p.aisle).toLowerCase().includes(q)
+          || String(p.brand || "").toLowerCase().includes(q);
         const price = Number(p.price || 0);
         let matchesPrice = true;
         if (normalPriceFilter === "under100") matchesPrice = price <= 100;
@@ -2440,7 +2818,10 @@
             <div class="bm-thumb-wrap" style="margin-top:6px;">
               <img src="${imgSrc}" alt="${prod.name}" />
             </div>
-            <button type="button" class="bm-add-btn" style="margin-top:8px;" ${avail <= 0 ? "disabled" : ""}>+ Agregar</button>
+            <div class="row" style="margin-top:8px;">
+              <button type="button" class="bm-add-btn" ${avail <= 0 ? "disabled" : ""}>+ Agregar</button>
+              <button type="button" class="bm-detail-btn">Por dentro</button>
+            </div>
           </div>
           <div>
             <div>
@@ -2448,52 +2829,33 @@
               <span class="bm-price-old">$${oldPriceNum.toLocaleString("es-MX")}</span>
               <span class="bm-save-pill">Ahorra $${saveNum.toLocaleString("es-MX")}</span>
             </div>
-            <div class="bm-prod-sub" style="margin-top:3px;">${prod.aisle} · Disp: <strong>${avail}</strong></div>
-            <div class="bm-prod-title" style="margin-top:2px;">${prod.name} ${prod.locked ? "🔒" : ""}</div>
+            <div class="bm-prod-sub" style="margin-top:3px;">${prod.brand || "ZeroMart"} · Disp: <strong>${avail}</strong></div>
+            <div class="bm-prod-title" style="margin-top:2px;">${prod.name}</div>
           </div>
         `;
-        card.querySelector(".bm-add-btn").addEventListener("click", () => {
+
+        // Clic en la tarjeta abre la ficha de especificaciones
+        card.addEventListener("click", () => openProductDetailModal(prod, false));
+
+        // Botón "Por dentro" abre directo la vista interior
+        card.querySelector(".bm-detail-btn").addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          openProductDetailModal(prod, true);
+        });
+
+        // Botón "+ Agregar" agrega directo al carrito
+        card.querySelector(".bm-add-btn").addEventListener("click", (ev) => {
+          ev.stopPropagation();
           normalCart.set(prod.id, (normalCart.get(prod.id) || 0) + 1);
           renderNormalStore();
         });
+
         normalProductGridEl.appendChild(card);
       });
 
-      normalCartItemsEl.innerHTML = "";
-      if (normalCart.size === 0) {
-        normalCartItemsEl.innerHTML = `<p style="font-size:0.78rem; color:#64748b;">Carrito normal vacío. Pulsa <strong>+ Agregar</strong>.</p>`;
-      } else {
-        normalCart.forEach((qty, prodId) => {
-          const prod = products.find((p) => Number(p.id) === Number(prodId));
-          if (!prod) return;
-          const itemRow = document.createElement("div");
-          itemRow.style.cssText = "border:1px solid #e2e8f0; border-radius:8px; padding:6px 8px; background:#ffffff; font-size:0.78rem;";
-          itemRow.innerHTML = `
-            <div class="row">
-              <strong>${prod.name}</strong>
-              <span style="font-weight:800; color:#15803d;">$${(prod.price * qty).toLocaleString("es-MX")}</span>
-            </div>
-            <div class="row" style="margin-top:3px; color:#475569; font-size:0.72rem;">
-              <span>Cant: ${qty} · $${prod.price} c/u</span>
-              <button type="button" class="btn" style="color:#0f172a; border-color:#cbd5e1; padding:2px 6px;">Quitar</button>
-            </div>
-          `;
-          itemRow.querySelector("button").addEventListener("click", () => {
-            if (qty > 1) normalCart.set(prod.id, qty - 1);
-            else normalCart.delete(prod.id);
-            renderNormalStore();
-          });
-          normalCartItemsEl.appendChild(itemRow);
-        });
-      }
-
-      const total = getNormalCartTotal();
-      normalCartTotalEl.textContent = `$${total.toLocaleString("es-MX")} MXN`;
       let count = 0;
       normalCart.forEach((q) => { count += q; });
-      normalCartCountEl.textContent = String(count);
       normalHeaderCartEl.textContent = String(count);
-      updateNormalPayControls();
     }
 
     normalSearchInput.addEventListener("input", (e) => {
