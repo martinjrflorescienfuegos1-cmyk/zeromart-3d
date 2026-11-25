@@ -7,7 +7,7 @@
   <style>
     :root {
       --bg: #0f172a;
-      --panel: rgba(15, 23, 42, 0.94);
+      --panel: rgba(15, 23, 42, 0.95);
       --border: rgba(255, 255, 255, 0.16);
       --text: #f3f4f6;
       --muted: #9ca3af;
@@ -419,8 +419,8 @@
 
     .bm-method-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 4px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
     }
 
     .bm-opt-btn {
@@ -428,8 +428,8 @@
       background: #ffffff;
       color: #1e293b;
       border-radius: 7px;
-      padding: 5px 4px;
-      font-size: 0.72rem;
+      padding: 6px 4px;
+      font-size: 0.74rem;
       font-weight: 700;
       cursor: pointer;
     }
@@ -463,6 +463,47 @@
     }
 
     .bm-ticket-card.active { display: flex; }
+
+    /* Subventana modal para cada método de pago */
+    .pay-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      background: rgba(9, 13, 22, 0.76);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .pay-modal-backdrop.active { display: flex; }
+
+    .pay-modal-card {
+      width: min(420px, 100%);
+      background: #0f172a;
+      color: #f8fafc;
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+    }
+
+    .saved-badge {
+      background: rgba(34, 197, 94, 0.16);
+      border: 1px solid rgba(34, 197, 94, 0.45);
+      color: #86efac;
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
 
     /* Auth y 3D HUD */
     .auth-screen {
@@ -660,7 +701,7 @@
     }
 
     .pay-methods {
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
     }
 
     .pay-box {
@@ -680,36 +721,6 @@
       font-size: 0.78rem;
       color: #e0f2fe;
       min-height: 44px;
-    }
-
-    .terminal-box {
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(56, 189, 248, 0.45);
-      border-radius: 10px;
-      padding: 10px;
-      font-size: 0.78rem;
-      color: #bae6fd;
-      display: none;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .terminal-box.active { display: flex; }
-
-    .card-visual {
-      background: linear-gradient(120deg, #0284c7, #1e1b4b);
-      border: 1px solid rgba(255, 255, 255, 0.28);
-      border-radius: 8px;
-      padding: 8px 10px;
-      color: #ffffff;
-      font-size: 0.75rem;
-      transition: transform 0.35s ease, opacity 0.35s ease;
-    }
-
-    .card-visual.inserted {
-      transform: translateY(-6px) scale(0.95);
-      opacity: 0.75;
-      border-color: #4ade80;
     }
 
     .ticket {
@@ -741,8 +752,8 @@
     }
 
     .qr-img-box img {
-      width: 132px;
-      height: 132px;
+      width: 144px;
+      height: 144px;
       display: block;
     }
 
@@ -801,7 +812,89 @@
 <body>
   <div id="canvas-wrap"></div>
 
-  <!-- Modo Tienda Normal estilo Bodega / Autoservicio (Pago y Ticket directo aquí mismo) -->
+  <!-- Subventana modal para cada método de pago -->
+  <div class="pay-modal-backdrop" id="pay-modal-backdrop">
+    <div class="pay-modal-card" id="pay-modal-card">
+      <div class="row">
+        <strong id="pay-modal-title" style="font-size:0.98rem;">Método de pago</strong>
+        <button type="button" class="btn" id="pay-modal-close">✕</button>
+      </div>
+      <div id="pay-modal-summary" class="muted" style="margin:0;"></div>
+
+      <!-- Subventana: Tarjeta (registrar y guardar en cuenta) -->
+      <div id="modal-panel-tarjeta" style="display:none; flex-direction:column; gap:8px;">
+        <div id="saved-card-box" class="saved-badge" style="display:none;">
+          <span id="saved-card-text"></span>
+          <button type="button" class="btn success" id="use-saved-card-btn" style="padding:3px 8px;">Usar guardada</button>
+        </div>
+        <div class="field">
+          <label for="card-holder-input">Nombre del titular</label>
+          <input id="card-holder-input" type="text" placeholder="Ej. Martín Flores" />
+        </div>
+        <div class="field">
+          <label for="card-number-input">Número de tarjeta</label>
+          <input id="card-number-input" type="text" inputmode="numeric" maxlength="19" placeholder="4152 3100 0000 2565" />
+        </div>
+        <div class="row">
+          <div class="field" style="flex:1;">
+            <label for="card-exp-input">Vencimiento (MM/AA)</label>
+            <input id="card-exp-input" type="text" inputmode="numeric" maxlength="5" placeholder="08/29" />
+          </div>
+          <div class="field" style="flex:1;">
+            <label for="card-nip-input">CVV / NIP (3-4 dígitos)</label>
+            <input id="card-nip-input" type="password" inputmode="numeric" maxlength="4" placeholder="1234" />
+          </div>
+        </div>
+        <div class="row" style="margin-top:4px;">
+          <button type="button" class="btn primary" id="save-card-btn" style="flex:1;">Guardar tarjeta en cuenta</button>
+          <button type="button" class="btn success" id="confirm-card-pay-btn" style="flex:1;">Pagar con tarjeta</button>
+        </div>
+      </div>
+
+      <!-- Subventana: PayPal (registrar y guardar correo) -->
+      <div id="modal-panel-paypal" style="display:none; flex-direction:column; gap:8px;">
+        <div id="saved-paypal-box" class="saved-badge" style="display:none;">
+          <span id="saved-paypal-text"></span>
+          <button type="button" class="btn success" id="use-saved-paypal-btn" style="padding:3px 8px;">Usar correo</button>
+        </div>
+        <div class="field">
+          <label for="paypal-email-input">Correo de PayPal</label>
+          <input id="paypal-email-input" type="email" placeholder="ejemplo@correo.com" />
+        </div>
+        <div class="field">
+          <label for="paypal-alias-input">Alias o referencia (opcional)</label>
+          <input id="paypal-alias-input" type="text" placeholder="Cuenta principal" />
+        </div>
+        <div class="row" style="margin-top:4px;">
+          <button type="button" class="btn primary" id="save-paypal-btn" style="flex:1;">Guardar PayPal</button>
+          <button type="button" class="btn success" id="confirm-paypal-pay-btn" style="flex:1;">Pagar con PayPal</button>
+        </div>
+      </div>
+
+      <!-- Subventana: Efectivo (recoger en tienda o domicilio + cambio) -->
+      <div id="modal-panel-efectivo" style="display:none; flex-direction:column; gap:8px;">
+        <span style="font-size:0.8rem; color:var(--muted);">Entrega del pedido:</span>
+        <div class="delivery-choices" id="modal-delivery-choices" style="margin:0;">
+          <button type="button" class="btn active" data-modal-deliv="recoger">Recoger en tienda</button>
+          <button type="button" class="btn" data-modal-deliv="casa">Llevar a mi casa</button>
+        </div>
+        <div class="field" id="modal-address-field" style="display:none;">
+          <label for="modal-address-input">Dirección de entrega</label>
+          <input id="modal-address-input" type="text" placeholder="Ej. Av. Insurgentes #120, Tepic" />
+        </div>
+        <div class="field">
+          <label for="modal-cash-input">Monto en efectivo (MXN)</label>
+          <input id="modal-cash-input" type="number" min="0" step="1" placeholder="Ej. 500" />
+          <span class="meta" id="modal-change-label">Cambio: $0 MXN</span>
+        </div>
+        <button type="button" class="btn success" id="confirm-cash-pay-btn" style="width:100%;">Confirmar pago en efectivo y generar QR</button>
+      </div>
+
+      <div id="pay-modal-error" style="color:#f87171; font-size:0.78rem; font-weight:700; min-height:18px;"></div>
+    </div>
+  </div>
+
+  <!-- Modo Tienda Normal estilo Bodega / Autoservicio -->
   <section class="normal-store" id="normal-store">
     <header class="bm-topbar">
       <div class="bm-logo">
@@ -812,7 +905,7 @@
 
       <button type="button" class="bm-fulfillment" id="bm-fulfillment-btn">
         <span>Entrega:</span>
-        <strong id="bm-fulfillment-badge">Tepic · Llevar a casa</strong>
+        <strong id="bm-fulfillment-badge">Tepic · Recoger tienda</strong>
         <span>▾</span>
       </button>
 
@@ -847,8 +940,8 @@
 
         <div class="filter-group">
           <div class="filter-title"><span>Entrega</span><span>▾</span></div>
-          <button type="button" class="filter-chip active" data-deliv-filter="casa">Llevar a mi casa</button>
-          <button type="button" class="filter-chip" data-deliv-filter="recoger">Recoger en tienda</button>
+          <button type="button" class="filter-chip active" data-deliv-filter="recoger">Recoger en tienda</button>
+          <button type="button" class="filter-chip" data-deliv-filter="casa">Llevar a mi casa</button>
         </div>
 
         <div class="filter-group">
@@ -880,46 +973,37 @@
           <strong style="font-size:0.95rem; color:#0f172a;">Carrito Normal (<span id="normal-cart-count">0</span>)</strong>
           <span style="color:#15803d; font-weight:900; font-size:0.95rem;" id="normal-cart-total">$0 MXN</span>
         </div>
-        <div style="font-size:0.74rem; color:#475569;" id="bm-cart-delivery-note">Entrega: Llevar a mi casa</div>
+        <div style="font-size:0.74rem; color:#475569;" id="bm-cart-delivery-note">Entrega: Recoger en tienda</div>
 
-        <div id="normal-cart-items" style="display:flex; flex-direction:column; gap:6px; max-height:175px; overflow-y:auto;"></div>
+        <div id="normal-cart-items" style="display:flex; flex-direction:column; gap:6px; max-height:165px; overflow-y:auto;"></div>
 
         <div class="bm-pay-box">
           <div style="font-weight:700; color:#0f172a;">Tipo de entrega</div>
           <div class="bm-choice-grid" id="bm-delivery-grid">
-            <button type="button" class="bm-opt-btn active" data-bm-deliv="casa">Llevar a casa</button>
-            <button type="button" class="bm-opt-btn" data-bm-deliv="recoger">Recoger tienda</button>
+            <button type="button" class="bm-opt-btn active" data-bm-deliv="recoger">Recoger tienda</button>
+            <button type="button" class="bm-opt-btn" data-bm-deliv="casa">Llevar a casa</button>
           </div>
 
-          <div id="bm-address-row" style="display:flex; flex-direction:column; gap:4px;">
+          <div id="bm-address-row" style="display:none; flex-direction:column; gap:4px;">
             <label for="bm-address-input" style="font-size:0.72rem; color:#475569; font-weight:600;">Dirección de entrega</label>
             <input id="bm-address-input" type="text" class="bm-input" placeholder="Ej. Av. Insurgentes #120, Tepic" />
           </div>
 
-          <div style="font-weight:700; color:#0f172a;">Método de pago</div>
+          <div style="font-weight:700; color:#0f172a;">Método de pago (abre subventana)</div>
           <div class="bm-method-grid" id="bm-method-grid">
             <button type="button" class="bm-opt-btn active" data-bm-pay="efectivo">Efectivo</button>
             <button type="button" class="bm-opt-btn" data-bm-pay="tarjeta">Tarjeta</button>
             <button type="button" class="bm-opt-btn" data-bm-pay="paypal">PayPal</button>
-            <button type="button" class="bm-opt-btn" data-bm-pay="transferencia">SPEI</button>
           </div>
 
-          <div id="bm-cash-row" style="display:flex; flex-direction:column; gap:3px;">
-            <label for="bm-cash-input" style="font-size:0.72rem; color:#475569; font-weight:600;">Monto en efectivo (MXN)</label>
-            <input id="bm-cash-input" type="number" min="0" step="1" class="bm-input" placeholder="Ej. 500" />
-            <span id="bm-change-label" style="font-size:0.72rem; color:#15803d; font-weight:700;">Cambio: $0.00 MXN</span>
-          </div>
-
-          <div id="bm-card-row" style="display:none; flex-direction:column; gap:4px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:7px;">
-            <button type="button" class="bm-opt-btn" id="bm-insert-card-btn" style="background:#0284c7; color:#fff; border-color:#0369a1;">Insertar tarjeta</button>
-            <input id="bm-card-nip" type="password" maxlength="4" inputmode="numeric" class="bm-input" placeholder="NIP (4 dígitos)" />
-            <span id="bm-card-status" style="font-size:0.7rem; color:#1e3a8a; font-weight:600;">Inserta la tarjeta y escribe tu NIP</span>
+          <div id="bm-payment-profile-note" style="font-size:0.72rem; color:#1e293b; background:#e2e8f0; border-radius:7px; padding:6px 8px;">
+            Método activo: <strong>Efectivo</strong>
           </div>
 
           <div id="bm-pay-error" style="font-size:0.73rem; color:#dc2626; font-weight:700; min-height:16px;"></div>
 
           <button type="button" class="bm-add-btn" id="bm-pay-submit-btn" style="width:100%; border-radius:9px; padding:8px; text-align:center;">
-            Pagar y generar Ticket con Folio
+            Pagar y generar Ticket con Folio y QR
           </button>
         </div>
 
@@ -1040,48 +1124,29 @@
       </div>
 
       <div class="pay-box">
-        <span style="font-size:0.8rem; color:var(--muted);">¿Lo quieres llevar a tu casa o recoger?</span>
+        <span style="font-size:0.8rem; color:var(--muted);">Entrega del pedido:</span>
         <div class="delivery-choices" id="delivery-choices">
-          <button type="button" class="btn active" data-delivery="casa">Llevar a mi casa</button>
-          <button type="button" class="btn" data-delivery="recoger">Recoger en tienda</button>
+          <button type="button" class="btn active" data-delivery="recoger">Recoger en tienda</button>
+          <button type="button" class="btn" data-delivery="casa">Llevar a mi casa</button>
         </div>
 
-        <div class="field" id="address-wrap">
+        <div class="field" id="address-wrap" style="display:none;">
           <label for="delivery-address">Dirección de entrega a domicilio</label>
           <input id="delivery-address" type="text" placeholder="Ej. Av. Insurgentes #120, Tepic" />
         </div>
 
-        <span style="font-size:0.8rem; color:var(--muted);">Selecciona método de pago:</span>
+        <span style="font-size:0.8rem; color:var(--muted);">Selecciona método de pago (abre subventana):</span>
         <div class="pay-methods" id="pay-methods">
           <button type="button" class="btn active" data-method="efectivo">Efectivo</button>
           <button type="button" class="btn" data-method="tarjeta">Tarjeta</button>
           <button type="button" class="btn" data-method="paypal">PayPal</button>
-          <button type="button" class="btn" data-method="transferencia">SPEI</button>
         </div>
 
-        <div class="field" id="cash-input-wrap">
-          <label for="cash-tendered">Monto en efectivo (MXN)</label>
-          <input id="cash-tendered" type="number" min="0" step="1" placeholder="ej. 500" />
-          <span class="meta" id="change-preview">Cambio: $0 MXN</span>
+        <div class="meta" id="method-detail" style="display:block; color:#bae6fd;">
+          Método activo: Efectivo
         </div>
 
-        <div class="terminal-box" id="terminal-box">
-          <strong>Terminal Bancaria ZeroMart</strong>
-          <div class="card-visual" id="card-visual">
-            <div>TARJETA DE DÉBITO / CRÉDITO · CHIP EMV</div>
-            <div style="margin-top:4px; font-weight:700; letter-spacing:1px;">•••• •••• •••• 2565</div>
-          </div>
-          <button type="button" class="btn primary" id="insert-card-btn">1. Insertar tarjeta</button>
-          <div class="field" style="gap:4px;">
-            <label for="card-nip">2. Escribe tu NIP (4 dígitos)</label>
-            <input id="card-nip" type="password" maxlength="4" inputmode="numeric" placeholder="ej. 1234" />
-          </div>
-          <span class="meta" id="card-status" style="margin:0; color:#4ade80;">Inserta la tarjeta y escribe tu NIP</span>
-        </div>
-
-        <div class="meta" id="method-detail" style="display:none;"></div>
-
-        <button class="btn success" id="checkout-btn" style="width:100%;">Pagar y generar Ticket QR</button>
+        <button class="btn success" id="checkout-btn" style="width:100%;">Abrir subventana de pago y generar QR</button>
       </div>
 
       <div class="ticket" id="receipt-box">
@@ -1133,13 +1198,7 @@
     const bmAddressRowEl = document.getElementById("bm-address-row");
     const bmAddressInput = document.getElementById("bm-address-input");
     const bmMethodGridEl = document.getElementById("bm-method-grid");
-    const bmCashRowEl = document.getElementById("bm-cash-row");
-    const bmCashInput = document.getElementById("bm-cash-input");
-    const bmChangeLabel = document.getElementById("bm-change-label");
-    const bmCardRowEl = document.getElementById("bm-card-row");
-    const bmInsertCardBtn = document.getElementById("bm-insert-card-btn");
-    const bmCardNipInput = document.getElementById("bm-card-nip");
-    const bmCardStatus = document.getElementById("bm-card-status");
+    const bmPaymentProfileNote = document.getElementById("bm-payment-profile-note");
     const bmPayError = document.getElementById("bm-pay-error");
     const bmPaySubmitBtn = document.getElementById("bm-pay-submit-btn");
     const bmTicketCard = document.getElementById("bm-ticket-card");
@@ -1147,6 +1206,41 @@
     const bmTicketQrImg = document.getElementById("bm-ticket-qr-img");
     const bmTicketFolioTxt = document.getElementById("bm-ticket-folio-txt");
     const bmNewPurchaseBtn = document.getElementById("bm-new-purchase-btn");
+
+    // Modal de pago y métodos guardados
+    const payModalBackdrop = document.getElementById("pay-modal-backdrop");
+    const payModalTitle = document.getElementById("pay-modal-title");
+    const payModalSummary = document.getElementById("pay-modal-summary");
+    const payModalClose = document.getElementById("pay-modal-close");
+    const payModalError = document.getElementById("pay-modal-error");
+
+    const modalPanelTarjeta = document.getElementById("modal-panel-tarjeta");
+    const savedCardBox = document.getElementById("saved-card-box");
+    const savedCardText = document.getElementById("saved-card-text");
+    const useSavedCardBtn = document.getElementById("use-saved-card-btn");
+    const cardHolderInput = document.getElementById("card-holder-input");
+    const cardNumberInput = document.getElementById("card-number-input");
+    const cardExpInput = document.getElementById("card-exp-input");
+    const cardNipInput = document.getElementById("card-nip-input");
+    const saveCardBtn = document.getElementById("save-card-btn");
+    const confirmCardPayBtn = document.getElementById("confirm-card-pay-btn");
+
+    const modalPanelPaypal = document.getElementById("modal-panel-paypal");
+    const savedPaypalBox = document.getElementById("saved-paypal-box");
+    const savedPaypalText = document.getElementById("saved-paypal-text");
+    const useSavedPaypalBtn = document.getElementById("use-saved-paypal-btn");
+    const paypalEmailInput = document.getElementById("paypal-email-input");
+    const paypalAliasInput = document.getElementById("paypal-alias-input");
+    const savePaypalBtn = document.getElementById("save-paypal-btn");
+    const confirmPaypalPayBtn = document.getElementById("confirm-paypal-pay-btn");
+
+    const modalPanelEfectivo = document.getElementById("modal-panel-efectivo");
+    const modalDeliveryChoices = document.getElementById("modal-delivery-choices");
+    const modalAddressField = document.getElementById("modal-address-field");
+    const modalAddressInput = document.getElementById("modal-address-input");
+    const modalCashInput = document.getElementById("modal-cash-input");
+    const modalChangeLabel = document.getElementById("modal-change-label");
+    const confirmCashPayBtn = document.getElementById("confirm-cash-pay-btn");
 
     const canvasWrapEl = document.getElementById("canvas-wrap");
     const hudTopEl = document.getElementById("hud-top");
@@ -1187,14 +1281,6 @@
     const addressWrap = document.getElementById("address-wrap");
     const deliveryAddressInput = document.getElementById("delivery-address");
     const payMethodsEl = document.getElementById("pay-methods");
-    const cashInputWrap = document.getElementById("cash-input-wrap");
-    const cashTenderedInput = document.getElementById("cash-tendered");
-    const changePreviewEl = document.getElementById("change-preview");
-    const terminalBox = document.getElementById("terminal-box");
-    const cardVisualEl = document.getElementById("card-visual");
-    const insertCardBtn = document.getElementById("insert-card-btn");
-    const cardNipInput = document.getElementById("card-nip");
-    const cardStatusEl = document.getElementById("card-status");
     const methodDetailEl = document.getElementById("method-detail");
     const checkoutBtn = document.getElementById("checkout-btn");
     const receiptBox = document.getElementById("receipt-box");
@@ -1447,9 +1533,21 @@
       } catch {}
     }
 
+    /**
+     * Generador de matriz QR (versión 2 = 25x25 módulos) con patrones de búsqueda (finder),
+     * separadores, patrones de sincronización (timing), módulo oscuro fijo,
+     * áreas reservadas de formato y datos codificados en flujo de bits + enmascarado.
+     */
     function buildLocalQrDataUrl(payloadText) {
-      const size = 21;
-      const matrix = Array.from({ length: size }, () => Array(size).fill(false));
+      const size = 25;
+      const grid = Array.from({ length: size }, () => Array(size).fill(null));
+      const isFunctionModule = Array.from({ length: size }, () => Array(size).fill(false));
+
+      const setFunc = (r, c, dark) => {
+        if (r < 0 || c < 0 || r >= size || c >= size) return;
+        grid[r][c] = Boolean(dark);
+        isFunctionModule[r][c] = true;
+      };
 
       const drawFinder = (r0, c0) => {
         for (let r = -1; r <= 7; r++) {
@@ -1457,9 +1555,9 @@
             const rr = r0 + r;
             const cc = c0 + c;
             if (rr < 0 || cc < 0 || rr >= size || cc >= size) continue;
-            const onBorder = r === 0 || r === 6 || c === 0 || c === 6;
-            const onCore = r >= 2 && r <= 4 && c >= 2 && c <= 4;
-            matrix[rr][cc] = onBorder || onCore;
+            const onOuter = r === 0 || r === 6 || c === 0 || c === 6;
+            const onInner = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+            setFunc(rr, cc, onOuter || onInner);
           }
         }
       };
@@ -1468,37 +1566,109 @@
       drawFinder(0, size - 7);
       drawFinder(size - 7, 0);
 
-      let hash = 2166136261;
-      for (let i = 0; i < payloadText.length; i++) {
-        hash ^= payloadText.charCodeAt(i);
-        hash = Math.imul(hash, 16777619);
+      // Alignment pattern en (18, 18) para QR v2 (25x25)
+      const alignCenter = 18;
+      for (let r = -2; r <= 2; r++) {
+        for (let c = -2; c <= 2; c++) {
+          const dark = Math.abs(r) === 2 || Math.abs(c) === 2 || (r === 0 && c === 0);
+          setFunc(alignCenter + r, alignCenter + c, dark);
+        }
       }
 
-      for (let r = 0; r < size; r++) {
-        for (let c = 0; c < size; c++) {
-          const inTopLeft = r <= 7 && c <= 7;
-          const inTopRight = r <= 7 && c >= size - 8;
-          const inBotLeft = r >= size - 8 && c <= 7;
-          if (inTopLeft || inTopRight || inBotLeft) continue;
-          const bit = ((hash >>> ((r * size + c) % 24)) ^ (r * 31 + c * 17)) & 1;
-          matrix[r][c] = bit === 1;
+      // Timing patterns
+      for (let i = 8; i < size - 8; i++) {
+        const dark = i % 2 === 0;
+        if (!isFunctionModule[6][i]) setFunc(6, i, dark);
+        if (!isFunctionModule[i][6]) setFunc(i, 6, dark);
+      }
+
+      // Dark module fijo
+      setFunc(size - 8, 8, true);
+
+      // Reservar celdas de información de formato (sin pisar timing ni finder)
+      for (let i = 0; i < 9; i++) {
+        if (!isFunctionModule[8][i]) isFunctionModule[8][i] = true;
+        if (!isFunctionModule[i][8]) isFunctionModule[i][8] = true;
+      }
+      for (let i = 0; i < 8; i++) {
+        isFunctionModule[8][size - 1 - i] = true;
+        isFunctionModule[size - 1 - i][8] = true;
+      }
+
+      // Construir flujo de bits (modo byte = 0100 + longitud 8 bits + bytes + relleno)
+      const encoder = new TextEncoder();
+      const rawBytes = encoder.encode(String(payloadText || "ZEROMART"));
+      const maxDataBytes = 44;
+      const bytesToUse = rawBytes.slice(0, maxDataBytes);
+
+      const bits = [];
+      const pushBits = (val, count) => {
+        for (let b = count - 1; b >= 0; b--) {
+          bits.push((val >>> b) & 1);
         }
+      };
+
+      pushBits(0b0100, 4);
+      pushBits(bytesToUse.length, 8);
+      for (const byteVal of bytesToUse) {
+        pushBits(byteVal, 8);
+      }
+      const capacityBits = maxDataBytes * 8;
+      while (bits.length < capacityBits) {
+        pushBits(0b11101100, 8);
+        if (bits.length < capacityBits) pushBits(0b00010001, 8);
+      }
+
+      // Zig-zag de colocación de bits
+      let bitIdx = 0;
+      let upward = true;
+      for (let col = size - 1; col >= 1; col -= 2) {
+        if (col === 6) col = 5;
+        for (let step = 0; step < size; step++) {
+          const r = upward ? (size - 1 - step) : step;
+          for (const cOffset of [0, -1]) {
+            const c = col + cOffset;
+            if (c < 0 || isFunctionModule[r][c]) continue;
+            const rawBit = bitIdx < bits.length ? bits[bitIdx++] : 0;
+            // Máscara 0: (r + c) % 2 === 0
+            const masked = ((r + c) % 2 === 0) ? (rawBit ^ 1) : rawBit;
+            grid[r][c] = masked === 1;
+          }
+        }
+        upward = !upward;
+      }
+
+      // Patrón de formato visual (nivel M, máscara 0) en esquinas reservadas
+      const formatBits = [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0];
+      const topLeftCoords = [
+        [0, 8], [1, 8], [2, 8], [3, 8], [4, 8], [5, 8], [7, 8], [8, 8],
+        [8, 7], [8, 5], [8, 4], [8, 3], [8, 2], [8, 1], [8, 0]
+      ];
+      topLeftCoords.forEach(([r, c], idx) => {
+        grid[r][c] = formatBits[idx] === 1;
+      });
+      for (let i = 0; i < 8; i++) {
+        grid[8][size - 1 - i] = formatBits[i] === 1;
+      }
+      for (let i = 0; i < 7; i++) {
+        grid[size - 1 - i][8] = formatBits[7 + i] === 1;
       }
 
       const canvas = document.createElement("canvas");
       const scale = 8;
-      const pad = 16;
-      canvas.width = size * scale + pad * 2;
-      canvas.height = size * scale + pad * 2;
+      const quietZone = 4 * scale;
+      canvas.width = size * scale + quietZone * 2;
+      canvas.height = size * scale + quietZone * 2;
       const ctx = canvas.getContext("2d");
+
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#0f172a";
+      ctx.fillStyle = "#000000";
 
       for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
-          if (matrix[r][c]) {
-            ctx.fillRect(pad + c * scale, pad + r * scale, scale, scale);
+          if (grid[r][c]) {
+            ctx.fillRect(quietZone + c * scale, quietZone + r * scale, scale, scale);
           }
         }
       }
@@ -1527,11 +1697,64 @@
     let normalSortMode = "featured";
     let normalSearchTerm = "";
 
-    // Carrito y estado de compra separado para Modo Normal, ligado a la cuenta
+    // Métodos de pago guardados por cuenta en localStorage
+    let savedCardData = null;
+    let savedPaypalData = null;
+
+    function getAccountStorageKey() {
+      const u = currentUser?.username || "invitado";
+      return `zeromart_pay_${u}`;
+    }
+
+    function loadSavedPaymentMethods() {
+      try {
+        const raw = localStorage.getItem(getAccountStorageKey());
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          savedCardData = parsed.card || null;
+          savedPaypalData = parsed.paypal || null;
+        } else {
+          savedCardData = null;
+          savedPaypalData = null;
+        }
+      } catch {
+        savedCardData = null;
+        savedPaypalData = null;
+      }
+      refreshSavedBadges();
+    }
+
+    function persistPaymentMethods() {
+      try {
+        localStorage.setItem(getAccountStorageKey(), JSON.stringify({
+          card: savedCardData,
+          paypal: savedPaypalData
+        }));
+      } catch {}
+      refreshSavedBadges();
+    }
+
+    function refreshSavedBadges() {
+      if (savedCardData) {
+        savedCardBox.style.display = "flex";
+        savedCardText.textContent = `Guardada: •••• ${savedCardData.last4} (${savedCardData.holder})`;
+      } else {
+        savedCardBox.style.display = "none";
+      }
+
+      if (savedPaypalData) {
+        savedPaypalBox.style.display = "flex";
+        savedPaypalText.textContent = `Guardado: ${savedPaypalData.email}`;
+      } else {
+        savedPaypalBox.style.display = "none";
+      }
+    }
+
+    // Carrito y estado de compra separado para Modo Normal
     let normalCart = new Map();
-    let normalDeliveryChoice = "casa";
+    let normalDeliveryChoice = "recoger";
     let normalPaymentMethod = "efectivo";
-    let isNormalCardInserted = false;
+    let pendingModalContext = null; // { source: "normal" | "3d", method, total, items, lineSummary }
 
     let activeAisle = "Panadería";
     let currentUser = null;
@@ -1544,9 +1767,8 @@
     let pendingRestockQueue = [];
     let hasExitedStoreWithBag = false;
     let selectedId = null;
-    let deliveryChoice = "casa";
+    let deliveryChoice = "recoger";
     let selectedPaymentMethod = "efectivo";
-    let isCardInserted = false;
     let isNearCashier = false;
     let activeRegisterIndex = 0;
     let scanTimer = null;
@@ -1599,6 +1821,16 @@
       ArrowUp: false, ArrowLeft: false, ArrowDown: false, ArrowRight: false
     };
 
+    function formatMethodLabel(method) {
+      if (method === "tarjeta") {
+        return savedCardData ? `Tarjeta •••• ${savedCardData.last4}` : "Tarjeta (registrar en subventana)";
+      }
+      if (method === "paypal") {
+        return savedPaypalData ? `PayPal (${savedPaypalData.email})` : "PayPal (registrar correo)";
+      }
+      return "Efectivo";
+    }
+
     function getNormalCartTotal() {
       let total = 0;
       normalCart.forEach((qty, prodId) => {
@@ -1625,24 +1857,369 @@
         b.classList.toggle("active", b.dataset.bmPay === normalPaymentMethod);
       });
 
-      const total = getNormalCartTotal();
-      if (normalPaymentMethod === "efectivo") {
-        bmCashRowEl.style.display = "flex";
-        bmCardRowEl.style.display = "none";
-        const tendered = Number(bmCashInput.value || 0);
-        if (tendered >= total && total > 0) {
-          bmChangeLabel.textContent = `Cambio: $${(tendered - total).toFixed(2)} MXN`;
-        } else {
-          bmChangeLabel.textContent = total > 0
-            ? `Faltan $${Math.max(0, total - tendered).toFixed(2)} MXN`
-            : "Cambio: $0.00 MXN";
+      bmPaymentProfileNote.innerHTML = `Método activo: <strong>${formatMethodLabel(normalPaymentMethod)}</strong>`;
+    }
+
+    function openPaymentSubwindow(ctx) {
+      pendingModalContext = ctx;
+      payModalError.textContent = "";
+      refreshSavedBadges();
+
+      const total = ctx.total;
+      payModalSummary.textContent = `Total a pagar: $${total.toLocaleString("es-MX")} MXN · Cuenta: ${currentUser?.username || "invitado"}`;
+
+      modalPanelTarjeta.style.display = "none";
+      modalPanelPaypal.style.display = "none";
+      modalPanelEfectivo.style.display = "none";
+
+      if (ctx.method === "tarjeta") {
+        payModalTitle.textContent = "Pago con Tarjeta · Registrar y Guardar";
+        modalPanelTarjeta.style.display = "flex";
+        if (savedCardData) {
+          cardHolderInput.value = savedCardData.holder || "";
+          cardNumberInput.value = savedCardData.masked || "";
+          cardExpInput.value = savedCardData.exp || "";
+          cardNipInput.value = "";
         }
-      } else if (normalPaymentMethod === "tarjeta") {
-        bmCashRowEl.style.display = "none";
-        bmCardRowEl.style.display = "flex";
+      } else if (ctx.method === "paypal") {
+        payModalTitle.textContent = "Pago con PayPal · Registrar Correo";
+        modalPanelPaypal.style.display = "flex";
+        if (savedPaypalData) {
+          paypalEmailInput.value = savedPaypalData.email || "";
+          paypalAliasInput.value = savedPaypalData.alias || "";
+        }
       } else {
-        bmCashRowEl.style.display = "none";
-        bmCardRowEl.style.display = "none";
+        payModalTitle.textContent = "Pago en Efectivo · Entrega y Cambio";
+        modalPanelEfectivo.style.display = "flex";
+        const currentDeliv = ctx.source === "normal" ? normalDeliveryChoice : deliveryChoice;
+        const currentAddr = ctx.source === "normal" ? bmAddressInput.value : deliveryAddressInput.value;
+        modalDeliveryChoices.querySelectorAll("button").forEach((b) => {
+          b.classList.toggle("active", b.dataset.modalDeliv === currentDeliv);
+        });
+        modalAddressField.style.display = currentDeliv === "casa" ? "flex" : "none";
+        modalAddressInput.value = currentAddr || "";
+        modalCashInput.value = String(total);
+        updateModalCashChange(total);
+      }
+
+      payModalBackdrop.classList.add("active");
+    }
+
+    function closePaymentSubwindow() {
+      payModalBackdrop.classList.remove("active");
+      pendingModalContext = null;
+      payModalError.textContent = "";
+    }
+
+    payModalClose.addEventListener("click", closePaymentSubwindow);
+
+    useSavedCardBtn.addEventListener("click", () => {
+      if (!savedCardData) return;
+      cardHolderInput.value = savedCardData.holder;
+      cardNumberInput.value = savedCardData.masked;
+      cardExpInput.value = savedCardData.exp;
+      payModalError.textContent = "";
+    });
+
+    cardNumberInput.addEventListener("input", () => {
+      const digits = cardNumberInput.value.replace(/\D/g, "").slice(0, 16);
+      const groups = digits.match(/.{1,4}/g) || [];
+      cardNumberInput.value = groups.join(" ");
+    });
+
+    cardExpInput.addEventListener("input", () => {
+      const digits = cardExpInput.value.replace(/\D/g, "").slice(0, 4);
+      cardExpInput.value = digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
+    });
+
+    cardNipInput.addEventListener("input", () => {
+      cardNipInput.value = cardNipInput.value.replace(/\D/g, "").slice(0, 4);
+    });
+
+    function validateAndSaveCard() {
+      const holder = cardHolderInput.value.trim();
+      const digits = cardNumberInput.value.replace(/\D/g, "");
+      const exp = cardExpInput.value.trim();
+      const nip = cardNipInput.value.trim();
+
+      if (!holder) {
+        payModalError.textContent = "Escribe el nombre del titular de la tarjeta.";
+        return null;
+      }
+      if (digits.length < 12) {
+        payModalError.textContent = "Escribe un número de tarjeta válido (mínimo 12 dígitos).";
+        return null;
+      }
+      if (!/^\d{2}\/\d{2}$/.test(exp)) {
+        payModalError.textContent = "Escribe el vencimiento en formato MM/AA.";
+        return null;
+      }
+      if (nip.length < 3) {
+        payModalError.textContent = "Escribe el CVV / NIP de 3 o 4 dígitos.";
+        return null;
+      }
+
+      const last4 = digits.slice(-4);
+      const masked = `•••• •••• •••• ${last4}`;
+      savedCardData = { holder, last4, masked, exp };
+      persistPaymentMethods();
+      updateNormalPayControls();
+      updateCashierUI();
+      payModalError.textContent = "";
+      return savedCardData;
+    }
+
+    saveCardBtn.addEventListener("click", () => {
+      const saved = validateAndSaveCard();
+      if (saved) {
+        payModalError.style.color = "#4ade80";
+        payModalError.textContent = `Tarjeta •••• ${saved.last4} guardada en tu cuenta.`;
+        setTimeout(() => { payModalError.style.color = "#f87171"; }, 1800);
+      }
+    });
+
+    confirmCardPayBtn.addEventListener("click", async () => {
+      const saved = validateAndSaveCard();
+      if (!saved || !pendingModalContext) return;
+      await finalizePurchaseFromModal({
+        paymentMethod: "tarjeta",
+        paymentInfo: `Tarjeta •••• ${saved.last4} (${saved.holder})`,
+        tendered: pendingModalContext.total,
+        changeAmt: 0
+      });
+    });
+
+    useSavedPaypalBtn.addEventListener("click", () => {
+      if (!savedPaypalData) return;
+      paypalEmailInput.value = savedPaypalData.email;
+      paypalAliasInput.value = savedPaypalData.alias || "";
+      payModalError.textContent = "";
+    });
+
+    function validateAndSavePaypal() {
+      const email = paypalEmailInput.value.trim();
+      const alias = paypalAliasInput.value.trim();
+      if (!email || !email.includes("@")) {
+        payModalError.textContent = "Escribe un correo de PayPal válido.";
+        return null;
+      }
+      savedPaypalData = { email, alias };
+      persistPaymentMethods();
+      updateNormalPayControls();
+      updateCashierUI();
+      payModalError.textContent = "";
+      return savedPaypalData;
+    }
+
+    savePaypalBtn.addEventListener("click", () => {
+      const saved = validateAndSavePaypal();
+      if (saved) {
+        payModalError.style.color = "#4ade80";
+        payModalError.textContent = `Correo ${saved.email} guardado en tu cuenta.`;
+        setTimeout(() => { payModalError.style.color = "#f87171"; }, 1800);
+      }
+    });
+
+    confirmPaypalPayBtn.addEventListener("click", async () => {
+      const saved = validateAndSavePaypal();
+      if (!saved || !pendingModalContext) return;
+      await finalizePurchaseFromModal({
+        paymentMethod: "paypal",
+        paymentInfo: `PayPal (${saved.email})`,
+        tendered: pendingModalContext.total,
+        changeAmt: 0
+      });
+    });
+
+    modalDeliveryChoices.querySelectorAll("button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const chosen = btn.dataset.modalDeliv;
+        modalDeliveryChoices.querySelectorAll("button").forEach((b) => {
+          b.classList.toggle("active", b.dataset.modalDeliv === chosen);
+        });
+        modalAddressField.style.display = chosen === "casa" ? "flex" : "none";
+        if (pendingModalContext?.source === "normal") {
+          normalDeliveryChoice = chosen;
+          updateNormalPayControls();
+        } else {
+          deliveryChoice = chosen;
+          deliveryChoicesEl.querySelectorAll("button").forEach((b) => {
+            b.classList.toggle("active", b.dataset.delivery === chosen);
+          });
+          updateCashierUI();
+        }
+      });
+    });
+
+    function updateModalCashChange(total) {
+      const tendered = Number(modalCashInput.value || 0);
+      if (tendered >= total && total > 0) {
+        modalChangeLabel.textContent = `Cambio a devolver: $${(tendered - total).toFixed(2)} MXN`;
+      } else {
+        modalChangeLabel.textContent = `Faltan $${Math.max(0, total - tendered).toFixed(2)} MXN`;
+      }
+    }
+
+    modalCashInput.addEventListener("input", () => {
+      updateModalCashChange(pendingModalContext?.total || 0);
+    });
+
+    confirmCashPayBtn.addEventListener("click", async () => {
+      if (!pendingModalContext) return;
+      const total = pendingModalContext.total;
+      const activeDelivBtn = modalDeliveryChoices.querySelector("button.active");
+      const chosenDeliv = activeDelivBtn ? activeDelivBtn.dataset.modalDeliv : "recoger";
+      const addr = modalAddressInput.value.trim();
+
+      if (chosenDeliv === "casa" && !addr) {
+        payModalError.textContent = "Escribe la dirección de entrega a domicilio.";
+        return;
+      }
+
+      const tendered = Number(modalCashInput.value || 0);
+      if (tendered < total) {
+        payModalError.textContent = `El efectivo debe ser de al menos $${total} MXN.`;
+        return;
+      }
+
+      if (pendingModalContext.source === "normal") {
+        normalDeliveryChoice = chosenDeliv;
+        if (addr) bmAddressInput.value = addr;
+      } else {
+        deliveryChoice = chosenDeliv;
+        if (addr) deliveryAddressInput.value = addr;
+      }
+
+      await finalizePurchaseFromModal({
+        paymentMethod: "efectivo",
+        paymentInfo: "Efectivo",
+        tendered,
+        changeAmt: Math.max(0, tendered - total),
+        deliveryOverride: chosenDeliv,
+        addressOverride: addr
+      });
+    });
+
+    async function finalizePurchaseFromModal({ paymentMethod, paymentInfo, tendered, changeAmt, deliveryOverride, addressOverride }) {
+      const ctx = pendingModalContext;
+      if (!ctx) return;
+
+      const total = ctx.total;
+      const chosenDeliv = deliveryOverride || (ctx.source === "normal" ? normalDeliveryChoice : deliveryChoice);
+      const chosenAddr = addressOverride !== undefined
+        ? addressOverride
+        : (ctx.source === "normal" ? bmAddressInput.value.trim() : deliveryAddressInput.value.trim());
+      const delivText = chosenDeliv === "casa"
+        ? `A domicilio (${chosenAddr || "Tepic"})`
+        : "Recoger en tienda";
+
+      if (ctx.source === "normal") {
+        const folio = `ZM-NORM-${Date.now().toString().slice(-6)}`;
+        const qrPayload = JSON.stringify({
+          folio,
+          mode: "normal",
+          user: currentUser?.username || "cliente",
+          total,
+          method: paymentMethod,
+          delivery: chosenDeliv
+        });
+        bmTicketQrImg.src = buildLocalQrDataUrl(qrPayload);
+        bmTicketFolioTxt.textContent = `Folio: ${folio}`;
+
+        bmTicketDetails.innerHTML = `
+          <div><strong>Folio:</strong> ${folio}</div>
+          <div><strong>Cuenta:</strong> ${currentUser?.username || "invitado"}</div>
+          <div><strong>Entrega:</strong> ${delivText}</div>
+          <div><strong>Pago:</strong> ${paymentInfo} · <strong>Total:</strong> $${total.toLocaleString("es-MX")} MXN</div>
+          ${paymentMethod === "efectivo" ? `<div><strong>Recibido:</strong> $${tendered} · <strong>Cambio:</strong> $${changeAmt} MXN</div>` : ""}
+          <div style="margin-top:4px; color:#334155;"><strong>Artículos:</strong> ${ctx.lineSummary.join(", ")}</div>
+        `;
+
+        bmTicketCard.classList.add("active");
+        normalCart.clear();
+        renderNormalStore();
+        closePaymentSubwindow();
+
+        try {
+          const res = await fetch("/api/cart/checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              items: ctx.items,
+              paymentMethod,
+              deliveryType: chosenDeliv,
+              address: chosenAddr,
+              amountPaid: tendered,
+              channel: "normal"
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.products) setProducts(data.products);
+          }
+        } catch {}
+      } else {
+        if (scanTimer) {
+          clearInterval(scanTimer);
+          scanTimer = null;
+        }
+        scanSessionId += 1;
+
+        const regIdx = getNearestRegisterIndex();
+        const regCfg = REGISTER_OFFSETS[regIdx] || REGISTER_OFFSETS[0];
+        const regState = registerStates[regIdx];
+        if (regState && paymentMethod === "efectivo") {
+          regState.drawerOpenUntil = performance.now() + 3600;
+        }
+
+        const purchasedSnapshot = [...beltItemsQueue];
+        beltItemsQueue = [];
+        baggedItemsList = [...baggedItemsList, ...purchasedSnapshot];
+        hasExitedStoreWithBag = false;
+
+        clearAllRegisterProps();
+        rebuildPlayerBag3D();
+        dispatchRestockersAfterPayment();
+
+        const ticketCode = `ZM-3D-${Date.now().toString().slice(-6)}`;
+        const qrPayload = JSON.stringify({
+          ticket: ticketCode,
+          mode: "3d",
+          total,
+          method: paymentMethod,
+          delivery: chosenDeliv,
+          user: currentUser?.username || "cliente"
+        });
+
+        receiptQrImg.src = buildLocalQrDataUrl(qrPayload);
+        receiptQrCodeEl.textContent = `Folio QR: ${ticketCode}`;
+
+        npcLogEl.textContent = `${regCfg.label} NPC: ¡Pago aprobado (${paymentInfo})! Aquí tienes tu bolsa y tu ticket con QR.`;
+        receiptBox.classList.add("active");
+        receiptContentEl.innerHTML = `
+          <strong>Ticket ${ticketCode}</strong><br/>
+          Entrega: <strong>${delivText}</strong><br/>
+          Pago: <strong>${paymentInfo}</strong> · Total: <strong>$${total} MXN</strong><br/>
+          ${paymentMethod === "efectivo" ? `Recibido: $${tendered} · Cambio: $${changeAmt} MXN` : "Transacción confirmada"}
+        `;
+        liveNoteEl.textContent = "Ticket con QR listo. Puedes regresar al menú principal o salir de la tienda con tu bolsa.";
+        updateCashierUI();
+        closePaymentSubwindow();
+
+        try {
+          await fetch("/api/cart/checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              items: ctx.items,
+              paymentMethod,
+              deliveryType: chosenDeliv,
+              address: chosenAddr,
+              amountPaid: tendered,
+              channel: "3d"
+            })
+          });
+        } catch {}
       }
     }
 
@@ -1668,53 +2245,32 @@
     bmMethodGridEl.querySelectorAll("button").forEach((b) => {
       b.addEventListener("click", () => {
         normalPaymentMethod = b.dataset.bmPay;
-        if (normalPaymentMethod !== "tarjeta") {
-          isNormalCardInserted = false;
-          bmCardNipInput.value = "";
-          bmCardStatus.textContent = "Inserta la tarjeta y escribe tu NIP";
-        }
         updateNormalPayControls();
+        const total = getNormalCartTotal();
+        if (normalCart.size > 0 && total > 0) {
+          const items = [];
+          const lineSummary = [];
+          normalCart.forEach((qty, prodId) => {
+            const prod = products.find((p) => Number(p.id) === Number(prodId));
+            if (prod) {
+              items.push({ productId: prod.id, qty });
+              lineSummary.push(`${qty}x ${prod.name} ($${prod.price * qty})`);
+            }
+          });
+          openPaymentSubwindow({ source: "normal", method: normalPaymentMethod, total, items, lineSummary });
+        }
       });
     });
 
-    bmInsertCardBtn.addEventListener("click", () => {
-      isNormalCardInserted = true;
-      bmCardStatus.textContent = "Tarjeta insertada · Escribe tu NIP de 4 dígitos";
-    });
-
-    bmCardNipInput.addEventListener("input", () => {
-      bmCardNipInput.value = bmCardNipInput.value.replace(/\D/g, "").slice(0, 4);
-    });
-
-    bmCashInput.addEventListener("input", updateNormalPayControls);
-
-    bmPaySubmitBtn.addEventListener("click", async () => {
+    bmPaySubmitBtn.addEventListener("click", () => {
       bmPayError.textContent = "";
       const total = getNormalCartTotal();
       if (normalCart.size === 0 || total <= 0) {
         bmPayError.textContent = "Agrega al menos un producto en Modo Normal antes de pagar.";
         return;
       }
-
       if (normalDeliveryChoice === "casa" && !bmAddressInput.value.trim()) {
         bmPayError.textContent = "Escribe tu dirección de entrega a domicilio.";
-        return;
-      }
-
-      if (normalPaymentMethod === "tarjeta") {
-        if (!isNormalCardInserted) {
-          bmPayError.textContent = "Inserta primero tu tarjeta.";
-          return;
-        }
-        if (bmCardNipInput.value.length !== 4) {
-          bmPayError.textContent = "Escribe tu NIP de 4 dígitos.";
-          return;
-        }
-      }
-
-      const tendered = normalPaymentMethod === "efectivo" ? Number(bmCashInput.value || total) : total;
-      if (normalPaymentMethod === "efectivo" && tendered < total) {
-        bmPayError.textContent = `El efectivo debe ser de al menos $${total} MXN.`;
         return;
       }
 
@@ -1728,59 +2284,7 @@
         }
       });
 
-      const folio = `ZM-NORM-${Date.now().toString().slice(-6)}`;
-      const changeAmt = normalPaymentMethod === "efectivo" ? Math.max(0, tendered - total) : 0;
-      const delivText = normalDeliveryChoice === "casa"
-        ? `A domicilio (${bmAddressInput.value.trim()})`
-        : "Recoger en tienda";
-
-      const qrPayload = JSON.stringify({
-        folio,
-        mode: "normal",
-        user: currentUser?.username || "cliente",
-        total,
-        method: normalPaymentMethod,
-        delivery: normalDeliveryChoice
-      });
-      const qrFallback = buildLocalQrDataUrl(qrPayload);
-      bmTicketQrImg.onerror = () => { bmTicketQrImg.src = qrFallback; };
-      bmTicketQrImg.src = `/api/qr?ticket=${encodeURIComponent(folio)}&total=${encodeURIComponent(total)}&method=${encodeURIComponent(normalPaymentMethod)}`;
-      bmTicketFolioTxt.textContent = `Folio: ${folio}`;
-
-      bmTicketDetails.innerHTML = `
-        <div><strong>Folio:</strong> ${folio}</div>
-        <div><strong>Cuenta:</strong> ${currentUser?.username || "invitado"}</div>
-        <div><strong>Entrega:</strong> ${delivText}</div>
-        <div><strong>Pago:</strong> ${normalPaymentMethod.toUpperCase()} · <strong>Total:</strong> $${total.toLocaleString("es-MX")} MXN</div>
-        ${normalPaymentMethod === "efectivo" ? `<div><strong>Recibido:</strong> $${tendered} · <strong>Cambio:</strong> $${changeAmt} MXN</div>` : ""}
-        <div style="margin-top:4px; color:#334155;"><strong>Artículos:</strong> ${lineSummary.join(", ")}</div>
-      `;
-
-      bmTicketCard.classList.add("active");
-      normalCart.clear();
-      bmCashInput.value = "";
-      isNormalCardInserted = false;
-      bmCardNipInput.value = "";
-      renderNormalStore();
-
-      try {
-        const res = await fetch("/api/cart/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            items,
-            paymentMethod: normalPaymentMethod,
-            deliveryType: normalDeliveryChoice,
-            address: bmAddressInput.value.trim(),
-            amountPaid: tendered,
-            channel: "normal"
-          })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data?.products) setProducts(data.products);
-        }
-      } catch {}
+      openPaymentSubwindow({ source: "normal", method: normalPaymentMethod, total, items, lineSummary });
     });
 
     bmNewPurchaseBtn.addEventListener("click", () => {
@@ -2152,7 +2656,7 @@
             regState.isScanning = false;
             if (regState.redBeam) regState.redBeam.visible = false;
           }
-          npcLogEl.textContent = `${regCfg.label} NPC terminó (${beltItemsQueue.length} prod.) · Total: $${runningTotal} MXN. Elige entrega, método de pago y genera tu QR.`;
+          npcLogEl.textContent = `${regCfg.label} NPC terminó (${beltItemsQueue.length} prod.) · Total: $${runningTotal} MXN. Abre la subventana de pago y genera tu QR.`;
           return;
         }
 
@@ -2203,6 +2707,7 @@
         normalUserLabel.textContent = `· ${currentUser.username}`;
         logoutBtn.style.display = "inline-flex";
         currentMode = "normal";
+        loadSavedPaymentMethods();
       } else {
         authScreen.classList.remove("hidden");
         userLabel.textContent = "Sin sesión";
@@ -3400,81 +3905,55 @@
       });
     });
 
-    insertCardBtn.addEventListener("click", () => {
-      isCardInserted = true;
-      cardVisualEl.classList.add("inserted");
-      cardStatusEl.textContent = "Tarjeta insertada · Escribe tu NIP de 4 dígitos";
-      npcLogEl.textContent = "Cajero NPC: Tarjeta insertada en el lector. Escribe tu NIP y pulsa Pagar y generar Ticket QR.";
-    });
-
-    cardNipInput.addEventListener("input", () => {
-      cardNipInput.value = cardNipInput.value.replace(/\D/g, "").slice(0, 4);
-      if (isCardInserted && cardNipInput.value.length === 4) {
-        cardStatusEl.textContent = "NIP ingresado · Listo para pagar";
-      }
-    });
-
     payMethodsEl.querySelectorAll("button").forEach((btn) => {
       btn.addEventListener("click", () => {
         selectedPaymentMethod = btn.dataset.method;
-        if (selectedPaymentMethod !== "tarjeta") {
-          isCardInserted = false;
-          cardNipInput.value = "";
-          cardVisualEl.classList.remove("inserted");
-          cardStatusEl.textContent = "Inserta la tarjeta y escribe tu NIP";
-        }
         payMethodsEl.querySelectorAll("button").forEach((b) => {
           b.classList.toggle("active", b.dataset.method === selectedPaymentMethod);
         });
         updateCashierUI();
+
+        const pendingBeltTotal = beltItemsQueue.reduce((acc, it) => acc + Number(it.price || 0), 0);
+        const total = getCartTotal() + pendingBeltTotal;
+        if (total > 0) {
+          const combined = [...beltItemsQueue];
+          cart.forEach((qty, prodId) => {
+            const prod = products.find((p) => Number(p.id) === Number(prodId));
+            if (prod) {
+              for (let i = 0; i < qty; i++) combined.push(prod);
+            }
+          });
+          const itemsMap = new Map();
+          combined.forEach((it) => itemsMap.set(it.id, (itemsMap.get(it.id) || 0) + 1));
+          const items = [];
+          const lineSummary = [];
+          itemsMap.forEach((qty, productId) => {
+            const pr = products.find((p) => Number(p.id) === Number(productId));
+            items.push({ productId, qty });
+            if (pr) lineSummary.push(`${qty}x ${pr.name} ($${pr.price * qty})`);
+          });
+          openPaymentSubwindow({ source: "3d", method: selectedPaymentMethod, total, items, lineSummary });
+        }
       });
     });
-
-    cashTenderedInput.addEventListener("input", updateCashierUI);
 
     function updateCashierUI() {
       const pendingBeltTotal = beltItemsQueue.reduce((acc, it) => acc + Number(it.price || 0), 0);
       const total = getCartTotal() + pendingBeltTotal;
       cashierTotalEl.textContent = `$${total} MXN`;
       addressWrap.style.display = deliveryChoice === "casa" ? "flex" : "none";
-
-      if (selectedPaymentMethod === "efectivo") {
-        cashInputWrap.style.display = "flex";
-        terminalBox.classList.remove("active");
-        methodDetailEl.style.display = "none";
-        const tendered = Number(cashTenderedInput.value || 0);
-        if (tendered >= total && total > 0) {
-          changePreviewEl.textContent = `Cambio a devolver: $${(tendered - total).toFixed(2)} MXN`;
-        } else {
-          changePreviewEl.textContent = total > 0
-            ? `Faltan $${Math.max(0, total - tendered).toFixed(2)} MXN para cubrir el total`
-            : "Cambio: $0 MXN";
-        }
-      } else if (selectedPaymentMethod === "tarjeta") {
-        cashInputWrap.style.display = "none";
-        terminalBox.classList.add("active");
-        methodDetailEl.style.display = "none";
-      } else if (selectedPaymentMethod === "paypal") {
-        cashInputWrap.style.display = "none";
-        terminalBox.classList.remove("active");
-        methodDetailEl.style.display = "block";
-        methodDetailEl.textContent = `PayPal Checkout: cargo autorizado en MXN para ${currentUser?.username || "cliente"}.`;
-      } else {
-        cashInputWrap.style.display = "none";
-        terminalBox.classList.remove("active");
-        methodDetailEl.style.display = "block";
-        methodDetailEl.textContent = "Transferencia SPEI / QR ZeroMart: confirmación instantánea por monto exacto.";
-      }
+      methodDetailEl.textContent = `Método activo: ${formatMethodLabel(selectedPaymentMethod)}`;
     }
 
-    checkoutBtn.addEventListener("click", async () => {
+    checkoutBtn.addEventListener("click", () => {
       if (cart.size > 0) {
         putCartOnBeltAndScan(getNearestRegisterIndex());
       }
 
-      const total = beltItemsQueue.reduce((acc, it) => acc + Number(it.price || 0), 0);
-      if (beltItemsQueue.length === 0 || total <= 0) {
-        liveNoteEl.textContent = "Primero agrega productos y pásalos por caja.";
+      const pendingBeltTotal = beltItemsQueue.reduce((acc, it) => acc + Number(it.price || 0), 0);
+      const total = getCartTotal() + pendingBeltTotal;
+      if (total <= 0) {
+        liveNoteEl.textContent = "Primero agrega productos en la tienda 3D.";
         return;
       }
 
@@ -3483,108 +3962,24 @@
         return;
       }
 
-      if (selectedPaymentMethod === "tarjeta") {
-        if (!isCardInserted) {
-          npcLogEl.textContent = "Cajero NPC: Inserta primero tu tarjeta en la terminal.";
-          return;
+      const combined = [...beltItemsQueue];
+      cart.forEach((qty, prodId) => {
+        const prod = products.find((p) => Number(p.id) === Number(prodId));
+        if (prod) {
+          for (let i = 0; i < qty; i++) combined.push(prod);
         }
-        if (cardNipInput.value.length !== 4) {
-          npcLogEl.textContent = "Cajero NPC: Escribe tu NIP de 4 dígitos para aprobar.";
-          return;
-        }
-      }
-
-      const tendered = selectedPaymentMethod === "efectivo"
-        ? Number(cashTenderedInput.value || total)
-        : total;
-
-      if (selectedPaymentMethod === "efectivo" && tendered < total) {
-        liveNoteEl.textContent = `El efectivo debe ser al menos $${total} MXN.`;
-        return;
-      }
-
-      if (scanTimer) {
-        clearInterval(scanTimer);
-        scanTimer = null;
-      }
-      scanSessionId += 1;
-
-      const regIdx = getNearestRegisterIndex();
-      const regCfg = REGISTER_OFFSETS[regIdx] || REGISTER_OFFSETS[0];
-      const regState = registerStates[regIdx];
-      if (regState && selectedPaymentMethod === "efectivo") {
-        regState.drawerOpenUntil = performance.now() + 3600;
-      }
-
-      const purchasedSnapshot = [...beltItemsQueue];
-      beltItemsQueue = [];
-      baggedItemsList = [...baggedItemsList, ...purchasedSnapshot];
-      hasExitedStoreWithBag = false;
-
-      clearAllRegisterProps();
-      rebuildPlayerBag3D();
-      dispatchRestockersAfterPayment();
-
-      isCardInserted = false;
-      cardNipInput.value = "";
-      cardVisualEl.classList.remove("inserted");
-      cardStatusEl.textContent = "Inserta la tarjeta y escribe tu NIP";
-
-      const changeAmount = selectedPaymentMethod === "efectivo" ? Math.max(0, tendered - total) : 0;
-      const ticketCode = `ZM-3D-${Date.now().toString().slice(-6)}`;
-      const deliveryLabel = deliveryChoice === "casa"
-        ? `Llevar a casa (${deliveryAddressInput.value.trim()})`
-        : "Recoger en sucursal";
-
-      const qrPayload = JSON.stringify({
-        ticket: ticketCode,
-        mode: "3d",
-        total,
-        method: selectedPaymentMethod,
-        delivery: deliveryChoice,
-        user: currentUser?.username || "cliente"
       });
-
-      const serverQrUrl = `/api/qr?ticket=${encodeURIComponent(ticketCode)}&total=${encodeURIComponent(total)}&method=${encodeURIComponent(selectedPaymentMethod)}`;
-      const fallbackQrDataUrl = buildLocalQrDataUrl(qrPayload);
-      receiptQrImg.onerror = () => {
-        receiptQrImg.src = fallbackQrDataUrl;
-      };
-      receiptQrImg.src = serverQrUrl;
-      receiptQrCodeEl.textContent = `Folio QR: ${ticketCode}`;
-
-      npcLogEl.textContent = `${regCfg.label} NPC: ¡Pago aprobado (${selectedPaymentMethod.toUpperCase()})! Aquí tienes tu bolsa y tu ticket con QR.`;
-      receiptBox.classList.add("active");
-      receiptContentEl.innerHTML = `
-        <strong>Ticket ${ticketCode}</strong><br/>
-        Entrega: <strong>${deliveryLabel}</strong><br/>
-        Pago: <strong>${selectedPaymentMethod.toUpperCase()}</strong> · Total: <strong>$${total} MXN</strong><br/>
-        ${selectedPaymentMethod === "efectivo" ? `Recibido: $${tendered} · Cambio: $${changeAmount} MXN` : "Transacción confirmada"}
-      `;
-      liveNoteEl.textContent = "Ticket con QR listo. Puedes regresar al menú principal o salir de la tienda con tu bolsa.";
-      updateCashierUI();
-
       const itemsMap = new Map();
-      purchasedSnapshot.forEach((it) => {
-        itemsMap.set(it.id, (itemsMap.get(it.id) || 0) + 1);
-      });
+      combined.forEach((it) => itemsMap.set(it.id, (itemsMap.get(it.id) || 0) + 1));
       const items = [];
-      itemsMap.forEach((qty, productId) => items.push({ productId, qty }));
+      const lineSummary = [];
+      itemsMap.forEach((qty, productId) => {
+        const pr = products.find((p) => Number(p.id) === Number(productId));
+        items.push({ productId, qty });
+        if (pr) lineSummary.push(`${qty}x ${pr.name} ($${pr.price * qty})`);
+      });
 
-      try {
-        await fetch("/api/cart/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            items,
-            paymentMethod: selectedPaymentMethod,
-            deliveryType: deliveryChoice,
-            address: deliveryAddressInput.value.trim(),
-            amountPaid: tendered,
-            channel: "3d"
-          })
-        });
-      } catch {}
+      openPaymentSubwindow({ source: "3d", method: selectedPaymentMethod, total, items, lineSummary });
     });
 
     function buildStoreAisles() {
