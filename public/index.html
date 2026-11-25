@@ -15,8 +15,9 @@
       --accent-2: #22c55e;
       --warn: #f59e0b;
       --danger: #ef4444;
-      --aurrera-red: #dc2626;
-      --aurrera-yellow: #facc15;
+      --bm-green: #167c2e;
+      --bm-green-dark: #105e22;
+      --bm-yellow: #ffc220;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,13 +39,13 @@
 
     #canvas-wrap.active { display: block; }
 
-    /* Tienda Normal estilo autoservicio tipo Bodega Aurrera */
+    /* Modo Tienda Normal estilo Bodega Aurrera */
     .normal-store {
       position: fixed;
       inset: 0;
       z-index: 15;
-      background: #f1f5f9;
-      color: #0f172a;
+      background: #ffffff;
+      color: #1e293b;
       display: none;
       flex-direction: column;
       overflow: hidden;
@@ -52,151 +53,356 @@
 
     .normal-store.active { display: flex; }
 
-    .store-header {
-      background: var(--aurrera-red);
+    .bm-topbar {
+      background: var(--bm-green);
       color: #ffffff;
-      padding: 12px 18px;
+      padding: 10px 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
       flex-wrap: wrap;
-      border-bottom: 4px solid var(--aurrera-yellow);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
     }
 
-    .brand-pill {
+    .bm-logo {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-weight: 800;
-      font-size: 1.15rem;
-      letter-spacing: 0.3px;
+      gap: 8px;
+      font-weight: 900;
+      font-size: 1.2rem;
+      letter-spacing: -0.3px;
     }
 
-    .brand-tag {
-      background: var(--aurrera-yellow);
-      color: #0f172a;
-      font-size: 0.72rem;
-      font-weight: 800;
-      padding: 3px 8px;
+    .bm-spark {
+      color: var(--bm-yellow);
+      font-size: 1.35rem;
+      line-height: 1;
+    }
+
+    .bm-fulfillment {
+      background: var(--bm-green-dark);
+      border: 1px solid rgba(255, 255, 255, 0.22);
       border-radius: 999px;
-    }
-
-    .store-search-wrap {
-      flex: 1;
-      min-width: 220px;
-      max-width: 440px;
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      color: #ffffff;
+      cursor: pointer;
       display: flex;
+      align-items: center;
       gap: 6px;
     }
 
-    .store-search {
-      width: 100%;
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: none;
-      font-size: 0.9rem;
-      color: #0f172a;
+    .bm-search-box {
+      flex: 1;
+      min-width: 240px;
+      max-width: 560px;
       background: #ffffff;
-      outline: none;
+      border-radius: 999px;
+      padding: 4px 6px 4px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .store-body {
+    .bm-search-box input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 0.88rem;
+      color: #0f172a;
+      background: transparent;
+    }
+
+    .bm-search-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: var(--bm-green-dark);
+      color: #ffffff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .bm-subbar {
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 7px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 0.8rem;
+    }
+
+    .bm-sublinks {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .bm-sublink {
+      background: none;
+      border: none;
+      color: #334155;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 3px 4px;
+    }
+
+    .bm-sublink:hover, .bm-sublink.active {
+      color: var(--bm-green);
+      text-decoration: underline;
+    }
+
+    .bm-promo-strip {
+      background: #dcfce7;
+      color: #14532d;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 5px 18px;
+      border-bottom: 1px solid #bbf7d0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bm-layout {
       flex: 1;
       display: grid;
-      grid-template-columns: 230px 1fr 330px;
-      gap: 14px;
-      padding: 14px;
+      grid-template-columns: 235px 1fr 310px;
+      gap: 16px;
+      padding: 14px 18px;
       overflow: hidden;
     }
 
-    @media (max-width: 960px) {
-      .store-body {
+    @media (max-width: 1020px) {
+      .bm-layout {
         grid-template-columns: 1fr;
         overflow-y: auto;
       }
     }
 
-    .cat-sidebar, .cart-sidebar {
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 12px;
-      padding: 12px;
+    .bm-filters {
       overflow-y: auto;
+      padding-right: 4px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 10px;
     }
 
-    .cat-btn {
-      text-align: left;
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
-      background: #f8fafc;
-      color: #0f172a;
+    .filter-group {
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 8px;
+    }
+
+    .filter-title {
       font-size: 0.84rem;
-      font-weight: 600;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .filter-chip {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      padding: 4px 6px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      color: #334155;
       cursor: pointer;
     }
 
-    .cat-btn.active {
-      background: var(--aurrera-red);
-      color: #ffffff;
-      border-color: var(--aurrera-red);
+    .filter-chip:hover { background: #f1f5f9; }
+    .filter-chip.active {
+      background: #dcfce7;
+      color: var(--bm-green-dark);
+      font-weight: 700;
     }
 
-    .grid-main {
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 12px;
-      padding: 14px;
+    .bm-catalog-pane {
       overflow-y: auto;
+      padding-right: 4px;
     }
 
-    .promo-banner {
-      background: linear-gradient(90deg, #dc2626 0%, #b91c1c 65%, #facc15 100%);
-      color: #ffffff;
+    .bm-quick-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .quick-pill-btn {
+      flex: 0 0 auto;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
       border-radius: 10px;
-      padding: 10px 14px;
-      margin-bottom: 12px;
+      padding: 6px 10px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #1e293b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .quick-pill-btn.active {
+      border-color: var(--bm-green);
+      background: #ecfdf5;
+      color: var(--bm-green-dark);
+    }
+
+    .bm-section-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 10px;
-      font-size: 0.86rem;
-      font-weight: 700;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
     }
 
-    .grid-cards {
+    .bm-section-head h2 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .bm-sort-select {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 0.8rem;
+      color: #0f172a;
+      background: #ffffff;
+    }
+
+    .bm-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
-      gap: 10px;
+      gap: 16px;
     }
 
-    .grid-card {
+    .bm-card {
+      background: #ffffff;
       border: 1px solid #e2e8f0;
       border-radius: 10px;
       padding: 10px;
-      background: #ffffff;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       gap: 8px;
-      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+      transition: box-shadow 0.15s, border-color 0.15s;
     }
 
-    .price-badge {
-      background: var(--aurrera-yellow);
-      color: #0f172a;
+    .bm-card:hover {
+      border-color: #94a3b8;
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+    }
+
+    .bm-rebaja-tag {
+      background: #ea580c;
+      color: #ffffff;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 4px;
+      align-self: flex-start;
+    }
+
+    .bm-thumb-wrap {
+      width: 100%;
+      height: 128px;
+      background: #f8fafc;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid #f1f5f9;
+    }
+
+    .bm-thumb-wrap img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .bm-add-btn {
+      align-self: flex-start;
+      background: var(--bm-green);
+      color: #ffffff;
+      border: none;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .bm-add-btn:hover { background: var(--bm-green-dark); }
+    .bm-add-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+
+    .bm-price-main {
+      color: #15803d;
+      font-size: 1.05rem;
       font-weight: 900;
-      font-size: 0.95rem;
-      padding: 3px 8px;
-      border-radius: 6px;
-      display: inline-block;
     }
 
+    .bm-price-old {
+      color: #64748b;
+      font-size: 0.75rem;
+      text-decoration: line-through;
+      margin-left: 4px;
+    }
+
+    .bm-save-pill {
+      background: #dcfce7;
+      color: #166534;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-left: 4px;
+    }
+
+    .bm-prod-title {
+      font-size: 0.82rem;
+      color: #1e293b;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .bm-prod-sub {
+      font-size: 0.72rem;
+      color: #64748b;
+    }
+
+    .bm-cart-pane {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+    }
+
+    /* Auth y 3D HUD */
     .auth-screen {
       position: fixed;
       inset: 0;
@@ -381,8 +587,8 @@
     .btn.primary { background: #0284c7; border-color: #38bdf8; font-weight: 600; }
     .btn.success { background: #15803d; border-color: #22c55e; font-weight: 600; }
     .btn.warn { background: #b45309; border-color: #f59e0b; font-weight: 600; }
-    .btn.yellow { background: var(--aurrera-yellow); color: #0f172a; border-color: #eab308; font-weight: 800; }
-    .btn.ghost { background: var(--panel); }
+    .btn.yellow { background: var(--bm-yellow); color: #0f172a; border-color: #eab308; font-weight: 800; }
+    .btn.ghost { background: rgba(255, 255, 255, 0.12); color: #ffffff; }
 
     .delivery-choices, .pay-methods {
       display: grid;
@@ -533,47 +739,90 @@
 <body>
   <div id="canvas-wrap"></div>
 
-  <!-- Modo Tienda Normal estilo Bodega Aurrera -->
+  <!-- Modo Tienda Normal estilo Bodega / Autoservicio -->
   <section class="normal-store" id="normal-store">
-    <header class="store-header">
-      <div class="brand-pill">
+    <header class="bm-topbar">
+      <div class="bm-logo">
+        <span class="bm-spark">✳</span>
         <span>ZeroMart</span>
-        <span class="brand-tag">BODEGA Y AUTOSERVICIO</span>
-        <span id="normal-user-label" style="font-size:0.8rem; font-weight:600; opacity:0.92;"></span>
+        <span id="normal-user-label" style="font-size:0.78rem; font-weight:600; opacity:0.9;"></span>
       </div>
 
-      <div class="store-search-wrap">
-        <input type="text" id="normal-search" class="store-search" placeholder="Buscar pollo, leche, cel, detergente, tv..." />
+      <button type="button" class="bm-fulfillment" id="bm-fulfillment-btn">
+        <span>¿Cómo quieres tus artículos?</span>
+        <strong id="bm-fulfillment-badge">Tepic · Casa o Recoger</strong>
+        <span>▾</span>
+      </button>
+
+      <div class="bm-search-box">
+        <input type="text" id="normal-search" placeholder="Buscar en ZeroMart en línea o en tienda..." />
+        <button type="button" class="bm-search-btn" id="normal-search-btn">⌕</button>
       </div>
 
       <div class="row" style="gap:8px;">
         <button type="button" class="btn yellow" id="enter-3d-btn">Ir a Tienda 3D</button>
-        <button type="button" class="btn primary" id="normal-go-cashier-btn">Caja y Pago (<span id="normal-header-cart">0</span>)</button>
+        <button type="button" class="btn primary" id="normal-go-cashier-btn">Caja (<span id="normal-header-cart">0</span>)</button>
         <button type="button" class="btn ghost" id="normal-logout-btn">Salir</button>
       </div>
     </header>
 
-    <div class="store-body">
-      <aside class="cat-sidebar">
-        <strong style="font-size:0.85rem; margin-bottom:4px;">Departamentos</strong>
-        <div id="normal-cat-list" style="display:flex; flex-direction:column; gap:5px;"></div>
+    <div class="bm-subbar">
+      <div class="bm-sublinks" id="bm-top-sublinks"></div>
+      <div style="color:#475569; font-weight:600;">Envío a domicilio o Recolección en sucursal</div>
+    </div>
+
+    <div class="bm-promo-strip">
+      <span>Precios Bajos ZeroMart · Todos los departamentos disponibles</span>
+      <span>Paga con Efectivo, Tarjeta, PayPal o SPEI y recibe Ticket con QR</span>
+    </div>
+
+    <div class="bm-layout">
+      <aside class="bm-filters">
+        <div class="filter-group">
+          <div class="filter-title"><span>Departamento</span><span>▾</span></div>
+          <div id="normal-cat-list"></div>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-title"><span>Entrega</span><span>▾</span></div>
+          <button type="button" class="filter-chip active" data-deliv-filter="casa">Llevar a mi casa</button>
+          <button type="button" class="filter-chip" data-deliv-filter="recoger">Recoger en tienda</button>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-title"><span>Rango de precio</span><span>▾</span></div>
+          <button type="button" class="filter-chip active" data-price-filter="all">Todos los precios</button>
+          <button type="button" class="filter-chip" data-price-filter="under100">Hasta $100 MXN</button>
+          <button type="button" class="filter-chip" data-price-filter="100to1000">$100 a $1,000 MXN</button>
+          <button type="button" class="filter-chip" data-price-filter="over1000">Más de $1,000 MXN</button>
+        </div>
       </aside>
 
-      <main class="grid-main">
-        <div class="promo-banner">
-          <span id="normal-dept-title">Departamento: Todos los productos</span>
-          <span>Precios Bajos ZeroMart · Envío a casa o Recolección</span>
+      <main class="bm-catalog-pane">
+        <div class="bm-quick-pills" id="bm-quick-pills"></div>
+
+        <div class="bm-section-head">
+          <h2 id="normal-dept-title">Todos los productos</h2>
+          <select id="bm-sort-select" class="bm-sort-select">
+            <option value="featured">Ordenar por: Más relevantes</option>
+            <option value="price-asc">Precio: menor a mayor</option>
+            <option value="price-desc">Precio: mayor a menor</option>
+          </select>
         </div>
-        <div class="grid-cards" id="normal-product-grid"></div>
+
+        <div class="bm-grid" id="normal-product-grid"></div>
       </main>
 
-      <aside class="cart-sidebar">
+      <aside class="bm-cart-pane">
         <div class="row">
-          <strong style="font-size:0.92rem;">Tu Carrito (<span id="normal-cart-count">0</span>)</strong>
-          <span style="color:#15803d; font-weight:800;" id="normal-cart-total">$0 MXN</span>
+          <strong style="font-size:0.95rem; color:#0f172a;">Carrito (<span id="normal-cart-count">0</span>)</strong>
+          <span style="color:#15803d; font-weight:900; font-size:0.95rem;" id="normal-cart-total">$0 MXN</span>
         </div>
-        <div id="normal-cart-items" style="display:flex; flex-direction:column; gap:6px; flex:1; overflow-y:auto; margin-top:6px;"></div>
-        <button type="button" class="btn success" id="normal-checkout-open-btn" style="width:100%; padding:9px;">Ir a pagar y generar QR</button>
+        <div style="font-size:0.75rem; color:#475569;" id="bm-cart-delivery-note">Entrega: Llevar a mi casa</div>
+        <div id="normal-cart-items" style="display:flex; flex-direction:column; gap:7px; flex:1; overflow-y:auto; margin-top:4px;"></div>
+        <button type="button" class="bm-add-btn" id="normal-checkout-open-btn" style="width:100%; border-radius:10px; padding:9px; text-align:center;">
+          Continuar a Caja y QR
+        </button>
       </aside>
     </div>
   </section>
@@ -753,7 +1002,14 @@
     const normalStoreEl = document.getElementById("normal-store");
     const normalUserLabel = document.getElementById("normal-user-label");
     const normalSearchInput = document.getElementById("normal-search");
+    const normalSearchBtn = document.getElementById("normal-search-btn");
     const normalCatListEl = document.getElementById("normal-cat-list");
+    const bmTopSublinksEl = document.getElementById("bm-top-sublinks");
+    const bmQuickPillsEl = document.getElementById("bm-quick-pills");
+    const bmSortSelect = document.getElementById("bm-sort-select");
+    const bmFulfillmentBtn = document.getElementById("bm-fulfillment-btn");
+    const bmFulfillmentBadge = document.getElementById("bm-fulfillment-badge");
+    const bmCartDeliveryNote = document.getElementById("bm-cart-delivery-note");
     const normalDeptTitleEl = document.getElementById("normal-dept-title");
     const normalProductGridEl = document.getElementById("normal-product-grid");
     const normalCartItemsEl = document.getElementById("normal-cart-items");
@@ -928,6 +1184,124 @@
       });
     });
 
+    const cardImageCache = new Map();
+
+    // Genera ilustración limpia de tarjeta estilo catálogo de bodega sin depender de imágenes externas rotas
+    function buildProductCardImage(prod) {
+      const key = `${prod.id}|${prod.name}|${prod.shape}|${prod.color}|${prod.price}`;
+      if (cardImageCache.has(key)) return cardImageCache.get(key);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = 240;
+      canvas.height = 150;
+      const ctx = canvas.getContext("2d");
+
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const accent = typeof prod.color === "string" && prod.color.trim() ? prod.color.trim() : "#167c2e";
+      const shape = prod.shape || "box";
+
+      if (shape === "tv") {
+        ctx.fillStyle = "#0f172a";
+        ctx.fillRect(36, 22, 168, 92);
+        ctx.fillStyle = accent;
+        ctx.fillRect(43, 28, 154, 78);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 16px system-ui, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("ZEROMART TV", 120, 62);
+        ctx.font = "bold 13px system-ui, sans-serif";
+        ctx.fillText(`$${prod.price}`, 120, 84);
+        ctx.fillStyle = "#334155";
+        ctx.fillRect(96, 114, 48, 6);
+        ctx.fillRect(78, 120, 84, 5);
+      } else if (shape === "fridgeUnit") {
+        ctx.fillStyle = "#cbd5e1";
+        ctx.fillRect(78, 14, 84, 122);
+        ctx.strokeStyle = "#475569";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(78, 14, 84, 122);
+        ctx.beginPath();
+        ctx.moveTo(78, 56);
+        ctx.lineTo(162, 56);
+        ctx.stroke();
+        ctx.fillStyle = "#334155";
+        ctx.fillRect(148, 32, 4, 14);
+        ctx.fillRect(148, 68, 4, 24);
+      } else if (shape === "washer") {
+        ctx.fillStyle = "#e2e8f0";
+        ctx.fillRect(72, 18, 96, 114);
+        ctx.strokeStyle = "#64748b";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(72, 18, 96, 114);
+        ctx.fillStyle = "#1e293b";
+        ctx.beginPath();
+        ctx.arc(120, 82, 28, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#38bdf8";
+        ctx.beginPath();
+        ctx.arc(120, 82, 18, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (shape === "stove") {
+        ctx.fillStyle = "#334155";
+        ctx.fillRect(72, 20, 96, 112);
+        ctx.fillStyle = "#0f172a";
+        [92, 148].forEach((bx) => {
+          [28, 40].forEach((by) => {
+            ctx.beginPath();
+            ctx.arc(bx, by, 6, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        });
+        ctx.fillStyle = "#1e293b";
+        ctx.fillRect(82, 56, 76, 66);
+      } else if (shape === "phone") {
+        ctx.fillStyle = "#1e293b";
+        ctx.fillRect(88, 18, 64, 114);
+        ctx.fillStyle = accent;
+        ctx.fillRect(93, 25, 54, 98);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 11px system-ui, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("PRO", 120, 76);
+      } else if (shape === "bottle") {
+        ctx.fillStyle = accent;
+        ctx.fillRect(96, 52, 48, 76);
+        ctx.beginPath();
+        ctx.moveTo(96, 52);
+        ctx.lineTo(110, 34);
+        ctx.lineTo(130, 34);
+        ctx.lineTo(144, 52);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = "#facc15";
+        ctx.fillRect(111, 22, 18, 12);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(98, 72, 44, 28);
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "bold 10px system-ui, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("ZEROMART", 120, 89);
+      } else {
+        ctx.fillStyle = accent;
+        ctx.fillRect(74, 34, 92, 86);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(84, 52, 72, 48);
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "bold 11px system-ui, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(String(prod.name || "ARTÍCULO").slice(0, 14), 120, 74);
+        ctx.fillStyle = "#15803d";
+        ctx.font = "bold 12px system-ui, sans-serif";
+        ctx.fillText(`$${prod.price}`, 120, 91);
+      }
+
+      const dataUrl = canvas.toDataURL("image/png");
+      cardImageCache.set(key, dataUrl);
+      return dataUrl;
+    }
+
     function playScannerBeep() {
       try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -948,7 +1322,6 @@
       } catch {}
     }
 
-    // Genera un QR real en PNG/SVG en el cliente y también permite enlazar a endpoint del servidor /api/qr
     function buildLocalQrDataUrl(payloadText) {
       const size = 21;
       const matrix = Array.from({ length: size }, () => Array(size).fill(false));
@@ -1023,8 +1396,10 @@
       }
     }
 
-    let currentMode = "normal"; // "normal" | "3d"
+    let currentMode = "normal";
     let normalSelectedDept = "Todos";
+    let normalPriceFilter = "all";
+    let normalSortMode = "featured";
     let normalSearchTerm = "";
 
     let activeAisle = "Panadería";
@@ -1038,7 +1413,7 @@
     let pendingRestockQueue = [];
     let hasExitedStoreWithBag = false;
     let selectedId = null;
-    let deliveryChoice = "casa"; // "casa" | "recoger"
+    let deliveryChoice = "casa";
     let selectedPaymentMethod = "efectivo";
     let isCardInserted = false;
     let isNearCashier = false;
@@ -1157,13 +1532,59 @@
       goToCashier();
     });
 
+    bmFulfillmentBtn.addEventListener("click", () => {
+      deliveryChoice = deliveryChoice === "casa" ? "recoger" : "casa";
+      syncDeliveryButtons();
+      renderNormalStore();
+      updateCashierUI();
+    });
+
+    document.querySelectorAll("[data-deliv-filter]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        deliveryChoice = btn.dataset.delivFilter;
+        syncDeliveryButtons();
+        renderNormalStore();
+        updateCashierUI();
+      });
+    });
+
+    document.querySelectorAll("[data-price-filter]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        normalPriceFilter = btn.dataset.priceFilter;
+        document.querySelectorAll("[data-price-filter]").forEach((b) => {
+          b.classList.toggle("active", b.dataset.priceFilter === normalPriceFilter);
+        });
+        renderNormalStore();
+      });
+    });
+
+    bmSortSelect.addEventListener("change", (e) => {
+      normalSortMode = e.target.value;
+      renderNormalStore();
+    });
+
+    function syncDeliveryButtons() {
+      const isHome = deliveryChoice === "casa";
+      bmFulfillmentBadge.textContent = isHome ? "Tepic · Llevar a casa" : "Tepic · Recoger en tienda";
+      bmCartDeliveryNote.textContent = isHome ? "Entrega: Llevar a tu casa" : "Entrega: Recoger en sucursal";
+      document.querySelectorAll("[data-deliv-filter]").forEach((b) => {
+        b.classList.toggle("active", b.dataset.delivFilter === deliveryChoice);
+      });
+      deliveryChoicesEl.querySelectorAll("button").forEach((b) => {
+        b.classList.toggle("active", b.dataset.delivery === deliveryChoice);
+      });
+      addressWrap.style.display = isHome ? "flex" : "none";
+    }
+
     function renderNormalStore() {
+      syncDeliveryButtons();
       const departments = ["Todos", ...AISLE_LAYOUT.map((a) => a.name)];
+
       normalCatListEl.innerHTML = "";
       departments.forEach((dept) => {
         const b = document.createElement("button");
         b.type = "button";
-        b.className = "cat-btn" + (dept === normalSelectedDept ? " active" : "");
+        b.className = "filter-chip" + (dept === normalSelectedDept ? " active" : "");
         b.textContent = dept;
         b.addEventListener("click", () => {
           normalSelectedDept = dept;
@@ -1172,32 +1593,83 @@
         normalCatListEl.appendChild(b);
       });
 
-      normalDeptTitleEl.textContent = `Departamento: ${normalSelectedDept}`;
+      bmTopSublinksEl.innerHTML = "";
+      ["Todos", "Televisiones", "Refrigeradores Grandes", "Lavadoras", "Estufas", "Frutas y Verduras", "Abarrotes"].forEach((lbl) => {
+        const link = document.createElement("button");
+        link.type = "button";
+        link.className = "bm-sublink" + (lbl === normalSelectedDept ? " active" : "");
+        link.textContent = lbl;
+        link.addEventListener("click", () => {
+          normalSelectedDept = lbl;
+          renderNormalStore();
+        });
+        bmTopSublinksEl.appendChild(link);
+      });
 
-      const filtered = products.filter((p) => {
+      bmQuickPillsEl.innerHTML = "";
+      departments.slice(0, 9).forEach((dept) => {
+        const pill = document.createElement("button");
+        pill.type = "button";
+        pill.className = "quick-pill-btn" + (dept === normalSelectedDept ? " active" : "");
+        pill.innerHTML = `<span style="width:8px; height:8px; border-radius:50%; background:#167c2e;"></span><span>${dept}</span>`;
+        pill.addEventListener("click", () => {
+          normalSelectedDept = dept;
+          renderNormalStore();
+        });
+        bmQuickPillsEl.appendChild(pill);
+      });
+
+      normalDeptTitleEl.textContent = normalSelectedDept === "Todos"
+        ? "Todos los productos destacados"
+        : `${normalSelectedDept}`;
+
+      let filtered = products.filter((p) => {
         const matchesDept = normalSelectedDept === "Todos" || p.aisle === normalSelectedDept;
         const q = normalSearchTerm.trim().toLowerCase();
         const matchesSearch = !q || String(p.name).toLowerCase().includes(q) || String(p.aisle).toLowerCase().includes(q);
-        return matchesDept && matchesSearch;
+        const price = Number(p.price || 0);
+        let matchesPrice = true;
+        if (normalPriceFilter === "under100") matchesPrice = price <= 100;
+        else if (normalPriceFilter === "100to1000") matchesPrice = price > 100 && price <= 1000;
+        else if (normalPriceFilter === "over1000") matchesPrice = price > 1000;
+        return matchesDept && matchesSearch && matchesPrice;
       });
 
+      if (normalSortMode === "price-asc") {
+        filtered = [...filtered].sort((a, b) => Number(a.price) - Number(b.price));
+      } else if (normalSortMode === "price-desc") {
+        filtered = [...filtered].sort((a, b) => Number(b.price) - Number(a.price));
+      }
+
       normalProductGridEl.innerHTML = "";
-      filtered.forEach((prod) => {
+      filtered.forEach((prod, idx) => {
         const avail = getAvailableCount(prod);
+        const priceNum = Number(prod.price || 0);
+        const oldPriceNum = Math.round(priceNum * 1.18);
+        const saveNum = Math.max(5, oldPriceNum - priceNum);
+        const imgSrc = buildProductCardImage(prod);
+
         const card = document.createElement("div");
-        card.className = "grid-card";
+        card.className = "bm-card";
         card.innerHTML = `
           <div>
-            <div style="font-size:0.72rem; font-weight:700; color:#64748b;">${prod.aisle}</div>
-            <div style="font-weight:700; font-size:0.9rem; margin:3px 0;">${prod.name} ${prod.locked ? "🔒" : ""}</div>
-            <div style="font-size:0.75rem; color:#475569;">Disponibles: <strong>${avail}</strong></div>
+            ${idx % 2 === 0 ? `<div class="bm-rebaja-tag">↓ Rebaja</div>` : `<div style="height:18px;"></div>`}
+            <div class="bm-thumb-wrap" style="margin-top:6px;">
+              <img src="${imgSrc}" alt="${prod.name}" />
+            </div>
+            <button type="button" class="bm-add-btn" style="margin-top:8px;" ${avail <= 0 ? "disabled" : ""}>+ Agregar</button>
           </div>
-          <div class="row">
-            <span class="price-badge">$${prod.price} MXN</span>
-            <button type="button" class="btn success" ${avail <= 0 ? "disabled" : ""}>Agregar</button>
+          <div>
+            <div>
+              <span class="bm-price-main">$${priceNum.toLocaleString("es-MX")}.00</span>
+              <span class="bm-price-old">$${oldPriceNum.toLocaleString("es-MX")}</span>
+              <span class="bm-save-pill">Ahorra $${saveNum.toLocaleString("es-MX")}</span>
+            </div>
+            <div class="bm-prod-sub" style="margin-top:3px;">${prod.aisle} · Disp: <strong>${avail}</strong></div>
+            <div class="bm-prod-title" style="margin-top:2px;">${prod.name} ${prod.locked ? "🔒" : ""}</div>
           </div>
         `;
-        card.querySelector("button").addEventListener("click", () => {
+        card.querySelector(".bm-add-btn").addEventListener("click", () => {
           const slots = getSlotsForProduct(prod.id);
           const freeSlot = slots.find((s) => !s.taken);
           if (freeSlot) {
@@ -1218,17 +1690,17 @@
 
       normalCartItemsEl.innerHTML = "";
       if (cart.size === 0) {
-        normalCartItemsEl.innerHTML = `<p style="font-size:0.8rem; color:#64748b;">Carrito vacío. Agrega productos aquí o pasa a la Tienda 3D.</p>`;
+        normalCartItemsEl.innerHTML = `<p style="font-size:0.8rem; color:#64748b;">Tu carrito está vacío. Pulsa <strong>+ Agregar</strong> en cualquier producto.</p>`;
       } else {
         cart.forEach((qty, prodId) => {
           const prod = products.find((p) => Number(p.id) === Number(prodId));
           if (!prod) return;
           const itemRow = document.createElement("div");
-          itemRow.style.cssText = "border:1px solid #e2e8f0; border-radius:8px; padding:7px 9px; background:#f8fafc; font-size:0.8rem;";
+          itemRow.style.cssText = "border:1px solid #e2e8f0; border-radius:8px; padding:7px 9px; background:#ffffff; font-size:0.8rem;";
           itemRow.innerHTML = `
             <div class="row">
               <strong>${prod.name}</strong>
-              <span style="font-weight:700; color:#15803d;">$${prod.price * qty}</span>
+              <span style="font-weight:800; color:#15803d;">$${(prod.price * qty).toLocaleString("es-MX")}</span>
             </div>
             <div class="row" style="margin-top:4px; color:#475569; font-size:0.74rem;">
               <span>Cant: ${qty} · $${prod.price} c/u</span>
@@ -1257,7 +1729,7 @@
       }
 
       const total = getCartTotal();
-      normalCartTotalEl.textContent = `$${total} MXN`;
+      normalCartTotalEl.textContent = `$${total.toLocaleString("es-MX")} MXN`;
       let count = 0;
       cart.forEach((q) => { count += q; });
       normalCartCountEl.textContent = String(count);
@@ -1266,6 +1738,11 @@
 
     normalSearchInput.addEventListener("input", (e) => {
       normalSearchTerm = e.target.value;
+      renderNormalStore();
+    });
+
+    normalSearchBtn.addEventListener("click", () => {
+      normalSearchTerm = normalSearchInput.value;
       renderNormalStore();
     });
 
@@ -2664,10 +3141,8 @@
     deliveryChoicesEl.querySelectorAll("button").forEach((btn) => {
       btn.addEventListener("click", () => {
         deliveryChoice = btn.dataset.delivery;
-        deliveryChoicesEl.querySelectorAll("button").forEach((b) => {
-          b.classList.toggle("active", b.dataset.delivery === deliveryChoice);
-        });
-        addressWrap.style.display = deliveryChoice === "casa" ? "flex" : "none";
+        syncDeliveryButtons();
+        renderNormalStore();
       });
     });
 
@@ -2815,7 +3290,6 @@
         user: currentUser?.username || "cliente"
       });
 
-      // Solicita QR al servidor si existe /api/qr o genera imagen PNG local funcional al instante
       const serverQrUrl = `/api/qr?ticket=${encodeURIComponent(ticketCode)}&total=${encodeURIComponent(total)}&method=${encodeURIComponent(selectedPaymentMethod)}`;
       const fallbackQrDataUrl = buildLocalQrDataUrl(qrPayload);
       receiptQrImg.onerror = () => {
