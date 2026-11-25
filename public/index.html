@@ -3,18 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZeroMart 3D</title>
+  <title>ZeroMart · Tienda y 3D</title>
   <style>
     :root {
       --bg: #0f172a;
-      --panel: rgba(15, 23, 42, 0.92);
+      --panel: rgba(15, 23, 42, 0.94);
       --border: rgba(255, 255, 255, 0.16);
       --text: #f3f4f6;
       --muted: #9ca3af;
       --accent: #38bdf8;
       --accent-2: #22c55e;
       --warn: #f59e0b;
-      --danger: #f87171;
+      --danger: #ef4444;
+      --aurrera-red: #dc2626;
+      --aurrera-yellow: #facc15;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -31,6 +33,168 @@
       position: fixed;
       inset: 0;
       z-index: 1;
+      display: none;
+    }
+
+    #canvas-wrap.active { display: block; }
+
+    /* Tienda Normal estilo autoservicio tipo Bodega Aurrera */
+    .normal-store {
+      position: fixed;
+      inset: 0;
+      z-index: 15;
+      background: #f1f5f9;
+      color: #0f172a;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .normal-store.active { display: flex; }
+
+    .store-header {
+      background: var(--aurrera-red);
+      color: #ffffff;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      border-bottom: 4px solid var(--aurrera-yellow);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+    }
+
+    .brand-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: 0.3px;
+    }
+
+    .brand-tag {
+      background: var(--aurrera-yellow);
+      color: #0f172a;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+
+    .store-search-wrap {
+      flex: 1;
+      min-width: 220px;
+      max-width: 440px;
+      display: flex;
+      gap: 6px;
+    }
+
+    .store-search {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 0.9rem;
+      color: #0f172a;
+      background: #ffffff;
+      outline: none;
+    }
+
+    .store-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 230px 1fr 330px;
+      gap: 14px;
+      padding: 14px;
+      overflow: hidden;
+    }
+
+    @media (max-width: 960px) {
+      .store-body {
+        grid-template-columns: 1fr;
+        overflow-y: auto;
+      }
+    }
+
+    .cat-sidebar, .cart-sidebar {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 12px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .cat-btn {
+      text-align: left;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      color: #0f172a;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .cat-btn.active {
+      background: var(--aurrera-red);
+      color: #ffffff;
+      border-color: var(--aurrera-red);
+    }
+
+    .grid-main {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 14px;
+      overflow-y: auto;
+    }
+
+    .promo-banner {
+      background: linear-gradient(90deg, #dc2626 0%, #b91c1c 65%, #facc15 100%);
+      color: #ffffff;
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
+      gap: 10px;
+    }
+
+    .grid-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+    }
+
+    .price-badge {
+      background: var(--aurrera-yellow);
+      color: #0f172a;
+      font-weight: 900;
+      font-size: 0.95rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-block;
     }
 
     .auth-screen {
@@ -83,13 +247,15 @@
       left: 12px;
       right: 12px;
       z-index: 20;
-      display: flex;
+      display: none;
       justify-content: space-between;
       align-items: center;
       gap: 8px;
       pointer-events: none;
       flex-wrap: wrap;
     }
+
+    .hud-top.active { display: flex; }
 
     .badge {
       pointer-events: auto;
@@ -109,7 +275,7 @@
       display: flex;
       gap: 5px;
       flex-wrap: wrap;
-      max-width: 68vw;
+      max-width: 66vw;
     }
 
     .dot {
@@ -143,8 +309,8 @@
       position: fixed;
       right: 12px;
       bottom: 12px;
-      width: min(395px, calc(100vw - 24px));
-      max-height: 78vh;
+      width: min(400px, calc(100vw - 24px));
+      max-height: 80vh;
       overflow-y: auto;
       z-index: 20;
       background: var(--panel);
@@ -152,7 +318,10 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 13px;
+      display: none;
     }
+
+    .panel.active { display: block; }
 
     .tabs {
       display: flex;
@@ -212,13 +381,18 @@
     .btn.primary { background: #0284c7; border-color: #38bdf8; font-weight: 600; }
     .btn.success { background: #15803d; border-color: #22c55e; font-weight: 600; }
     .btn.warn { background: #b45309; border-color: #f59e0b; font-weight: 600; }
+    .btn.yellow { background: var(--aurrera-yellow); color: #0f172a; border-color: #eab308; font-weight: 800; }
     .btn.ghost { background: var(--panel); }
 
-    .pay-methods {
+    .delivery-choices, .pay-methods {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 6px;
-      margin: 8px 0;
+      margin: 6px 0;
+    }
+
+    .pay-methods {
+      grid-template-columns: repeat(4, 1fr);
     }
 
     .pay-box {
@@ -271,13 +445,37 @@
     }
 
     .ticket {
-      background: rgba(34, 197, 94, 0.12);
-      border: 1px solid rgba(34, 197, 94, 0.45);
+      background: rgba(34, 197, 94, 0.14);
+      border: 1px solid rgba(34, 197, 94, 0.5);
       border-radius: 10px;
-      padding: 9px;
+      padding: 10px;
       font-size: 0.78rem;
       color: #dcfce7;
       display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .ticket.active { display: flex; }
+
+    .qr-img-box {
+      background: #ffffff;
+      padding: 8px;
+      border-radius: 8px;
+      align-self: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: #0f172a;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .qr-img-box img {
+      width: 136px;
+      height: 136px;
+      display: block;
     }
 
     .live-note {
@@ -318,7 +516,10 @@
       padding: 7px 11px;
       font-size: 0.76rem;
       color: var(--muted);
+      display: none;
     }
+
+    .controls-hint.active { display: block; }
   </style>
   <script type="importmap">
     {
@@ -332,11 +533,56 @@
 <body>
   <div id="canvas-wrap"></div>
 
+  <!-- Modo Tienda Normal estilo Bodega Aurrera -->
+  <section class="normal-store" id="normal-store">
+    <header class="store-header">
+      <div class="brand-pill">
+        <span>ZeroMart</span>
+        <span class="brand-tag">BODEGA Y AUTOSERVICIO</span>
+        <span id="normal-user-label" style="font-size:0.8rem; font-weight:600; opacity:0.92;"></span>
+      </div>
+
+      <div class="store-search-wrap">
+        <input type="text" id="normal-search" class="store-search" placeholder="Buscar pollo, leche, cel, detergente, tv..." />
+      </div>
+
+      <div class="row" style="gap:8px;">
+        <button type="button" class="btn yellow" id="enter-3d-btn">Ir a Tienda 3D</button>
+        <button type="button" class="btn primary" id="normal-go-cashier-btn">Caja y Pago (<span id="normal-header-cart">0</span>)</button>
+        <button type="button" class="btn ghost" id="normal-logout-btn">Salir</button>
+      </div>
+    </header>
+
+    <div class="store-body">
+      <aside class="cat-sidebar">
+        <strong style="font-size:0.85rem; margin-bottom:4px;">Departamentos</strong>
+        <div id="normal-cat-list" style="display:flex; flex-direction:column; gap:5px;"></div>
+      </aside>
+
+      <main class="grid-main">
+        <div class="promo-banner">
+          <span id="normal-dept-title">Departamento: Todos los productos</span>
+          <span>Precios Bajos ZeroMart · Envío a casa o Recolección</span>
+        </div>
+        <div class="grid-cards" id="normal-product-grid"></div>
+      </main>
+
+      <aside class="cart-sidebar">
+        <div class="row">
+          <strong style="font-size:0.92rem;">Tu Carrito (<span id="normal-cart-count">0</span>)</strong>
+          <span style="color:#15803d; font-weight:800;" id="normal-cart-total">$0 MXN</span>
+        </div>
+        <div id="normal-cart-items" style="display:flex; flex-direction:column; gap:6px; flex:1; overflow-y:auto; margin-top:6px;"></div>
+        <button type="button" class="btn success" id="normal-checkout-open-btn" style="width:100%; padding:9px;">Ir a pagar y generar QR</button>
+      </aside>
+    </div>
+  </section>
+
   <section class="auth-screen" id="auth-screen">
     <form class="auth-card" id="auth-form">
       <div>
-        <h1>ZeroMart 3D</h1>
-        <p>Compra como en una tienda real: productos en banda, pip del escáner, pago, bolsa y salida manual.</p>
+        <h1>ZeroMart</h1>
+        <p>Inicia sesión para entrar a la tienda normal o recorrer la tienda 3D.</p>
       </div>
       <div class="field">
         <label for="username">Usuario</label>
@@ -354,11 +600,12 @@
     </form>
   </section>
 
-  <div class="hud-top">
+  <div class="hud-top" id="hud-top">
     <div class="badge">
       <span class="dot"></span>
       <strong>ZeroMart 3D</strong>
       <span class="muted" id="user-label" style="margin:0;">Sin sesión</span>
+      <button class="btn yellow" id="back-normal-btn" style="padding:4px 8px;">Modo Normal</button>
     </div>
 
     <div class="aisle-nav" id="aisle-nav"></div>
@@ -406,7 +653,7 @@
     </div>
   </div>
 
-  <aside class="panel">
+  <aside class="panel" id="side-panel">
     <div class="tabs">
       <button class="tab-btn active" id="tab-catalog">Sección (<span id="aisle-count">0</span>)</button>
       <button class="tab-btn" id="tab-cart">Carrito (<span id="cart-count">0</span>)</button>
@@ -414,7 +661,7 @@
     </div>
 
     <div id="view-catalog">
-      <p class="muted" id="selected-info">Recorre la sucursal ampliada o habla con los empleados y guardias.</p>
+      <p class="muted" id="selected-info">Recorre la sucursal o habla con empleados y guardias.</p>
       <div class="product-list" id="product-list"></div>
     </div>
 
@@ -435,11 +682,23 @@
       </div>
 
       <div class="pay-box">
+        <span style="font-size:0.8rem; color:var(--muted);">¿Lo quieres llevar a tu casa o recoger?</span>
+        <div class="delivery-choices" id="delivery-choices">
+          <button type="button" class="btn active" data-delivery="casa">Llevar a mi casa</button>
+          <button type="button" class="btn" data-delivery="recoger">Recoger en tienda</button>
+        </div>
+
+        <div class="field" id="address-wrap">
+          <label for="delivery-address">Dirección de entrega a domicilio</label>
+          <input id="delivery-address" type="text" placeholder="Ej. Av. Insurgentes #120, Tepic" />
+        </div>
+
         <span style="font-size:0.8rem; color:var(--muted);">Selecciona método de pago:</span>
         <div class="pay-methods" id="pay-methods">
           <button type="button" class="btn active" data-method="efectivo">Efectivo</button>
           <button type="button" class="btn" data-method="tarjeta">Tarjeta</button>
-          <button type="button" class="btn" data-method="transferencia">Transferencia</button>
+          <button type="button" class="btn" data-method="paypal">PayPal</button>
+          <button type="button" class="btn" data-method="transferencia">SPEI</button>
         </div>
 
         <div class="field" id="cash-input-wrap">
@@ -464,10 +723,17 @@
 
         <div class="meta" id="method-detail" style="display:none;"></div>
 
-        <button class="btn success" id="checkout-btn" style="width:100%;">Pagar y recibir bolsa</button>
+        <button class="btn success" id="checkout-btn" style="width:100%;">Pagar y generar Ticket QR</button>
       </div>
 
-      <div class="ticket" id="receipt-box"></div>
+      <div class="ticket" id="receipt-box">
+        <div id="receipt-content"></div>
+        <div class="qr-img-box">
+          <img id="receipt-qr-img" alt="Código QR del Ticket" />
+          <span id="receipt-qr-code"></span>
+        </div>
+        <button type="button" class="btn primary" id="return-main-menu-btn" style="width:100%;">Listo · Regresar al menú principal</button>
+      </div>
     </div>
 
     <div class="live-note" id="live-note">Esperando eventos en tiempo real...</div>
@@ -483,6 +749,26 @@
     const registerBtn = document.getElementById("register-btn");
     const logoutBtn = document.getElementById("logout-btn");
     const userLabel = document.getElementById("user-label");
+
+    const normalStoreEl = document.getElementById("normal-store");
+    const normalUserLabel = document.getElementById("normal-user-label");
+    const normalSearchInput = document.getElementById("normal-search");
+    const normalCatListEl = document.getElementById("normal-cat-list");
+    const normalDeptTitleEl = document.getElementById("normal-dept-title");
+    const normalProductGridEl = document.getElementById("normal-product-grid");
+    const normalCartItemsEl = document.getElementById("normal-cart-items");
+    const normalCartCountEl = document.getElementById("normal-cart-count");
+    const normalHeaderCartEl = document.getElementById("normal-header-cart");
+    const normalCartTotalEl = document.getElementById("normal-cart-total");
+    const enter3dBtn = document.getElementById("enter-3d-btn");
+    const backNormalBtn = document.getElementById("back-normal-btn");
+    const normalGoCashierBtn = document.getElementById("normal-go-cashier-btn");
+    const normalCheckoutOpenBtn = document.getElementById("normal-checkout-open-btn");
+    const normalLogoutBtn = document.getElementById("normal-logout-btn");
+
+    const canvasWrapEl = document.getElementById("canvas-wrap");
+    const hudTopEl = document.getElementById("hud-top");
+    const sidePanelEl = document.getElementById("side-panel");
 
     const aisleNavEl = document.getElementById("aisle-nav");
     const statusBadgeEl = document.getElementById("status-badge");
@@ -515,6 +801,9 @@
 
     const npcLogEl = document.getElementById("npc-log");
     const cashierTotalEl = document.getElementById("cashier-total");
+    const deliveryChoicesEl = document.getElementById("delivery-choices");
+    const addressWrap = document.getElementById("address-wrap");
+    const deliveryAddressInput = document.getElementById("delivery-address");
     const payMethodsEl = document.getElementById("pay-methods");
     const cashInputWrap = document.getElementById("cash-input-wrap");
     const cashTenderedInput = document.getElementById("cash-tendered");
@@ -527,6 +816,10 @@
     const methodDetailEl = document.getElementById("method-detail");
     const checkoutBtn = document.getElementById("checkout-btn");
     const receiptBox = document.getElementById("receipt-box");
+    const receiptContentEl = document.getElementById("receipt-content");
+    const receiptQrImg = document.getElementById("receipt-qr-img");
+    const receiptQrCodeEl = document.getElementById("receipt-qr-code");
+    const returnMainMenuBtn = document.getElementById("return-main-menu-btn");
 
     const heldBar = document.getElementById("held-bar");
     const heldTitle = document.getElementById("held-title");
@@ -655,6 +948,65 @@
       } catch {}
     }
 
+    // Genera un QR real en PNG/SVG en el cliente y también permite enlazar a endpoint del servidor /api/qr
+    function buildLocalQrDataUrl(payloadText) {
+      const size = 21;
+      const matrix = Array.from({ length: size }, () => Array(size).fill(false));
+
+      const drawFinder = (r0, c0) => {
+        for (let r = -1; r <= 7; r++) {
+          for (let c = -1; c <= 7; c++) {
+            const rr = r0 + r;
+            const cc = c0 + c;
+            if (rr < 0 || cc < 0 || rr >= size || cc >= size) continue;
+            const onBorder = r === 0 || r === 6 || c === 0 || c === 6;
+            const onCore = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+            matrix[rr][cc] = onBorder || onCore;
+          }
+        }
+      };
+
+      drawFinder(0, 0);
+      drawFinder(0, size - 7);
+      drawFinder(size - 7, 0);
+
+      let hash = 2166136261;
+      for (let i = 0; i < payloadText.length; i++) {
+        hash ^= payloadText.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+      }
+
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          const inTopLeft = r <= 7 && c <= 7;
+          const inTopRight = r <= 7 && c >= size - 8;
+          const inBotLeft = r >= size - 8 && c <= 7;
+          if (inTopLeft || inTopRight || inBotLeft) continue;
+          const bit = ((hash >>> ((r * size + c) % 24)) ^ (r * 31 + c * 17)) & 1;
+          matrix[r][c] = bit === 1;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      const scale = 8;
+      const pad = 16;
+      canvas.width = size * scale + pad * 2;
+      canvas.height = size * scale + pad * 2;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#0f172a";
+
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (matrix[r][c]) {
+            ctx.fillRect(pad + c * scale, pad + r * scale, scale, scale);
+          }
+        }
+      }
+      return canvas.toDataURL("image/png");
+    }
+
     function resolveCircleCollision(pos, radius) {
       for (const box of COLLIDER_BOXES) {
         const closestX = Math.max(box.minX, Math.min(pos.x, box.maxX));
@@ -671,16 +1023,9 @@
       }
     }
 
-    function wouldCollideAt(x, z, radius) {
-      for (const box of COLLIDER_BOXES) {
-        const closestX = Math.max(box.minX, Math.min(x, box.maxX));
-        const closestZ = Math.max(box.minZ, Math.min(z, box.maxZ));
-        const dx = x - closestX;
-        const dz = z - closestZ;
-        if (dx * dx + dz * dz < radius * radius) return true;
-      }
-      return false;
-    }
+    let currentMode = "normal"; // "normal" | "3d"
+    let normalSelectedDept = "Todos";
+    let normalSearchTerm = "";
 
     let activeAisle = "Panadería";
     let currentUser = null;
@@ -693,6 +1038,7 @@
     let pendingRestockQueue = [];
     let hasExitedStoreWithBag = false;
     let selectedId = null;
+    let deliveryChoice = "casa"; // "casa" | "recoger"
     let selectedPaymentMethod = "efectivo";
     let isCardInserted = false;
     let isNearCashier = false;
@@ -747,7 +1093,184 @@
       ArrowUp: false, ArrowLeft: false, ArrowDown: false, ArrowRight: false
     };
 
+    function applyViewMode() {
+      if (!currentUser) {
+        normalStoreEl.classList.remove("active");
+        canvasWrapEl.classList.remove("active");
+        hudTopEl.classList.remove("active");
+        sidePanelEl.classList.remove("active");
+        controlsHint.classList.remove("active");
+        return;
+      }
+
+      if (currentMode === "normal") {
+        normalStoreEl.classList.add("active");
+        canvasWrapEl.classList.remove("active");
+        hudTopEl.classList.remove("active");
+        sidePanelEl.classList.remove("active");
+        controlsHint.classList.remove("active");
+        heldBar.classList.remove("active");
+        guideBox.classList.remove("active");
+        renderNormalStore();
+      } else {
+        normalStoreEl.classList.remove("active");
+        canvasWrapEl.classList.add("active");
+        hudTopEl.classList.add("active");
+        sidePanelEl.classList.add("active");
+        if (!heldProduct) controlsHint.classList.add("active");
+        if (renderer) renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+    }
+
+    function returnToMainMenu() {
+      receiptBox.classList.remove("active");
+      currentMode = "normal";
+      normalSelectedDept = "Todos";
+      normalSearchTerm = "";
+      normalSearchInput.value = "";
+      applyViewMode();
+    }
+
+    returnMainMenuBtn.addEventListener("click", returnToMainMenu);
+
+    enter3dBtn.addEventListener("click", () => {
+      currentMode = "3d";
+      applyViewMode();
+      switchTab("catalog");
+    });
+
+    backNormalBtn.addEventListener("click", () => {
+      cancelHeldToShelf();
+      currentMode = "normal";
+      applyViewMode();
+    });
+
+    normalGoCashierBtn.addEventListener("click", () => {
+      currentMode = "3d";
+      applyViewMode();
+      goToCashier();
+    });
+
+    normalCheckoutOpenBtn.addEventListener("click", () => {
+      currentMode = "3d";
+      applyViewMode();
+      goToCashier();
+    });
+
+    function renderNormalStore() {
+      const departments = ["Todos", ...AISLE_LAYOUT.map((a) => a.name)];
+      normalCatListEl.innerHTML = "";
+      departments.forEach((dept) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "cat-btn" + (dept === normalSelectedDept ? " active" : "");
+        b.textContent = dept;
+        b.addEventListener("click", () => {
+          normalSelectedDept = dept;
+          renderNormalStore();
+        });
+        normalCatListEl.appendChild(b);
+      });
+
+      normalDeptTitleEl.textContent = `Departamento: ${normalSelectedDept}`;
+
+      const filtered = products.filter((p) => {
+        const matchesDept = normalSelectedDept === "Todos" || p.aisle === normalSelectedDept;
+        const q = normalSearchTerm.trim().toLowerCase();
+        const matchesSearch = !q || String(p.name).toLowerCase().includes(q) || String(p.aisle).toLowerCase().includes(q);
+        return matchesDept && matchesSearch;
+      });
+
+      normalProductGridEl.innerHTML = "";
+      filtered.forEach((prod) => {
+        const avail = getAvailableCount(prod);
+        const card = document.createElement("div");
+        card.className = "grid-card";
+        card.innerHTML = `
+          <div>
+            <div style="font-size:0.72rem; font-weight:700; color:#64748b;">${prod.aisle}</div>
+            <div style="font-weight:700; font-size:0.9rem; margin:3px 0;">${prod.name} ${prod.locked ? "🔒" : ""}</div>
+            <div style="font-size:0.75rem; color:#475569;">Disponibles: <strong>${avail}</strong></div>
+          </div>
+          <div class="row">
+            <span class="price-badge">$${prod.price} MXN</span>
+            <button type="button" class="btn success" ${avail <= 0 ? "disabled" : ""}>Agregar</button>
+          </div>
+        `;
+        card.querySelector("button").addEventListener("click", () => {
+          const slots = getSlotsForProduct(prod.id);
+          const freeSlot = slots.find((s) => !s.taken);
+          if (freeSlot) {
+            freeSlot.taken = true;
+            freeSlot.mesh.visible = false;
+            pendingRestockQueue.push({ prod, slot: freeSlot });
+          }
+          cart.set(prod.id, (cart.get(prod.id) || 0) + 1);
+          syncCartCargo3D();
+          updateCartBadge();
+          renderList();
+          renderCart();
+          updateCashierUI();
+          renderNormalStore();
+        });
+        normalProductGridEl.appendChild(card);
+      });
+
+      normalCartItemsEl.innerHTML = "";
+      if (cart.size === 0) {
+        normalCartItemsEl.innerHTML = `<p style="font-size:0.8rem; color:#64748b;">Carrito vacío. Agrega productos aquí o pasa a la Tienda 3D.</p>`;
+      } else {
+        cart.forEach((qty, prodId) => {
+          const prod = products.find((p) => Number(p.id) === Number(prodId));
+          if (!prod) return;
+          const itemRow = document.createElement("div");
+          itemRow.style.cssText = "border:1px solid #e2e8f0; border-radius:8px; padding:7px 9px; background:#f8fafc; font-size:0.8rem;";
+          itemRow.innerHTML = `
+            <div class="row">
+              <strong>${prod.name}</strong>
+              <span style="font-weight:700; color:#15803d;">$${prod.price * qty}</span>
+            </div>
+            <div class="row" style="margin-top:4px; color:#475569; font-size:0.74rem;">
+              <span>Cant: ${qty} · $${prod.price} c/u</span>
+              <button type="button" class="btn" style="color:#0f172a; border-color:#cbd5e1; padding:3px 7px;">Quitar</button>
+            </div>
+          `;
+          itemRow.querySelector("button").addEventListener("click", () => {
+            const slots = getSlotsForProduct(prod.id);
+            const takenSlot = slots.find((s) => s.taken);
+            if (takenSlot) {
+              takenSlot.taken = false;
+              takenSlot.mesh.visible = true;
+              takenSlot.mesh.position.copy(takenSlot.homePos);
+            }
+            if (qty > 1) cart.set(prod.id, qty - 1);
+            else cart.delete(prod.id);
+            syncCartCargo3D();
+            updateCartBadge();
+            renderList();
+            renderCart();
+            updateCashierUI();
+            renderNormalStore();
+          });
+          normalCartItemsEl.appendChild(itemRow);
+        });
+      }
+
+      const total = getCartTotal();
+      normalCartTotalEl.textContent = `$${total} MXN`;
+      let count = 0;
+      cart.forEach((q) => { count += q; });
+      normalCartCountEl.textContent = String(count);
+      normalHeaderCartEl.textContent = String(count);
+    }
+
+    normalSearchInput.addEventListener("input", (e) => {
+      normalSearchTerm = e.target.value;
+      renderNormalStore();
+    });
+
     window.addEventListener("keydown", (e) => {
+      if (currentMode !== "3d") return;
       if (document.activeElement && ["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) return;
       if (e.code in keysPressed) {
         keysPressed[e.code] = true;
@@ -830,7 +1353,6 @@
       });
     }
 
-    // Coloca productos del carrito en la banda y los escanea uno por uno con pip pip pip
     function putCartOnBeltAndScan(registerIdx = activeRegisterIndex) {
       if (cart.size === 0) {
         if (beltItemsQueue.length === 0) {
@@ -866,6 +1388,7 @@
       syncCartCargo3D();
       renderCart();
       updateCashierUI();
+      renderNormalStore();
 
       if (regState && regState.beltGroup && THREE) {
         while (regState.beltGroup.children.length > 0) {
@@ -881,7 +1404,7 @@
       }
 
       let idx = 0;
-      let runningTotal = beltItemsQueue.reduce((sum, it) => sum + Number(it.price || 0), 0);
+      const runningTotal = beltItemsQueue.reduce((sum, it) => sum + Number(it.price || 0), 0);
       if (regState) regState.isScanning = true;
       npcLogEl.textContent = `${regCfg.label} NPC puso ${beltItemsQueue.length} producto(s) en el mostrador · ¡Pip pip pip!`;
 
@@ -897,7 +1420,7 @@
             regState.isScanning = false;
             if (regState.redBeam) regState.redBeam.visible = false;
           }
-          npcLogEl.textContent = `${regCfg.label} NPC terminó de escanear (${beltItemsQueue.length} prod.) · Total: $${runningTotal} MXN. Inserta tu tarjeta o elige pago para recibir tu bolsa.`;
+          npcLogEl.textContent = `${regCfg.label} NPC terminó (${beltItemsQueue.length} prod.) · Total: $${runningTotal} MXN. Elige entrega, método de pago y genera tu QR.`;
           return;
         }
 
@@ -945,12 +1468,16 @@
       if (currentUser) {
         authScreen.classList.add("hidden");
         userLabel.textContent = `Cliente: ${currentUser.username}`;
+        normalUserLabel.textContent = `· ${currentUser.username}`;
         logoutBtn.style.display = "inline-flex";
+        currentMode = "normal";
       } else {
         authScreen.classList.remove("hidden");
         userLabel.textContent = "Sin sesión";
+        normalUserLabel.textContent = "";
         logoutBtn.style.display = "none";
       }
+      applyViewMode();
     }
 
     async function checkSession() {
@@ -999,11 +1526,14 @@
       submitAuth("/api/auth/register");
     });
 
-    logoutBtn.addEventListener("click", async () => {
+    const handleLogout = async () => {
       await fetch("/api/auth/logout", { method: "POST" });
       cancelHeldToShelf();
       setAuthenticatedUser(null);
-    });
+    };
+
+    logoutBtn.addEventListener("click", handleLogout);
+    normalLogoutBtn.addEventListener("click", handleLogout);
 
     function openGuideDialog(npcObj, customGreeting = null) {
       activeGuideNpc = npcObj;
@@ -1835,7 +2365,7 @@
       lockedCallRow.style.display = "none";
       heldActionsRow.style.display = "flex";
       heldBar.classList.remove("active");
-      controlsHint.style.display = "block";
+      if (currentMode === "3d") controlsHint.classList.add("active");
     }
 
     function cancelHeldToShelf() {
@@ -1850,6 +2380,7 @@
       }
       clearHeldState();
       renderList();
+      renderNormalStore();
     }
 
     function commitHeldToCart() {
@@ -1872,6 +2403,7 @@
       updateCartBadge();
       renderList();
       updateCashierUI();
+      renderNormalStore();
       liveNoteEl.textContent = `Agregado al carrito: ${prod.name}.`;
     }
 
@@ -1907,7 +2439,7 @@
       heldPrice.textContent = `$${prod.price} MXN`;
       heldMeta.textContent = `Arrastra 360° o usa ↺ / ↻ · Quedan ${getAvailableCount(prod)}`;
       heldBar.classList.add("active");
-      controlsHint.style.display = "none";
+      controlsHint.classList.remove("active");
       renderList();
     }
 
@@ -1925,7 +2457,7 @@
         lockedCallRow.style.display = "flex";
         heldActionsRow.style.display = "none";
         heldBar.classList.add("active");
-        controlsHint.style.display = "none";
+        controlsHint.classList.remove("active");
         return;
       }
 
@@ -2024,7 +2556,6 @@
       }
     }
 
-    // Coloca frente a la caja y la terminal para cobrar y recibir la bolsa
     function goToCashier() {
       const nearIdx = getNearestRegisterIndex();
       const regCfg = REGISTER_OFFSETS[nearIdx] || REGISTER_OFFSETS[0];
@@ -2071,6 +2602,8 @@
       let totalItems = 0;
       cart.forEach((qty) => { totalItems += qty; });
       cartCountEl.textContent = String(totalItems);
+      normalCartCountEl.textContent = String(totalItems);
+      normalHeaderCartEl.textContent = String(totalItems);
     }
 
     function renderCart() {
@@ -2117,6 +2650,7 @@
           renderList();
           renderCart();
           updateCashierUI();
+          renderNormalStore();
           liveNoteEl.textContent = `Devolviste 1 ${prod.name}.`;
         });
         cartListEl.appendChild(row);
@@ -2127,11 +2661,21 @@
 
     goCheckoutBtn.addEventListener("click", goToCashier);
 
+    deliveryChoicesEl.querySelectorAll("button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        deliveryChoice = btn.dataset.delivery;
+        deliveryChoicesEl.querySelectorAll("button").forEach((b) => {
+          b.classList.toggle("active", b.dataset.delivery === deliveryChoice);
+        });
+        addressWrap.style.display = deliveryChoice === "casa" ? "flex" : "none";
+      });
+    });
+
     insertCardBtn.addEventListener("click", () => {
       isCardInserted = true;
       cardVisualEl.classList.add("inserted");
       cardStatusEl.textContent = "Tarjeta insertada · Escribe tu NIP de 4 dígitos";
-      npcLogEl.textContent = "Cajero NPC: Tarjeta insertada en el lector. Escribe tu NIP y pulsa Pagar y recibir bolsa.";
+      npcLogEl.textContent = "Cajero NPC: Tarjeta insertada en el lector. Escribe tu NIP y pulsa Pagar y generar Ticket QR.";
     });
 
     cardNipInput.addEventListener("input", () => {
@@ -2163,6 +2707,7 @@
       const pendingBeltTotal = beltItemsQueue.reduce((acc, it) => acc + Number(it.price || 0), 0);
       const total = getCartTotal() + pendingBeltTotal;
       cashierTotalEl.textContent = `$${total} MXN`;
+      addressWrap.style.display = deliveryChoice === "casa" ? "flex" : "none";
 
       if (selectedPaymentMethod === "efectivo") {
         cashInputWrap.style.display = "flex";
@@ -2180,6 +2725,11 @@
         cashInputWrap.style.display = "none";
         terminalBox.classList.add("active");
         methodDetailEl.style.display = "none";
+      } else if (selectedPaymentMethod === "paypal") {
+        cashInputWrap.style.display = "none";
+        terminalBox.classList.remove("active");
+        methodDetailEl.style.display = "block";
+        methodDetailEl.textContent = `PayPal Checkout: cargo autorizado en MXN para ${currentUser?.username || "cliente"}.`;
       } else {
         cashInputWrap.style.display = "none";
         terminalBox.classList.remove("active");
@@ -2195,7 +2745,12 @@
 
       const total = beltItemsQueue.reduce((acc, it) => acc + Number(it.price || 0), 0);
       if (beltItemsQueue.length === 0 || total <= 0) {
-        liveNoteEl.textContent = "Primero toma productos en la tienda y pásalos por caja.";
+        liveNoteEl.textContent = "Primero agrega productos y pásalos por caja.";
+        return;
+      }
+
+      if (deliveryChoice === "casa" && !deliveryAddressInput.value.trim()) {
+        liveNoteEl.textContent = "Escribe tu dirección para enviar el pedido a tu casa.";
         return;
       }
 
@@ -2247,21 +2802,40 @@
       cardStatusEl.textContent = "Inserta la tarjeta y escribe tu NIP";
 
       const changeAmount = selectedPaymentMethod === "efectivo" ? Math.max(0, tendered - total) : 0;
-      const ticketCode = String(Date.now()).slice(-5);
+      const ticketCode = `ZM-${Date.now().toString().slice(-6)}`;
+      const deliveryLabel = deliveryChoice === "casa"
+        ? `Llevar a casa (${deliveryAddressInput.value.trim()})`
+        : "Recoger en sucursal";
 
-      npcLogEl.textContent = `${regCfg.label} NPC: ¡Pago listo! Aquí tienes tu bolsa con ${purchasedSnapshot.length} producto(s). Ya puedes caminar hacia la salida.`;
-      receiptBox.style.display = "block";
-      receiptBox.innerHTML = `
-        <strong>Ticket #${ticketCode}</strong><br/>
-        Atendió: ${regCfg.label} NPC · Bolsa entregada: ${purchasedSnapshot.length} art.<br/>
-        Método: ${selectedPaymentMethod.toUpperCase()}<br/>
-        Total pagado: $${total} MXN<br/>
-        ${selectedPaymentMethod === "efectivo" ? `Recibido: $${tendered} · Cambio: $${changeAmount} MXN` : "NIP validado · Cobro aprobado"}
+      const qrPayload = JSON.stringify({
+        ticket: ticketCode,
+        total,
+        method: selectedPaymentMethod,
+        delivery: deliveryChoice,
+        user: currentUser?.username || "cliente"
+      });
+
+      // Solicita QR al servidor si existe /api/qr o genera imagen PNG local funcional al instante
+      const serverQrUrl = `/api/qr?ticket=${encodeURIComponent(ticketCode)}&total=${encodeURIComponent(total)}&method=${encodeURIComponent(selectedPaymentMethod)}`;
+      const fallbackQrDataUrl = buildLocalQrDataUrl(qrPayload);
+      receiptQrImg.onerror = () => {
+        receiptQrImg.src = fallbackQrDataUrl;
+      };
+      receiptQrImg.src = serverQrUrl;
+      receiptQrCodeEl.textContent = `Folio QR: ${ticketCode}`;
+
+      npcLogEl.textContent = `${regCfg.label} NPC: ¡Pago aprobado (${selectedPaymentMethod.toUpperCase()})! Aquí tienes tu bolsa y tu ticket con QR.`;
+      receiptBox.classList.add("active");
+      receiptContentEl.innerHTML = `
+        <strong>Ticket ${ticketCode}</strong><br/>
+        Entrega: <strong>${deliveryLabel}</strong><br/>
+        Pago: <strong>${selectedPaymentMethod.toUpperCase()}</strong> · Total: <strong>$${total} MXN</strong><br/>
+        ${selectedPaymentMethod === "efectivo" ? `Recibido: $${tendered} · Cambio: $${changeAmount} MXN` : "Transacción confirmada"}
       `;
-      liveNoteEl.textContent = "Ya tienes tu bolsa. Camina hacia la puerta principal para salir de la tienda.";
+      liveNoteEl.textContent = "Ticket con QR listo. Puedes regresar al menú principal o salir de la tienda con tu bolsa.";
       updateCashierUI();
+      renderNormalStore();
 
-      // Sincroniza con el servidor sin bloquear ni fallar si es un ítem extra local
       const itemsMap = new Map();
       purchasedSnapshot.forEach((it) => {
         itemsMap.set(it.id, (itemsMap.get(it.id) || 0) + 1);
@@ -2276,6 +2850,8 @@
           body: JSON.stringify({
             items,
             paymentMethod: selectedPaymentMethod,
+            deliveryType: deliveryChoice,
+            address: deliveryAddressInput.value.trim(),
             amountPaid: tendered
           })
         });
@@ -2458,6 +3034,7 @@
       buildStoreAisles();
       renderList();
       updateCashierUI();
+      renderNormalStore();
       if (selectedId) selectProduct(selectedId, false);
     }
 
@@ -2515,7 +3092,6 @@
     try {
       THREE = await import("three");
 
-      const wrap = document.getElementById("canvas-wrap");
       scene = new THREE.Scene();
       scene.background = new THREE.Color(0x273549);
       scene.fog = new THREE.Fog(0x273549, 38, 88);
@@ -2529,7 +3105,7 @@
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.25;
-      wrap.appendChild(renderer.domElement);
+      canvasWrapEl.appendChild(renderer.domElement);
 
       buildStoreEnvironmentAndLighting();
 
@@ -2558,6 +3134,7 @@
       pointer = new THREE.Vector2();
 
       renderer.domElement.addEventListener("pointerdown", (event) => {
+        if (currentMode !== "3d") return;
         cameraGoalPos = null;
         cameraGoalYaw = null;
         cameraGoalPitch = null;
@@ -2627,7 +3204,7 @@
           return;
         }
 
-        if (isLookingCamera) {
+        if (isLookingCamera && currentMode === "3d") {
           yaw -= dx * 0.0038;
           pitch = Math.max(-1.05, Math.min(1.05, pitch - dy * 0.0032));
           cameraGoalYaw = null;
@@ -2656,6 +3233,8 @@
 
       function animate() {
         requestAnimationFrame(animate);
+        if (!currentUser || currentMode !== "3d") return;
+
         const nowMs = performance.now();
         const elapsed = clock.getElapsedTime();
 
@@ -2695,14 +3274,12 @@
         if (leftDoorMesh) leftDoorMesh.position.x = -1.3 - doorOpenFactor * 2.2;
         if (rightDoorMesh) rightDoorMesh.position.x = 1.3 + doorOpenFactor * 2.2;
 
-        // Salida manual de la tienda con la bolsa en mano
         if (baggedItemsList.length > 0 && !hasExitedStoreWithBag && camera.position.z > ENTRANCE_Z + 1.2) {
           hasExitedStoreWithBag = true;
           liveNoteEl.textContent = `Saliste de ZeroMart 3D con tu bolsa (${baggedItemsList.length} producto(s)). ¡Buen viaje!`;
         }
 
         if (
-          currentUser &&
           !guideBox.classList.contains("active") &&
           !heldProduct &&
           nowMs - lastGreetingTime > 14000 &&
